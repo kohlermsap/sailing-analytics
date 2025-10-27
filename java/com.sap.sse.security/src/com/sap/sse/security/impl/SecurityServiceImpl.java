@@ -1186,6 +1186,7 @@ implements ReplicableSecurityService, ClearStateTestSupport {
             if (timedLock == null || !timedLock.isLocked()) {
                 apply(s->s.internalRecordUserCreationFromClientIP(clientIP));
             } else {
+                timedLock.extendLockDuration();
                 throw new UserManagementException("Client IP "+clientIP+" locked for user creation: "+timedLock);
             }
         }

@@ -10,8 +10,8 @@ import com.sap.sailing.selenium.pages.gwt.CellTablePO;
 import com.sap.sailing.selenium.pages.gwt.DataEntryPO;
 
 public class IpBlocklistPanelPO extends PageArea {
-    static class TablePO extends CellTablePO<IPLockEntry> {
-        public TablePO(WebDriver driver, WebElement element) {
+    static class IPBlocklistTablePO extends CellTablePO<IPLockEntry> {
+        public IPBlocklistTablePO(WebDriver driver, WebElement element) {
             super(driver, element);
         }
 
@@ -46,8 +46,8 @@ public class IpBlocklistPanelPO extends PageArea {
 
     public IpBlocklistPanelPO(WebDriver driver, WebElement element) {
         super(driver, element);
-        final WebElement cellTableWebElement = driver.findElement(new BySeleniumId("cellTable"));
-        this.cellTable = new TablePO(driver, cellTableWebElement);
+        final WebElement cellTableWebElement = this.findElementBySeleniumId("cellTable");
+        this.cellTable = new IPBlocklistTablePO(driver, cellTableWebElement);
     }
 
     @FindBy(how = BySeleniumId.class, using = "refreshButton")
@@ -56,16 +56,13 @@ public class IpBlocklistPanelPO extends PageArea {
     @FindBy(how = BySeleniumId.class, using = "unlockButton")
     private WebElement unlockButton;
 
-    private final TablePO cellTable;
+    private final IPBlocklistTablePO cellTable;
 
     public void refresh() {
         refreshButton.click();
     }
 
-    /**
-     * @return true if IP was found, false if not found
-     */
-    public boolean expectIpInTable(final String ip) {
+    public boolean isIpInTable(final String ip) {
         final IPLockEntry entry = cellTable.getEntry(ip);
         final boolean wasFound = entry != null;
         return wasFound;

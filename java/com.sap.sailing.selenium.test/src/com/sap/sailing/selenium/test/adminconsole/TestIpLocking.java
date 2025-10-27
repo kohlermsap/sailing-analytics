@@ -32,9 +32,9 @@ public class TestIpLocking extends AbstractSeleniumTest {
         attemptBearerTokenAbuse(5);
         tablePO.refresh();
         final String ip = "127.0.0.1";
-        assertTrue(tablePO.expectIpInTable(ip));
+        assertTrue(tablePO.isIpInTable(ip));
         tablePO.unblockIP(ip);
-        assertFalse(tablePO.expectIpInTable(ip));
+        assertFalse(tablePO.isIpInTable(ip));
         attemptValidBearerTokenUse();
     }
 
@@ -74,21 +74,21 @@ public class TestIpLocking extends AbstractSeleniumTest {
     public void testUnlockingForUserCreationAbuser() throws InterruptedException {
         final AdminConsolePage adminConsole = AdminConsolePage.goToPage(getWebDriver(), getContextRoot());
         final IpBlocklistPanelPO tablePO = adminConsole.goToLocalServerPanel().getUserCreationAbusePO();
-        attemptUserCreationAbuse(5);
+        spamUserCreation(4);
         tablePO.refresh();
         final String ip = "127.0.0.1";
-        assertTrue(tablePO.expectIpInTable(ip));
+        assertTrue(tablePO.isIpInTable(ip));
         tablePO.unblockIP(ip);
-        assertFalse(tablePO.expectIpInTable(ip));
+        assertFalse(tablePO.isIpInTable(ip));
         attemptValidBearerTokenUse();
     }
 
-    private void attemptUserCreationAbuse(final int attempts) throws InterruptedException {
+    private void spamUserCreation(final int attempts) throws InterruptedException {
         for (int i = 0; i < attempts; i++) {
             attemptUserCreation(String.valueOf(i));
             // wait for lock to expire
-            long lockDuration = (long) Math.pow(2, i) * 1000;
-            boolean isFinalAttempt = i == (attempts - 1);
+            final long lockDuration = (long) Math.pow(2, i) * 1000;
+            final boolean isFinalAttempt = i == (attempts - 1);
             if (!isFinalAttempt) {
                 Thread.sleep(lockDuration);
             }
