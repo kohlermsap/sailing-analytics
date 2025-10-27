@@ -148,7 +148,7 @@ implements TrackingDataLoader {
                     }
                 }, /* useInternalMarkPassingAlgorithm */ true, raceLogResolver,
                 /* Not needed because the RaceTracker is not active on a replica */ Optional.empty(),
-                new TrackingConnectorInfoImpl(YellowBrickTrackingAdapter.NAME, "https://www.ybtracking.com/", /* TODO any default YB tracker URL? */ null), /* markPassingRaceFingerprintRegistry */ null);
+                new TrackingConnectorInfoImpl(YellowBrickTrackingAdapter.NAME, "https://www.ybtracking.com/", /* TODO any default YB tracker URL? */ null), /* markPassingRaceFingerprintRegistry */ null, /*maneuverRaceFingerprintRegistry*/ null);
         addRaceLogListenerForCourseUpdates();
         loadStoredData();
         schedulePeriodicPollingTask();

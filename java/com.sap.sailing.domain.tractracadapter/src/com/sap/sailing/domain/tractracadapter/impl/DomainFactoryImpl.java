@@ -783,7 +783,7 @@ public class DomainFactoryImpl implements DomainFactory {
                 windStore, delayToLiveInMillis, millisecondsOverWhichToAverageWind,
                 /* time over which to average speed: */ race.getBoatClass().getApproximateManeuverDurationInMilliseconds(),
                 raceDefinitionSetToUpdate, useMarkPassingCalculator, raceLogResolver, Optional.empty(),
-                trackingConnectorInfo, markPassingRaceFingerprintRegistry);
+                trackingConnectorInfo, markPassingRaceFingerprintRegistry, /*maneuverRaceFingerprintRegistry*/ null);
     }
 
     /**

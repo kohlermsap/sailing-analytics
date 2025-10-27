@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 import com.sap.sailing.domain.base.Competitor;
 import com.sap.sailing.domain.base.Waypoint;
-import com.sap.sailing.domain.common.RaceIdentifier;
 import com.sap.sailing.domain.tracking.MarkPassing;
 import com.sap.sailing.domain.tracking.TrackedRace;
 import com.sap.sse.common.TimePoint;
@@ -36,8 +35,8 @@ public class MarkPassingProxy implements MarkPassing {
     
     @Override
     public TimePoint getTimePoint() {
-        isMarkPassing();
-        return markPassing.getTimePoint();   
+//        isMarkPassing();
+        return timePoint;   
     }
 
     @Override

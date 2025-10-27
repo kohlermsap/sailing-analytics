@@ -2,6 +2,7 @@ package com.sap.sailing.domain.maneuverhash.impl;
 
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.json.simple.JSONObject;
 
@@ -224,7 +225,10 @@ public class ManeuverRaceFingerprintImpl implements ManeuverRaceFingerprint {
         int res = 0;
         String regattaName = trackedRace.getTrackedRegatta().getRegatta().getName();
         Map<? extends WindSource, ? extends WindTrack> windTrack = trackedRace.getWindStore().loadWindTracks(regattaName, trackedRace, 10000);
-        for (Map.Entry<? extends WindSource, ? extends WindTrack> w : windTrack.entrySet() ) { 
+        Map<WindSource, WindTrack> gefilterteMap = windTrack.entrySet()
+                .stream().filter(entry -> entry.getKey().getType().isObserved())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        for (Map.Entry<? extends WindSource, ? extends WindTrack> w : gefilterteMap.entrySet() ) {
             int k = w.getKey().hashCode();
             int v = w.getValue().hashCode();
             res = res ^ k;

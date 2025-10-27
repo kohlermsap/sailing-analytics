@@ -614,6 +614,7 @@ public class MarkPassingCalculator {
                             try {
                                 latchForRunningListenRun.await();
                                 final Map<Competitor, Map<Waypoint, MarkPassing>> markPassings = race.getMarkPassings(/* waitForLatestUpdates */ true);
+                                // Bei Live-Rennen Speicherung unnötig
                                 markPassingRaceFingerprintRegistry.storeMarkPassings(race.getRaceIdentifier(),
                                         MarkPassingRaceFingerprintFactory.INSTANCE.createFingerprint(race),
                                         markPassings, race.getRace().getCourse());

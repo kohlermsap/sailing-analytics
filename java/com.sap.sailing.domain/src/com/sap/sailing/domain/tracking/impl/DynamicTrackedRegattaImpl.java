@@ -1,9 +1,19 @@
 package com.sap.sailing.domain.tracking.impl;
 
+import java.util.Optional;
+
 import com.sap.sailing.domain.base.RaceDefinition;
 import com.sap.sailing.domain.base.Regatta;
+import com.sap.sailing.domain.base.Sideline;
+import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprintRegistry;
+import com.sap.sailing.domain.markpassinghash.MarkPassingRaceFingerprintRegistry;
+import com.sap.sailing.domain.racelog.RaceLogAndTrackedRaceResolver;
+import com.sap.sailing.domain.tracking.DynamicRaceDefinitionSet;
 import com.sap.sailing.domain.tracking.DynamicTrackedRace;
 import com.sap.sailing.domain.tracking.DynamicTrackedRegatta;
+import com.sap.sailing.domain.tracking.TrackingConnectorInfo;
+import com.sap.sailing.domain.tracking.WindStore;
+import com.sap.sse.util.ThreadLocalTransporter;
 
 public class DynamicTrackedRegattaImpl extends TrackedRegattaImpl implements DynamicTrackedRegatta {
     private static final long serialVersionUID = -90155868534737120L;
@@ -26,5 +36,17 @@ public class DynamicTrackedRegattaImpl extends TrackedRegattaImpl implements Dyn
     @Override
     public DynamicTrackedRace getExistingTrackedRace(RaceDefinition race) {
         return (DynamicTrackedRace) super.getExistingTrackedRace(race);
+    }
+
+    @Override
+    public DynamicTrackedRace createTrackedRace(RaceDefinition raceDefinition, Iterable<Sideline> sidelines,
+            WindStore windStore, long delayToLiveInMillis, long millisecondsOverWhichToAverageWind,
+            long millisecondsOverWhichToAverageSpeed, DynamicRaceDefinitionSet raceDefinitionSetToUpdate,
+            boolean useInternalMarkPassingAlgorithm, RaceLogAndTrackedRaceResolver raceLogResolver,
+            Optional<ThreadLocalTransporter> beforeAndAfterNotificationHandler,
+            TrackingConnectorInfo trackingConnectorInfo,
+            MarkPassingRaceFingerprintRegistry markPassingRaceFingerprintRegistry, ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

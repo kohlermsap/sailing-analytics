@@ -264,7 +264,7 @@ public class RaceCourseReceiver extends AbstractReceiverWithQueue<IControlRoute,
                 /* ThreadLocalTransporter not needed because the RaceTracker is not active on a replica */ Optional
                         .empty(),
                 new TrackingConnectorInfoImpl(TracTracAdapter.NAME, TracTracAdapter.DEFAULT_URL,
-                        webUrlString), markPassingRaceFingerprintRegistry);
+                        webUrlString), markPassingRaceFingerprintRegistry,  /* maneuverRaceFingerprintRegistry */ null);
         if (runAfterCreatingTrackedRace != null) {
             runAfterCreatingTrackedRace.accept(trackedRace);
         }
