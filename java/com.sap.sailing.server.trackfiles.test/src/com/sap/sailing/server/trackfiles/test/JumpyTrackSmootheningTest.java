@@ -289,7 +289,7 @@ public class JumpyTrackSmootheningTest {
         addFixedMarkPassingToRaceLog("2020-10-14T17:29:36Z", gallagherZelenka, 2, raceLog);
         addFixedMarkPassingToRaceLog("2020-10-14T17:36:42Z", gallagherZelenka, 3, raceLog);
         addFixedMarkPassingToRaceLog("2020-10-14T18:21:38Z", gallagherZelenka, 4, raceLog);
-        trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.LOADING, 0.0));
+        trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.LOADING, 0.0)); // suspends mark passing calculator
         final DynamicGPSFixTrack<Competitor, GPSFixMoving> competitorTrackInRace = trackedRace.getTrack(gallagherZelenka);
         competitorTrack.lockForRead();
         try {
@@ -299,7 +299,12 @@ public class JumpyTrackSmootheningTest {
         } finally {
             competitorTrack.unlockAfterRead();
         }
-        trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.TRACKING, 1.0));
+        trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.TRACKING, 1.0)); // resumes mark passing calculator
+        // FIXME is it possible that MarkPassingCalculator.Listen has applied only a subset of the changes from its queue when this method returns?
+        // It scoops up a few events from the queue under the MPC write lock and collects the changes in various collections, but doesn't re-calculate while suspended;
+        // When the lock is released prior to fetching the next set of events from the queue, the test case calling this method may call getMarkPassings(..., true)
+        // and obtain the read lock, keeping the Listen thread from applying the next round of updates. Yes, the getMarkPassings(...) call may return something,
+        // but that may be the result of only applying a subset of the changes, with other changes still in the queue...
         return trackedRace;
     }
     
