@@ -87,6 +87,7 @@ public class SwissTimingRaceEditor extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("SwissTiming-Sample-Race Editor");
         jCommandList.setModel(new javax.swing.AbstractListModel<Object>() {
+            private static final long serialVersionUID = 1L;
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
