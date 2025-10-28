@@ -9,7 +9,6 @@ public class UserAgentCheckerImpl implements UserAgentChecker {
     /**
      * Version numbers indicate minimum required browser (20 = at least this version)
      */
-    @SuppressWarnings("serial")
     private static final HashMap<AgentTypes, Integer> MINIMUM_SUPPORTED_AGENTS = new HashMap<AgentTypes, Integer>() {
         {
             put(AgentTypes.MSIE, 9);
@@ -17,7 +16,6 @@ public class UserAgentCheckerImpl implements UserAgentChecker {
             put(AgentTypes.OPERA, 10);
             put(AgentTypes.FIREFOX, 10);
             put(AgentTypes.CHROME, 20);
-
         }
     };
 

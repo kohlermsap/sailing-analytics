@@ -156,7 +156,6 @@ public class TrackTest {
      * {@link Timed} objects in ascending order, this method compares those results to the ordinary explicit calls
      * to {@link GPSFixTrack#getEstimatedPosition(TimePoint, boolean)}.
      */
-    @SuppressWarnings("serial")
     @Test
     public void testGetEstimatedPositionSingleVsIteratedWithSmallerSteps() {
         TimePoint start = gpsFix1.getTimePoint().minus((gpsFix5.getTimePoint().asMillis()-gpsFix1.getTimePoint().asMillis())/2);
@@ -170,7 +169,6 @@ public class TrackTest {
         assertEqualEstimatedPositionsSingleVsIterated(timeds, /* extrapolate */ false);
     }
 
-    @SuppressWarnings("serial")
     @Test
     public void testGetEstimatedPositionSingleVsIteratedWithLargerSteps() {
         TimePoint start = gpsFix1.getTimePoint().minus((gpsFix5.getTimePoint().asMillis()-gpsFix1.getTimePoint().asMillis())/2);

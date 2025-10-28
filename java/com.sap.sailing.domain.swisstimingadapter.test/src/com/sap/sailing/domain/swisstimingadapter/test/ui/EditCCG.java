@@ -51,9 +51,7 @@ public class EditCCG extends javax.swing.JDialog {
      */
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    @SuppressWarnings("serial")
     private void initComponents() {
-
         jBuoyType = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         jRaceID = new javax.swing.JTextField();

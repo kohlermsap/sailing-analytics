@@ -35,12 +35,9 @@ public class MobileEntryPoint extends AbstractMvpEntryPoint<StringMessages, Mobi
     @Override
     public void doOnModuleLoad() {
         Document.get().getBody().addClassName(SharedResources.INSTANCE.mainCss().mobile());
-
         CommonControlsCSS.ensureInjected();
-        
         ServerConfigurationServiceAsync serverConfigService = GWT.create(ServerConfigurationService.class);
         EntryPointHelper.registerASyncService((ServiceDefTarget) serverConfigService, RemoteServiceMappingConstants.serverConfigurationServiceRemotePath);
-       
         serverConfigService.isStandaloneServer(new AsyncCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean result) {

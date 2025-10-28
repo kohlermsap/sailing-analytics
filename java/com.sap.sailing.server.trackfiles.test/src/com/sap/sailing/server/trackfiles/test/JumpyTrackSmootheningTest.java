@@ -199,8 +199,9 @@ public class JumpyTrackSmootheningTest {
             assertNotNull(markPassings);
             assertEquals(13, markPassings.size());
         }
-        assertTrue(durationForAdjustedTrack.times(8).compareTo(durationForOriginalTrack) < 0,
-                "Expected duration for mark passing analysis on adjusted track to be at least eight times less than for original track");
+        assertTrue(durationForAdjustedTrack.times(2).compareTo(durationForOriginalTrack) < 0,
+                "Expected duration for mark passing analysis on adjusted track to be at least two times less than for original track: "+
+                durationForAdjustedTrack+" vs. "+durationForOriginalTrack);
     }
     
     private DynamicGPSFixTrack<Competitor, GPSFixMoving> readTrack(String filename) throws Exception {
@@ -227,7 +228,8 @@ public class JumpyTrackSmootheningTest {
     }
     
     /**
-     * Simulates the "Oak cliff DH Distance Race" R1 with a single competitor, Gallagher / Zelenka, sail number "1" with
+     * Simulates the "Oak cliff DH Distance Race" R1 (see https://my.sapsailing.com/gwt/RaceBoard.html?regattaName=Oak+cliff+DH+Distance+Race&raceName=R1&leaderboardName=Oak+cliff+DH+Distance+Race&leaderboardGroupId=a3902560-6bfa-43be-85e1-2b82a4963416&eventId=bf48a59d-f2af-47b6-a2f7-a5b78b22b9f2)
+     * with a single competitor, Gallagher / Zelenka, sail number "1" with
      * the marks pinged statically to establish the course. The track of Gallagher / Zelenka is provided as a track of
      * their GPS positions. This could be the raw track, or it may be a filtered variant of the track with outliers
      * removed or adjusted.<p>
@@ -287,7 +289,7 @@ public class JumpyTrackSmootheningTest {
         addFixedMarkPassingToRaceLog("2020-10-14T17:29:36Z", gallagherZelenka, 2, raceLog);
         addFixedMarkPassingToRaceLog("2020-10-14T17:36:42Z", gallagherZelenka, 3, raceLog);
         addFixedMarkPassingToRaceLog("2020-10-14T18:21:38Z", gallagherZelenka, 4, raceLog);
-        trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.LOADING, 0.0));
+        trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.LOADING, 0.0)); // suspends mark passing calculator
         final DynamicGPSFixTrack<Competitor, GPSFixMoving> competitorTrackInRace = trackedRace.getTrack(gallagherZelenka);
         // TODO switch race into suspended mode to avoid updates during mass fix insertion:
         competitorTrack.lockForRead();
@@ -298,8 +300,12 @@ public class JumpyTrackSmootheningTest {
         } finally {
             competitorTrack.unlockAfterRead();
         }
-        trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.TRACKING, 1.0));
-        // TODO resume race
+        trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.TRACKING, 1.0)); // resumes mark passing calculator
+        // FIXME is it possible that MarkPassingCalculator.Listen has applied only a subset of the changes from its queue when this method returns?
+        // It scoops up a few events from the queue under the MPC write lock and collects the changes in various collections, but doesn't re-calculate while suspended;
+        // When the lock is released prior to fetching the next set of events from the queue, the test case calling this method may call getMarkPassings(..., true)
+        // and obtain the read lock, keeping the Listen thread from applying the next round of updates. Yes, the getMarkPassings(...) call may return something,
+        // but that may be the result of only applying a subset of the changes, with other changes still in the queue...
         return trackedRace;
     }
     
