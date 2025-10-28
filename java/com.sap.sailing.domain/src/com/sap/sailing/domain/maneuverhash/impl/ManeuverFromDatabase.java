@@ -2,19 +2,23 @@ package com.sap.sailing.domain.maneuverhash.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.sap.sailing.domain.base.Competitor;
 import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprintRegistry;
+import com.sap.sailing.domain.shared.tracking.impl.TimedComparator;
 import com.sap.sailing.domain.tracking.Maneuver;
-import com.sap.sailing.domain.tracking.impl.TrackedRaceImpl;
+import com.sap.sailing.domain.tracking.impl.DynamicTrackedRaceImpl;
+//import com.sap.sailing.domain.tracking.impl.TrackedRaceImpl;
 import com.sap.sse.util.ManeuverCache;
 import com.sap.sse.util.SmartFutureCache.EmptyUpdateInterval;
 
 public class ManeuverFromDatabase implements ManeuverCache<Competitor, List<Maneuver>, EmptyUpdateInterval> {
     
-    public ManeuverFromDatabase(boolean suspended, TrackedRaceImpl race,
+    public ManeuverFromDatabase(boolean suspended, DynamicTrackedRaceImpl race,
             ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry) {
         super();
         this.suspended = suspended;
@@ -23,7 +27,7 @@ public class ManeuverFromDatabase implements ManeuverCache<Competitor, List<Mane
     }
 
     boolean suspended;
-    private TrackedRaceImpl race;
+    private DynamicTrackedRaceImpl race;
     private ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry;
     private static final Logger logger = Logger.getLogger(ManeuverFromDatabase.class.getName());
     Map<Competitor, List<Maneuver>> maneuvers;
@@ -36,10 +40,10 @@ public class ManeuverFromDatabase implements ManeuverCache<Competitor, List<Mane
 
     private void updateManeuversFromRegistry() {
         maneuvers = maneuverRaceFingerprintRegistry.loadManeuvers(race, race.getRace().getCourse());
-//        for (final Entry<Competitor,List<Maneuver>> e : maneuverRaceFingerprintRegistry.loadManeuvers(
-//                race, race.getRace().getCourse()).entrySet()) {
-////            race.updateManeuvers(e.getKey(), e.getValue().stream().sorted(TimedComparator.INSTANCE).collect(Collectors.toList()));
-//        }
+        for (final Entry<Competitor, List<Maneuver>> e : maneuverRaceFingerprintRegistry.loadManeuvers(
+                race, race.getRace().getCourse()).entrySet()) {
+            race.updateManeuvers(e.getKey(), e.getValue().stream().sorted(TimedComparator.INSTANCE).collect(Collectors.toList()));
+        }
     }
 
     public void suspend() {

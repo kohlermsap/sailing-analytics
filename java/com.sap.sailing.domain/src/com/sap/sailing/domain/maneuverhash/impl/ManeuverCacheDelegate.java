@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+//import java.util.logging.Logger;
 
 import com.sap.sailing.domain.base.CPUMeteringType;
 import com.sap.sailing.domain.base.Competitor;
@@ -15,23 +14,23 @@ import com.sap.sailing.domain.maneuverdetection.ManeuverDetector;
 import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprint;
 import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprintFactory;
 import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprintRegistry;
-import com.sap.sailing.domain.tracking.DynamicTrackedRace;
 import com.sap.sailing.domain.tracking.Maneuver;
+import com.sap.sailing.domain.tracking.impl.DynamicTrackedRaceImpl;
 import com.sap.sailing.domain.tracking.impl.TrackedRaceImpl;
 import com.sap.sse.common.Duration;
 import com.sap.sse.util.ManeuverCache;
 import com.sap.sse.util.SmartFutureCache;
 import com.sap.sse.util.SmartFutureCache.AbstractCacheUpdater;
 import com.sap.sse.util.SmartFutureCache.EmptyUpdateInterval;
-import com.sap.sse.util.SmartFutureCache.UpdateInterval;
+
 
 public class ManeuverCacheDelegate implements ManeuverCache<Competitor, List<Maneuver>, EmptyUpdateInterval> {
 
 
     private final TrackedRaceImpl race;
-    private static final Logger logger = Logger.getLogger(ManeuverCacheDelegate.class.getName());
+   // private static final Logger logger = Logger.getLogger(ManeuverCacheDelegate.class.getName());
     private final ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry;
-    private ManeuverCache<Competitor, List<Maneuver>, EmptyUpdateInterval> maneuverCache;
+//    private ManeuverCache<Competitor, List<Maneuver>, EmptyUpdateInterval> maneuverCache;
     private ManeuverFromDatabase cache;
     private SmartFutureCache<Competitor, List<Maneuver>, EmptyUpdateInterval> smartFutureCache; 
     Map<Competitor, List<Maneuver>> maneuvers;
@@ -44,7 +43,7 @@ public class ManeuverCacheDelegate implements ManeuverCache<Competitor, List<Man
         super();
         this.race = race;
         this.maneuverRaceFingerprintRegistry = maneuverRaceFingerprintRegistry;
-        this.cache = new ManeuverFromDatabase( false, race, maneuverRaceFingerprintRegistry);
+        this.cache = new ManeuverFromDatabase( false, (DynamicTrackedRaceImpl) race, maneuverRaceFingerprintRegistry);
         this.smartFutureCache = new SmartFutureCache<Competitor, List<Maneuver>, EmptyUpdateInterval>(
                             new AbstractCacheUpdater<Competitor, List<Maneuver>, EmptyUpdateInterval>() {
                                 @Override
@@ -191,7 +190,7 @@ public class ManeuverCacheDelegate implements ManeuverCache<Competitor, List<Man
         if (cachesSuspended) {
             triggerManeuverCacheInvalidationForAllCompetitors = true;
         } else {
-            maneuverCache.triggerUpdate(competitor, /* updateInterval */null);
+            triggerUpdate(competitor, /* updateInterval */null);
         }
     }
 }

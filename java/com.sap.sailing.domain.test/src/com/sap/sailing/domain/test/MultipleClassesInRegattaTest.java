@@ -59,28 +59,28 @@ public class MultipleClassesInRegattaTest {
                         EmptyRegattaLogStore.INSTANCE, EmptyWindStore.INSTANCE, new DummyTrackedRegattaRegistry(),
                         mock(RaceLogAndTrackedRaceResolver.class), mock(LeaderboardGroupResolver.class), createConnectivityParams(httpAndHost, liveURI, storedURI, courseDesignUpdateURI,
                                 tracTracUsername, tracTracPassword, "cce678c8-97e6-11e0-9aed-406186cbf87c"), RaceTracker.TIMEOUT_FOR_RECEIVING_RACE_DEFINITION_IN_MILLISECONDS,
-                        new DefaultRaceTrackingHandler(), /* markPassingRaceFingerprintRegistry */ null);
+                        new DefaultRaceTrackingHandler(), /* markPassingRaceFingerprintRegistry */ null, /* maneuverRaceFingerprintRegistry */ null);
         kiwotest2 = domainFactory
                 .createRaceTracker(
                         EmptyRaceLogStore.INSTANCE,
                         EmptyRegattaLogStore.INSTANCE, EmptyWindStore.INSTANCE, new DummyTrackedRegattaRegistry(),
                         mock(RaceLogAndTrackedRaceResolver.class), mock(LeaderboardGroupResolver.class), createConnectivityParams(httpAndHost, liveURI, storedURI, courseDesignUpdateURI,
                                 tracTracUsername, tracTracPassword, "11290bd6-97e7-11e0-9aed-406186cbf87c"), RaceTracker.TIMEOUT_FOR_RECEIVING_RACE_DEFINITION_IN_MILLISECONDS,
-                        new DefaultRaceTrackingHandler(), /* markPassingRaceFingerprintRegistry */ null);
+                        new DefaultRaceTrackingHandler(), /* markPassingRaceFingerprintRegistry */ null, /* maneuverRaceFingerprintRegistry */ null);
         kiwotest3 = domainFactory
                 .createRaceTracker(
                         EmptyRaceLogStore.INSTANCE,
                         EmptyRegattaLogStore.INSTANCE, EmptyWindStore.INSTANCE, new DummyTrackedRegattaRegistry(),
                         mock(RaceLogAndTrackedRaceResolver.class), mock(LeaderboardGroupResolver.class), createConnectivityParams(httpAndHost, liveURI, storedURI, courseDesignUpdateURI,
                                 tracTracUsername, tracTracPassword, "39635b24-97e7-11e0-9aed-406186cbf87c"), RaceTracker.TIMEOUT_FOR_RECEIVING_RACE_DEFINITION_IN_MILLISECONDS,
-                        new DefaultRaceTrackingHandler(), /* markPassingRaceFingerprintRegistry */ null);
+                        new DefaultRaceTrackingHandler(), /* markPassingRaceFingerprintRegistry */ null, /* maneuverRaceFingerprintRegistry */ null);
         weym470may112014_2 = domainFactory
                 .createRaceTracker(
                         EmptyRaceLogStore.INSTANCE,
                         EmptyRegattaLogStore.INSTANCE, EmptyWindStore.INSTANCE, new DummyTrackedRegattaRegistry(),
                         mock(RaceLogAndTrackedRaceResolver.class), mock(LeaderboardGroupResolver.class), createConnectivityParams(httpAndHost, liveURI, storedURI, courseDesignUpdateURI,
                                 tracTracUsername, tracTracPassword, "04498426-7dfd-11e0-8236-406186cbf87c"), RaceTracker.TIMEOUT_FOR_RECEIVING_RACE_DEFINITION_IN_MILLISECONDS,
-                        new DefaultRaceTrackingHandler(), /* markPassingRaceFingerprintRegistry */ null);
+                        new DefaultRaceTrackingHandler(), /* markPassingRaceFingerprintRegistry */ null, /* maneuverRaceFingerprintRegistry */ null);
 
         assertEquals("STG", kiwotest1.getRegatta().getBoatClass().getName());
         assertEquals("5O5", kiwotest2.getRegatta().getBoatClass().getName());

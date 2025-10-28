@@ -942,7 +942,7 @@ DynamicTrackedRace, GPSTrackListener<Competitor, GPSFixMoving> {
     @Override
     public void updateManeuvers(Competitor competitor, Iterable<Maneuver> maneuvers) {
         final CompetitorResult resultFromRaceLog = competitorResultsFromRaceLog.get(competitor);
-        updateManeuversNotConsideringFinishingTimesFromRaceLog(competitor, maneuvers);
+        updateManeuversConsideringFinishingTimesFromRaceLog(competitor, maneuvers, resultFromRaceLog);
     }
 
     
@@ -950,17 +950,18 @@ DynamicTrackedRace, GPSTrackListener<Competitor, GPSFixMoving> {
     
     
 
-    private void updateManeuversNotConsideringFinishingTimesFromRaceLog(Competitor competitor,
-            Iterable<Maneuver> maneuvers) {
-//        LockUtil.lockForRead(getSerializationLock()); // keep serializer from reading the mark passings collections
-//        try {
+    private void updateManeuversConsideringFinishingTimesFromRaceLog(Competitor competitor,
+            Iterable<Maneuver> maneuvers, CompetitorResult resultFromRaceLog) {
+        LockUtil.lockForRead(getSerializationLock()); // keep serializer from reading the mark passings collections
+        try {
 //            List<Maneuver> oldManeuvers = new ArrayList<Maneuver>();
-////            MarkPassing oldStartMarkPassing = null;
+//            TimePoint finishTime = resultFromRaceLog.getFinishingTime();
+//            MarkPassing oldStartMarkPassing = null;
 //            boolean requiresStartTimeUpdate = true;
-//            final NavigableSet<Maneuver> maneuversForCompetitor = getManeuvers(competitor);
+//            final Iterable<Maneuver> maneuversForCompetitor = getManeuvers(competitor, false);
 //            lockForRead(maneuversForCompetitor);
 //            try {
-//                for (MarkPassing oldMarkPassing : maneuversForCompetitor) {
+//                for (Maneuver oldMarkPassing : maneuversForCompetitor) {
 //                    if (oldStartMarkPassing == null) {
 //                        oldStartMarkPassing = oldMarkPassing;
 //                    }
@@ -1035,7 +1036,7 @@ DynamicTrackedRace, GPSTrackListener<Competitor, GPSFixMoving> {
 //                    }
 //                }
 //            } finally {
-//                LockUtil.unlockAfterWrite(markPassingsLock);
+//                LockUtil.unlockAfterWrite(maneuversLock);
 //                getRace().getCourse().unlockAfterRead();
 //            }
 //            updated(timePointOfLatestEvent);
@@ -1048,9 +1049,9 @@ DynamicTrackedRace, GPSTrackListener<Competitor, GPSFixMoving> {
 //            invalidateEndTime();
 //            // notify *after* all mark passings have been re-established; should avoid flicker
 //            notifyListeners(competitor, oldMarkPassings, markPassings);
-//        } finally {
-//            LockUtil.unlockAfterRead(getSerializationLock());
-//        }
+        } finally {
+            LockUtil.unlockAfterRead(getSerializationLock());
+        }
         
     }
 
