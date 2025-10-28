@@ -24,5 +24,6 @@ Require-Bundle: com.sap.sailing.domain,
  com.sap.sse.common,
  com.sun.xml.bind.jaxb-impl;bundle-version="2.3.0",
  com.sap.sailing.domain.shared.android,
- com.sap.sse
+ com.sap.sse,
+ com.sap.sse.security.common
 Bundle-Activator: com.sap.sailing.xrr.resultimport.impl.Activator
