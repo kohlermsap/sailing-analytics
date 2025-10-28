@@ -167,7 +167,7 @@ public abstract class AbstractTracTracLiveTest extends StoredTrackBasedTest {
     }
 
     public static String getTracTracApiToken() {
-        return "tracTest";
+        return "e1c8618d5da19eb97a08aafe93ccf11374d83c92"; // token for test user sap-test; permitted to publish; see https://bugzilla.sapsailing.com/bugzilla/show_bug.cgi?id=6170#c8
     }
     
     protected void addReceiverToStopDuringTearDown(Receiver receiver) {
