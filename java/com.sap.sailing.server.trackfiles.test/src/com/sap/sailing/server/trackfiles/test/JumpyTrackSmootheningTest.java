@@ -68,7 +68,6 @@ import com.sap.sailing.domain.tracking.MarkPassing;
 import com.sap.sailing.domain.tracking.TrackedRegatta;
 import com.sap.sailing.domain.tracking.WindTrack;
 import com.sap.sailing.domain.tracking.impl.DynamicGPSFixMovingTrackImpl;
-import com.sap.sailing.domain.tracking.impl.DynamicTrackedRaceImpl;
 import com.sap.sailing.domain.tracking.impl.DynamicTrackedRegattaImpl;
 import com.sap.sailing.domain.tracking.impl.EmptyWindStore;
 import com.sap.sailing.domain.tracking.impl.OutlierFilter;
@@ -197,7 +196,7 @@ public class JumpyTrackSmootheningTest {
             durationForOriginalTrack = startedAt.until(doneAt);
             logger.info("Duration for computing mark passings with original track: "+durationForOriginalTrack);
             assertNotNull(markPassings);
-            assertEquals(13, markPassings.size());
+            assertEquals(5, markPassings.size()); // there are fewer mark passings with the spikes still included
         }
         assertTrue(durationForAdjustedTrack.times(2).compareTo(durationForOriginalTrack) < 0,
                 "Expected duration for mark passing analysis on adjusted track to be at least two times less than for original track: "+
@@ -238,9 +237,9 @@ public class JumpyTrackSmootheningTest {
      * its calculation. As a result, a test may determine the impact filtering / adjusting the track may have on the
      * mark passing analysis.
      */
-    private DynamicTrackedRace createRace(DynamicGPSFixTrack<Competitor, GPSFixMoving> competitorTrack) throws PatchFailedException, ParseException {
+    private DynamicTrackedRace createRace(DynamicGPSFixTrack<Competitor, GPSFixMoving> competitorTrack) throws PatchFailedException, ParseException, InterruptedException {
         final Competitor gallagherZelenka = competitorTrack.getTrackedItem();
-        final DynamicTrackedRace trackedRace = createTrackedRace("Oak cliff DH Distance Race", "R1", BoatClassMasterdata.MELGES_24, gallagherZelenka);
+        final DynamicTrackedRaceWithMarkPassingCalculator trackedRace = createTrackedRace("Oak cliff DH Distance Race", "R1", BoatClassMasterdata.MELGES_24, gallagherZelenka);
         final Series defaultSeries = trackedRace.getTrackedRegatta().getRegatta().getSeries().iterator().next();
         final Fleet defaultFleet = defaultSeries.getFleets().iterator().next();
         final RaceColumnInSeries r1RaceColumn = defaultSeries.getRaceColumns().iterator().next();
@@ -291,7 +290,6 @@ public class JumpyTrackSmootheningTest {
         addFixedMarkPassingToRaceLog("2020-10-14T18:21:38Z", gallagherZelenka, 4, raceLog);
         trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.LOADING, 0.0)); // suspends mark passing calculator
         final DynamicGPSFixTrack<Competitor, GPSFixMoving> competitorTrackInRace = trackedRace.getTrack(gallagherZelenka);
-        // TODO switch race into suspended mode to avoid updates during mass fix insertion:
         competitorTrack.lockForRead();
         try {
             for (final GPSFixMoving fix : competitorTrack.getRawFixes()) {
@@ -301,15 +299,11 @@ public class JumpyTrackSmootheningTest {
             competitorTrack.unlockAfterRead();
         }
         trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.TRACKING, 1.0)); // resumes mark passing calculator
-        // FIXME is it possible that MarkPassingCalculator.Listen has applied only a subset of the changes from its queue when this method returns?
-        // It scoops up a few events from the queue under the MPC write lock and collects the changes in various collections, but doesn't re-calculate while suspended;
-        // When the lock is released prior to fetching the next set of events from the queue, the test case calling this method may call getMarkPassings(..., true)
-        // and obtain the read lock, keeping the Listen thread from applying the next round of updates. Yes, the getMarkPassings(...) call may return something,
-        // but that may be the result of only applying a subset of the changes, with other changes still in the queue...
+        trackedRace.getMarkPassingCalculator().waitUntilStopped(/* timeout in millis */ Duration.ONE_MINUTE.times(15).asMillis());
         return trackedRace;
     }
     
-    private DynamicTrackedRace createTrackedRace(String regattaName, String name, BoatClassMasterdata boatClassMasterData, Competitor gallagherZelenka) {
+    private DynamicTrackedRaceWithMarkPassingCalculator createTrackedRace(String regattaName, String name, BoatClassMasterdata boatClassMasterData, Competitor gallagherZelenka) {
         final BoatClassImpl boatClass = new BoatClassImpl(boatClassMasterData);
         final TrackedRegatta trackedRegatta = new DynamicTrackedRegattaImpl(new RegattaImpl(regattaName, boatClass,
                 /* canBoatsOfCompetitorsChangePerRace */ false, /* competitorRegistrationType */ CompetitorRegistrationType.CLOSED,
@@ -321,7 +315,7 @@ public class JumpyTrackSmootheningTest {
         final Map<Competitor, Boat> competitorsAndTheirBoats = Util.<Competitor, Boat>mapBuilder().put(gallagherZelenka, boat).build();
         final Course course = new CourseImpl("R1 Course", Collections.emptySet());
         final RaceDefinition race = new RaceDefinitionImpl(name, course, boatClass, competitorsAndTheirBoats, UUID.randomUUID());
-        return new DynamicTrackedRaceImpl(trackedRegatta, race, /* sidelines */ Collections.emptySet(), new EmptyWindStore(), /* delayToLiveInMillis */ 1000,
+        return new DynamicTrackedRaceWithMarkPassingCalculator(trackedRegatta, race, /* sidelines */ Collections.emptySet(), new EmptyWindStore(), /* delayToLiveInMillis */ 1000,
                 WindTrack.DEFAULT_MILLISECONDS_OVER_WHICH_TO_AVERAGE_WIND, /* time over which to average speed: */ boatClass.getApproximateManeuverDurationInMilliseconds(),
                 /* useInternalMarkPassingAlgorithm */ true, OneDesignRankingMetric::new, mock(RaceLogAndTrackedRaceResolver.class), /* trackingConnectorInfo */ null, /* markPassingRaceFingerprintRegistry */ null);
     }
