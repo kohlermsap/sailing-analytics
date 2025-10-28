@@ -571,10 +571,11 @@ public class SailingServiceWriteImpl extends SailingServiceImpl implements Saili
                 + " and storedURI " + storedURIFromConfiguration);
         getSecurityService().checkCurrentUserServerPermission(ServerActions.CREATE_OBJECT);
         final TracTracConfiguration config = tractracDomainObjectFactory.getTracTracConfiguration(jsonUrlAsKey);
+        final String tracTracApiToken = config == null ? null : config.getTracTracApiToken();
         for (TracTracRaceRecordDTO rr : rrs) {
             try {
                 // reload JSON and load clientparams.php
-                final RaceRecord record = getTracTracAdapter().getSingleTracTracRaceRecord(new URL(rr.jsonURL), rr.id, /*loadClientParams*/true);
+                final RaceRecord record = getTracTracAdapter().getSingleTracTracRaceRecord(new URL(rr.jsonURL), rr.id, /*loadClientParams*/true, tracTracApiToken);
                 logger.info("Loaded race " + record.getName() + " in " + record.getEventName() + " start:" + record.getRaceStartTime() +
                         " trackingStart:" + record.getTrackingStartTime() + " trackingEnd:" + record.getTrackingEndTime());
                 // note that the live URI may be null for races that were put into replay mode
@@ -605,7 +606,7 @@ public class SailingServiceWriteImpl extends SailingServiceImpl implements Saili
                         new MillisecondsTimePoint(record.getTrackingStartTime().asMillis()),
                         new MillisecondsTimePoint(record.getTrackingEndTime().asMillis()), getRaceLogStore(),
                         getRegattaLogStore(), RaceTracker.TIMEOUT_FOR_RECEIVING_RACE_DEFINITION_IN_MILLISECONDS,
-                        offsetToStartTimeOfSimulatedRace, useInternalMarkPassingAlgorithm, config == null ? null : config.getTracTracApiToken(),
+                        offsetToStartTimeOfSimulatedRace, useInternalMarkPassingAlgorithm, tracTracApiToken,
                         record.getRaceStatus(), record.getRaceVisibility(), trackWind,
                         correctWindByDeclination, useOfficialEventsToUpdateRaceLog,
                         liveURIFromConfiguration==null || liveURIFromConfiguration.trim().length() == 0 ? null : new URI(liveURIFromConfiguration),

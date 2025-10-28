@@ -93,18 +93,18 @@ public interface TracTracAdapter {
      * {@link #addTracTracRace(URL, URI, URI, WindStore, long)} calls to individually start tracking races of this
      * event, rather than tracking <em>all</em> races in the event which is hardly ever useful. The returned pair's
      * first component is the event name.
-     * 
      * @param loadClientParams
      *            shall the properties from the clientparams.php file such as liveURI and storedURI already be loaded?
      *            Generally, this is not necessary as the
      *            {@link #addTracTracRace(TrackerManager, RegattaIdentifier, URL, URI, URI, URI, TimePoint, TimePoint, RaceLogStore, WindStore, long, boolean, String, String)}
      *            and {@link #addTracTracRace(TrackerManager, URL, URI, URI, URI, RaceLogStore, WindStore, long, String, String)} will
      *            fetch the JSON and clientparams.php documents to work with up-to-date data.
+     * @param tracTracApiToken TODO
      */
-    Util.Pair<String, List<RaceRecord>> getTracTracRaceRecords(URL jsonURL, boolean loadClientParams) throws IOException,
+    Util.Pair<String, List<RaceRecord>> getTracTracRaceRecords(URL jsonURL, boolean loadClientParams, String tracTracApiToken) throws IOException,
             ParseException, org.json.simple.parser.ParseException, URISyntaxException;
 
-    RaceRecord getSingleTracTracRaceRecord(URL jsonURL, String raceId, boolean loadClientParams) throws Exception;
+    RaceRecord getSingleTracTracRaceRecord(URL jsonURL, String raceId, boolean loadClientParams, String tracTracApiToken) throws Exception;
 
     TracTracConfiguration createTracTracConfiguration(String creatorName, String name, String jsonURL,
             String liveDataURI, String storedDataURI, String courseDesignUpdateURI, String tracTracApiToken);

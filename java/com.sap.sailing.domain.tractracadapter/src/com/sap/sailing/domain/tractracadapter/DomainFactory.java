@@ -244,7 +244,7 @@ public interface DomainFactory {
             URI courseDesignUpdateURI, String tracTracApiToken, IEventSubscriber eventSubscriber, IRaceSubscriber raceSubscriber, boolean ignoreTracTracMarkPassings,
             long timeoutInMilliseconds, RaceTrackingHandler raceTrackingHandler, RaceAndCompetitorStatusWithRaceLogReconciler raceAndCompetitorStatusWithRaceLogReconciler, ReceiverType... types);
 
-    JSONService parseJSONURLWithRaceRecords(URL jsonURL, boolean loadClientParams) throws IOException, ParseException, org.json.simple.parser.ParseException, URISyntaxException;
+    JSONService parseJSONURLWithRaceRecords(URL jsonURL, boolean loadClientParams, String tracTracApiToken) throws IOException, ParseException, org.json.simple.parser.ParseException, URISyntaxException;
 
     /**
      * Returns a {@link RaceDefinition} for the race if it already exists, <code>null</code> otherwise.
@@ -306,7 +306,7 @@ public interface DomainFactory {
      */
     Serializable getRaceID(IRace tractracRace);
 
-    JSONService parseJSONURLForOneRaceRecord(URL jsonURL, String raceId, boolean loadClientParams)
+    JSONService parseJSONURLForOneRaceRecord(URL jsonURL, String raceId, boolean loadClientParams, String tracTracApiToken)
             throws IOException, ParseException, org.json.simple.parser.ParseException, URISyntaxException;
 
     MetadataParser getMetadataParser();

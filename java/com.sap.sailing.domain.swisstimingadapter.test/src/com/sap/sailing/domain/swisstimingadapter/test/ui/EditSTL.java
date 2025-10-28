@@ -93,6 +93,7 @@ public class EditSTL extends javax.swing.JDialog {
             }
         });
         jCompetitorList.setModel(new javax.swing.AbstractListModel<Competitor>() {
+            private static final long serialVersionUID = 1L;
             Competitor[] competitors = { new CompetitorWithoutID("Item 1", "DEU", "Item 1"),
                     new CompetitorWithoutID("Item 2", "DEU", "Item 2"),
                     new CompetitorWithoutID("Item 3", "DEU", "Item 3"),

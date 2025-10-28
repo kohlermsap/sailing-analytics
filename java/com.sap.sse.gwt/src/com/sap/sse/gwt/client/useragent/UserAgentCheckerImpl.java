@@ -10,6 +10,7 @@ public class UserAgentCheckerImpl implements UserAgentChecker {
      * Version numbers indicate minimum required browser (20 = at least this version)
      */
     private static final HashMap<AgentTypes, Integer> MINIMUM_SUPPORTED_AGENTS = new HashMap<AgentTypes, Integer>() {
+        private static final long serialVersionUID = -3972648919899828625L;
         {
             put(AgentTypes.MSIE, 9);
             put(AgentTypes.SAFARI, 5);

@@ -81,18 +81,18 @@ public class TracTracAdapterImpl implements TracTracAdapter {
     }
 
     @Override
-    public Util.Pair<String, List<RaceRecord>> getTracTracRaceRecords(URL jsonURL, boolean loadClientParams)
+    public Util.Pair<String, List<RaceRecord>> getTracTracRaceRecords(URL jsonURL, boolean loadClientParams, String tracTracApiToken)
             throws IOException, ParseException, org.json.simple.parser.ParseException, URISyntaxException {
         logger.info("Retrieving TracTrac race records from " + jsonURL);
-        JSONService jsonService = getTracTracDomainFactory().parseJSONURLWithRaceRecords(jsonURL, loadClientParams);
+        JSONService jsonService = getTracTracDomainFactory().parseJSONURLWithRaceRecords(jsonURL, loadClientParams, tracTracApiToken);
         logger.info("OK retrieving TracTrac race records from " + jsonURL);
         return new Util.Pair<String, List<RaceRecord>>(jsonService.getEventName(), jsonService.getRaceRecords());
     }
 
     @Override
-    public RaceRecord getSingleTracTracRaceRecord(URL jsonURL, String raceId, boolean loadClientParams)
+    public RaceRecord getSingleTracTracRaceRecord(URL jsonURL, String raceId, boolean loadClientParams, String tracTracApiToken)
             throws Exception {
-        JSONService service = getTracTracDomainFactory().parseJSONURLForOneRaceRecord(jsonURL, raceId, loadClientParams);
+        JSONService service = getTracTracDomainFactory().parseJSONURLForOneRaceRecord(jsonURL, raceId, loadClientParams, tracTracApiToken);
         if (!service.getRaceRecords().isEmpty()) {
             return service.getRaceRecords().get(0);
         }

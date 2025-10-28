@@ -123,11 +123,10 @@ public interface SailingServiceAsync extends RemoteReplicationServiceAsync {
 
     /**
      * The string returned in the callback's pair is the common event name
-     * 
      * @param listHiddenRaces
      */
     void listTracTracRacesInEvent(String eventJsonURL, boolean listHiddenRaces,
-            AsyncCallback<Util.Pair<String, List<TracTracRaceRecordDTO>>> callback);
+            String tracTracApiToken, AsyncCallback<Util.Pair<String, List<TracTracRaceRecordDTO>>> callback);
 
     void replaySwissTimingRace(RegattaIdentifier regattaIdentifier, Iterable<SwissTimingReplayRaceDTO> replayRaces,
             boolean trackWind, boolean correctWindByDeclination, boolean useInternalMarkPassingAlgorithm,

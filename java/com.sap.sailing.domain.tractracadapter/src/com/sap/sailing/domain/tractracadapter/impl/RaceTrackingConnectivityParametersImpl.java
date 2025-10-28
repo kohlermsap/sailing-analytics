@@ -80,6 +80,7 @@ public class RaceTrackingConnectivityParametersImpl extends AbstractRaceTracking
         this.useOfficialEventsToUpdateRaceLog = useOfficialEventsToUpdateRaceLog;
         this.paramURL = paramURL;
         this.timeoutInMillis = timeoutInMillis;
+        this.tracTracApiToken = tracTracApiToken; // required before trying getTractracRace()
         final IRace tractracRace = getTractracRace();
         if (preferReplayIfAvailable && isReplayRace(tractracRace) &&
                 (!Util.equalsWithNull(liveURI, tractracRace.getLiveURI()) || !Util.equalsWithNull(storedURI, tractracRace.getStoredURI()))) {
@@ -100,7 +101,6 @@ public class RaceTrackingConnectivityParametersImpl extends AbstractRaceTracking
         this.offsetToStartTimeOfSimulatedRace = offsetToStartTimeOfSimulatedRace;
         this.raceLogStore = raceLogStore;
         this.regattaLogStore = regattaLogStore;
-        this.tracTracApiToken = tracTracApiToken;
         this.raceStatus = raceStatus;
         this.raceVisibility = raceVisibility;
         this.useInternalMarkPassingAlgorithm = useInternalMarkPassingAlgorithm;

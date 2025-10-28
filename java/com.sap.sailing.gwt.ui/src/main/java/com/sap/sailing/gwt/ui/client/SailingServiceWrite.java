@@ -115,7 +115,6 @@ import com.sap.sse.security.interfaces.UserStore;
 import com.sap.sse.security.ui.shared.SuccessInfo;
 
 public interface SailingServiceWrite extends FileStorageManagementGwtService, SailingService {
-
     void setORCPerformanceCurveScratchBoat(String leaderboardName, String raceColumnName, String fleetName,
             CompetitorDTO newScratchBoatDTO) throws NotFoundException;
 

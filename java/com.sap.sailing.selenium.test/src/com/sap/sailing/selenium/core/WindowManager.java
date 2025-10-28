@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
@@ -21,6 +22,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  *   Riccardo Nimser (D049941)
  */
 public class WindowManager {
+    private static final Logger logger = Logger.getLogger(WindowManager.class.getName());
+
     private WebDriverWindow defaultWindow;
     private final Set<WebDriverWindow> allWindows = new HashSet<>();
     private WebDriver driver;
@@ -108,12 +111,18 @@ public class WindowManager {
     }
     
     private boolean isDriverAlive(WebDriver driver) {
-        try {
-            driver.getWindowHandles();
-            return true;
-        } catch (NoSuchSessionException | SessionNotCreatedException e) {
-            return false;
+        boolean result;
+        if (driver == null) {
+            result = false;
+        } else {
+            try {
+                driver.getWindowHandles();
+                result = true;
+            } catch (NoSuchSessionException | SessionNotCreatedException e) {
+                result = false;
+            }
         }
+        return result;
     }
     
     private void setWindowMaximized(WebDriver driver) {
@@ -137,6 +146,16 @@ public class WindowManager {
     
     public void closeAllWindows() {
         forEachOpenedWindow(WebDriverWindow::close);
+        if (driver != null) {
+            try {
+                driver.close();
+                driver.quit();
+            } catch (org.openqa.selenium.NoSuchSessionException e) {
+                logger.warning("The Selenium driver seems to have already been closed");
+                // Already closed — ignore
+            }
+            driver = null;
+        }
     }
     
     private class ManagedWebDriverWindow extends WebDriverWindow {
