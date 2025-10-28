@@ -101,6 +101,7 @@ public class EditTMD extends javax.swing.JDialog {
             }
         });
         jTmdData.setModel(new javax.swing.AbstractListModel<TimingDataElement>() {
+            private static final long serialVersionUID = 1L;
             TimingDataElement[] strings = { new TimingDataElement(1, 1, new Date()),
                     new TimingDataElement(2, 2, new Date()),
                     new TimingDataElement(3, 3, new Date()),

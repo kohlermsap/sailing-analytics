@@ -99,6 +99,7 @@ public class EditCAM extends javax.swing.JDialog {
             }
         });
         jMarkList.setModel(new javax.swing.AbstractListModel<ClockAtMarkElement>() {
+            private static final long serialVersionUID = 1L;
             ClockAtMarkElement[] clockAtMarkElements = { new ClockAtMarkElement(1, new Date(), "Item 1"),
                     new ClockAtMarkElement(1, new Date(), "Item 2"), new ClockAtMarkElement(1, new Date(), "Item 3"),
                     new ClockAtMarkElement(1, new Date(), "Item 4"), new ClockAtMarkElement(1, new Date(), "Item 5") };

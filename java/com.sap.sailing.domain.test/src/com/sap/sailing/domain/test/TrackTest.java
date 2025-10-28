@@ -163,7 +163,10 @@ public class TrackTest {
         List<Timed> timeds = new ArrayList<>();
         for (TimePoint t = start; !t.after(end); t = t.plus((gpsFix5.getTimePoint().asMillis()-gpsFix1.getTimePoint().asMillis())/10)) {
             final TimePoint finalT = t;
-            timeds.add(new Timed() {public TimePoint getTimePoint() { return finalT; }});
+            timeds.add(new Timed() {
+                private static final long serialVersionUID = 7038806820707652754L;
+                public TimePoint getTimePoint() { return finalT; }
+            });
         }
         assertEqualEstimatedPositionsSingleVsIterated(timeds, /* extrapolate */ true);
         assertEqualEstimatedPositionsSingleVsIterated(timeds, /* extrapolate */ false);
@@ -176,7 +179,10 @@ public class TrackTest {
         List<Timed> timeds = new ArrayList<>();
         for (TimePoint t = start; !t.after(end); t = t.plus(gpsFix5.getTimePoint().asMillis()-gpsFix1.getTimePoint().asMillis())) {
             final TimePoint finalT = t;
-            timeds.add(new Timed() {public TimePoint getTimePoint() { return finalT; }});
+            timeds.add(new Timed() {
+                private static final long serialVersionUID = -6329517520161330872L;
+                public TimePoint getTimePoint() { return finalT; }
+            });
         }
         assertEqualEstimatedPositionsSingleVsIterated(timeds, /* extrapolate */ true);
         assertEqualEstimatedPositionsSingleVsIterated(timeds, /* extrapolate */ false);
