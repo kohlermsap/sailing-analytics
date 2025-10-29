@@ -1,9 +1,9 @@
-/**
- * Website footer styling
- */
  @def SITEFOOTER_BACKGROUND_COLOR #333;
  @def SITEFOOTER_TEXT_COLOR #fff;
  
+/**
+ * Mobile footer styling
+ */
 .sitefooter {
   font-size: 1rem;
   background: SITEFOOTER_BACKGROUND_COLOR;
@@ -50,6 +50,74 @@
 }
 @media (min-width: 45em) {
   .sitefooter_language {
+    float: right;
     text-align: right;
   }
+}
+/**
+ * Desktop footer styling
+ */
+.dfooter {
+  background: SITEFOOTER_BACKGROUND_COLOR;
+  color: SITEFOOTER_TEXT_COLOR;
+  font-size: 1rem;
+  border-top: 0.333333333333333em solid SITEFOOTER_BACKGROUND_COLOR;
+  padding: 0 1.333333333333333em;
+  margin-top: -5.333333333333333em;
+  display: block;
+  line-height: normal;
+  width: 100%;
+  position: relative;
+  z-index: 1000;
+}
+.dfooter_row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 5em;
+  row-gap: 0.25em;
+  column-gap: 2em;
+}
+.dfooter_left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  /*change rem here to configure preferred width before right block drops */
+  flex: 1 1 14rem;
+  row-gap: 0.25em;
+  column-gap: 2em;
+  min-width: 0;
+}
+.dfooter_right {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  flex: 0 0 auto;
+  min-width: 8rem;
+}
+.dfooter_item,
+.dfooter_link,
+.dfooter_copyright {
+  line-height: 1;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+}
+.dfooter_copyright {
+  font-weight: 600;
+  white-space: nowrap;
+  color: SITEFOOTER_TEXT_COLOR;
+}
+.dfooter_link {
+  text-decoration: none;
+  color: SITEFOOTER_TEXT_COLOR;
+}
+.dfooter_link:hover,
+.dfooter_link:focus { text-decoration: underline; }
+.dfooter_language { text-align: right; white-space: nowrap; }
+.dfooter_language select {
+  background-color: SITEFOOTER_BACKGROUND_COLOR;
+  color: SITEFOOTER_TEXT_COLOR;
+  max-width: 100%;
 }
