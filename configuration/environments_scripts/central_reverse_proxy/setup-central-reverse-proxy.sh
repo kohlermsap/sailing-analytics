@@ -66,12 +66,14 @@ gem install gollum -v 5.3.2
 gem update --system 3.5.7
 cd /home
 # copy bugzilla
-scp -o StrictHostKeyChecking=no  root@sapsailing.com:/var/www/static/bugzilla-5.0.4.tar.gz /usr/local/src
+scp -o StrictHostKeyChecking=no  root@sapsailing.com:/var/www/static/bugzilla-5.2.tar.gz /usr/local/src
 cd /usr/local/src
-tar -xzvf bugzilla-5.0.4.tar.gz
-mv bugzilla-5.0.4 /usr/share/bugzilla
+tar -xzvf bugzilla-5.2.tar.gz
+mv bugzilla-5.2 /usr/share/bugzilla
 cd /usr/share/bugzilla/
+mkdir data
 scp -o StrictHostKeyChecking=no  root@sapsailing.com:/usr/share/bugzilla/localconfig .
+scp -o StrictHostKeyChecking=no  root@sapsailing.com:/usr/share/bugzilla/data/params.json ./data/
 echo "Bugzilla has been copied. Now setting up bugzilla modules."
 echo "This can take 5 minutes or so. The output is muted (but sent to log.txt) to prevent excessive warnings and clutter in the terminal."
 SECONDEOF
@@ -79,6 +81,8 @@ terminationCheck "$?"
 ssh -A "root@${IP}" "bash -s" << BUGZILLAEOF &>log.txt
 cd /usr/share/bugzilla/
 # essentials bugzilla
+/usr/bin/perl -MCPAN -e 'install App::cpanminus'
+cpanm --notest SOAP::Lite
 /usr/bin/perl install-module.pl DateTime
 /usr/bin/perl install-module.pl DateTime::TimeZone
 /usr/bin/perl install-module.pl Email::Sender
@@ -91,7 +95,9 @@ cd /usr/share/bugzilla/
 /usr/bin/perl install-module.pl Email::Address
 /usr/bin/perl install-module.pl autodie
 /usr/bin/perl install-module.pl Class::XSAccessor
+/usr/bin/perl install-module.pl DBIx::Connector
 # nice to have for buzilla
+/usr/bin/perl install-module.pl Encode::Detect
 /usr/bin/perl install-module.pl Date::Parse
 /usr/bin/perl install-module.pl Email::Send
 /usr/bin/perl install-module.pl DBI
@@ -109,6 +115,15 @@ cd /usr/share/bugzilla/
 /usr/bin/perl install-module.pl File::Copy::Recursive
 /usr/bin/perl install-module.pl MIME::Base64
 /usr/bin/perl install-module.pl Authen::SASL
+/usr/bin/perl install-module.pl XML::Twig
+/usr/bin/perl install-module.pl Net::LDAP
+/usr/bin/perl install-module.pl Net::SMTP::SSL
+/usr/bin/perl install-module.pl XMLRPC::Lite
+/usr/bin/perl install-module.pl Test::Taint
+/usr/bin/perl install-module.pl HTML::Scrubber
+/usr/bin/perl install-module.pl Email::Reply
+/usr/bin/perl install-module.pl HTML::FormatText::WithLinks
+/usr/bin/perl install-module.pl Cache::Memcached
 BUGZILLAEOF
 terminationCheck "$?"
 read -n 1  -p "Bugzilla installation complete, when ready press a key to continue." key_pressed
