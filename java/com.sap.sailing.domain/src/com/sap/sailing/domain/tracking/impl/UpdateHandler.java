@@ -135,6 +135,12 @@ public class UpdateHandler {
         parseAndLogResponse(reader);
     }
 
+    private void authenticate(HttpURLConnection connection) {
+        if (Util.hasLength(tracTracApiToken)) {
+            connection.addRequestProperty("Authorization", "Bearer " + tracTracApiToken);
+        }
+    }
+
     protected void parseAndLogResponse(BufferedReader reader)
             throws IOException, ParseException, JsonDeserializationException {
         Object responseBody = JSONValue.parseWithException(reader);
@@ -156,6 +162,7 @@ public class UpdateHandler {
 
     protected HttpURLConnection setConnectionProperties(HttpURLConnection connection) throws IOException {
         return followRedirects(connection, c->{
+            authenticate(c);
             c.setRequestMethod(HttpGetRequestMethod);
             c.setDoOutput(false);
             c.setUseCaches(false);
@@ -164,14 +171,13 @@ public class UpdateHandler {
     
     protected HttpURLConnection setConnectionPropertiesAndSendWithPayload(HttpURLConnection connection, String payload) throws IOException {
         return followRedirects(connection, c-> {
+            authenticate(c);
             c.setRequestMethod(HttpPostRequestMethod);
             c.setDoOutput(true);
             c.setUseCaches(false);
             c.setRequestProperty(ContentType, ContentTypeApplicationJson);
             c.addRequestProperty(ContentLength, String.valueOf(payload.getBytes().length));
-            if (Util.hasLength(tracTracApiToken)) {
-                c.addRequestProperty("Authorization", "Bearer " + tracTracApiToken);
-            }
+            authenticate(c);
             DataOutputStream writer = new DataOutputStream(c.getOutputStream());
             writer.writeBytes(payload);
             writer.flush();

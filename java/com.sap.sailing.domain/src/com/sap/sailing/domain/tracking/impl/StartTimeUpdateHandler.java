@@ -67,7 +67,6 @@ public class StartTimeUpdateHandler extends UpdateHandler implements StartTimeCh
                 HashMap<String, String> additionalParameters = new HashMap<String, String>();
                 additionalParameters.put(FIELD_RACE_START_TIME, String.valueOf(newStartTime.asMillis()));
                 URL startTimeUpdateURL = buildUpdateURL(additionalParameters);
-                
                 logger.info("Using " + eraseSecurityRelatedValuesFromURL(startTimeUpdateURL.toString()) + " for the start time update!");
                 HttpURLConnection connection = (HttpURLConnection) startTimeUpdateURL.openConnection();
                 try {
