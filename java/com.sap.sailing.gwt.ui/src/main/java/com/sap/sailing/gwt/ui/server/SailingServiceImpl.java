@@ -6119,20 +6119,23 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
     
     public String getBrandAffiliationWithSailing(String locale) {
         Optional<String> optLocale = Optional.ofNullable(locale).filter(s -> !s.isEmpty() && !"default".equalsIgnoreCase(s));
+        String result;
         if (brandingConfigurationServiceTracker == null) {
-            return "";
-        }
-        BrandingConfigurationService brandingConfigurationService;
-        try {
-            brandingConfigurationService = brandingConfigurationServiceTracker.waitForService(0);
-        } catch (InterruptedException e) {
-            return "";
-        }
-        BrandingConfiguration configuration = brandingConfigurationService.getActiveBrandingConfiguration();
-        if (configuration == null) {
-            return "";
+            result = "";
         } else {
-            return configuration.getInSailingContent(optLocale);
+            BrandingConfigurationService brandingConfigurationService;
+            try {
+                brandingConfigurationService = brandingConfigurationServiceTracker.waitForService(0);
+                BrandingConfiguration configuration = brandingConfigurationService.getActiveBrandingConfiguration();
+                if (configuration == null) {
+                    result = "";
+                } else {
+                    result = configuration.getInSailingContent(optLocale);
+                }
+            } catch (InterruptedException e) {
+                result = "";
+            }
         }
+        return result;
     }
 }
