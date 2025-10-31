@@ -87,11 +87,11 @@ public class Footer extends Composite {
     }
     
     private static boolean hideIfBlank(DivElement el, String text) {
-        if (!Util.hasLength(text)) {
+        final boolean hidden = !Util.hasLength(text);
+        if (hidden) {
             el.getStyle().setDisplay(Display.NONE);
-            return true;
         }
-        return false;
+        return hidden;
     }
     
     private static void setHrefOrHide(AnchorElement el, String url) {
@@ -101,5 +101,4 @@ public class Footer extends Composite {
           el.setHref(url);
         }
     }
-    
 }
