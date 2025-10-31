@@ -11,6 +11,7 @@ GWT="`mktemp -t -d gwt.XXXXX`"
 cd "${GWT}"
 echo "GWT directory: ${GWT}"
 curl -L "${GWT_REPO_URL}/releases/download/gwt-${GWT_VERSION}/gwt-${GWT_VERSION}.zip" -o "gwt-${GWT_VERSION}.zip"
+echo "The strange = thing: ${GWT_MAVEN_PLUG_REPO_URL=}"
 curl -L "${GWT_MAVEN_PLUG_REPO_URL=}/releases/download/gwt-${GWT_VERSION}/gwt-maven-plugin-${GWT_VERSION}.jar" -o "gwt-maven-plugin-${GWT_VERSION}.jar"
 curl -L "${GWT_MAVEN_PLUG_REPO_URL=}/releases/download/gwt-${GWT_VERSION}/gwt-maven-plugin-${GWT_VERSION}.pom" -o "gwt-maven-plugin-${GWT_VERSION}.pom"
 unzip gwt-${GWT_VERSION}.zip
@@ -27,4 +28,4 @@ mvn --batch-mode install:install-file -Dpackaging=pom -Dfile="${SAILING_GIT_ROOT
 # gwt-maven-plugin:
 cd ..
 mvn --batch-mode install:install-file -Dfile="gwt-maven-plugin-${GWT_VERSION}.jar" -DpomFile="gwt-maven-plugin-${GWT_VERSION}.pom"
-rm -rf "${GWT}"
+#rm -rf "${GWT}"
