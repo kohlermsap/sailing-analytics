@@ -68,13 +68,7 @@ public class ManeuverFromSmartFutureCache implements ManeuverCache<Competitor, L
                   }
               },//.computeCacheUpdate(competitor, null), 
               /* nameForLocks */ "Maneuver cache for race " + race.getRace().getName());
-    }
-
-    
-     
-    
-    
-    
+    }   
     
     @Override
     public void resume() {

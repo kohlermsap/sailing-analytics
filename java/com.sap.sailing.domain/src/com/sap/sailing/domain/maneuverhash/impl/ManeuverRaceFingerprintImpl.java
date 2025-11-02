@@ -2,6 +2,7 @@ package com.sap.sailing.domain.maneuverhash.impl;
 
 
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.json.simple.JSONObject;
@@ -11,6 +12,7 @@ import com.sap.sailing.domain.abstractlog.race.analyzing.impl.MarkPassingDataFin
 import com.sap.sailing.domain.base.Competitor;
 import com.sap.sailing.domain.base.Mark;
 import com.sap.sailing.domain.base.Waypoint;
+import com.sap.sailing.domain.common.Wind;
 import com.sap.sailing.domain.common.WindSource;
 import com.sap.sailing.domain.common.tracking.GPSFix;
 import com.sap.sailing.domain.common.tracking.GPSFixMoving;
@@ -221,19 +223,39 @@ public class ManeuverRaceFingerprintImpl implements ManeuverRaceFingerprint {
     }
     
     private int calculateWindHash(TrackedRace trackedRace) {
-//        Set<WindSource> windSoure = trackedRace.getWindSources();
+        Set<WindSource> windSoures = trackedRace.getWindSources();
         int res = 0;
-        String regattaName = trackedRace.getTrackedRegatta().getRegatta().getName();
-        Map<? extends WindSource, ? extends WindTrack> windTrack = trackedRace.getWindStore().loadWindTracks(regattaName, trackedRace, 10000);
-        Map<WindSource, WindTrack> gefilterteMap = windTrack.entrySet()
-                .stream().filter(entry -> entry.getKey().getType().isObserved())
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        for (Map.Entry<? extends WindSource, ? extends WindTrack> w : gefilterteMap.entrySet() ) {
-            int k = w.getKey().hashCode();
-            int v = w.getValue().hashCode();
-            res = res ^ k;
-            res = res ^ v;
+//        String regattaName = trackedRace.getTrackedRegatta().getRegatta().getName();
+        Set<WindSource> windSouresToExclude = trackedRace.getWindSourcesToExclude();
+        
+        for(WindSource w : windSoures) {
+            if(w.getType().isObserved() && !windSouresToExclude.contains(w)) {
+                WindTrack windTrack = trackedRace.getOrCreateWindTrack(w);
+                windTrack.lockForRead();
+                try {
+                    int k = w.getId().hashCode();
+                    int v = 0;
+                    for(Wind wf : trackedRace.getOrCreateWindTrack(w).getFixes()) {
+                         v =   v + (int) ( wf.getPosition().getLatDeg() + wf.getPosition().getLngDeg() + wf.getKilometersPerHour());
+                    }
+                    res = res ^ k;
+                    res = res ^ v; 
+                } finally {
+                    windTrack.unlockAfterRead();
+                }
+
+            }
         }
+//        Map<? extends WindSource, ? extends WindTrack> windTrack = trackedRace.getOrCreateWindTrack(null)
+//        Map<WindSource, WindTrack> gefilterteMap = windTrack.entrySet()
+//                .stream().filter(entry -> entry.getKey().getType().isObserved())
+//                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+//        for (Map.Entry<? extends WindSource, ? extends WindTrack> w : gefilterteMap.entrySet() ) {
+//            int k = w.getKey().hashCode();
+//            int v = w.getValue().hashCode();
+//            res = res ^ k;
+//            res = res ^ v;
+//        }
         return res;
     }
 

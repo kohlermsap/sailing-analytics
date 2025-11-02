@@ -34,6 +34,8 @@ import com.sap.sailing.domain.tracking.impl.RaceAbortedHandler;
 import com.sap.sailing.domain.tracking.impl.StartTimeUpdateHandler;
 import com.sap.sse.common.IsManagedByCache;
 import com.sap.sse.common.TimePoint;
+import com.sap.sse.common.Util.Pair;
+import com.sap.sse.common.Util.Triple;
 import com.sap.sse.util.ObjectInputStreamResolvingAgainstCache;
 import com.sap.sse.util.ObjectInputStreamResolvingAgainstCache.ResolveListener;
 
@@ -48,6 +50,16 @@ public interface DomainFactory extends SharedDomainFactory<RaceLogAndTrackedRace
         public TrackedRace resolveTrackedRace(SimpleRaceLogIdentifier identifier) {
             return null;
         }
+
+        @Override
+        public List<Triple<Leaderboard, RaceColumn, Fleet>> getColumnsWithRaceLogForTrackedRace(
+                RegattaAndRaceIdentifier trackedRaceIdentifier) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+
+
     };
     
     /**

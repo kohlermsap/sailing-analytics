@@ -65,9 +65,9 @@ public class ManeuverCacheDelegate implements ManeuverCache<Competitor, List<Man
     public void resume() {
       
         // richtigen Ort bestimmen
-        if (triggerManeuverCacheInvalidationForAllCompetitors) {
-            triggerManeuverCacheRecalculationForAllCompetitors();
-        }
+//        if (triggerManeuverCacheInvalidationForAllCompetitors) {
+//            triggerManeuverCacheRecalculationForAllCompetitors();
+//        }
         
         ManeuverRaceFingerprint fingerprint;
         race.getRace().getCourse().lockForRead(); 
@@ -137,7 +137,7 @@ public class ManeuverCacheDelegate implements ManeuverCache<Competitor, List<Man
         try {
             synchronized (this) {
               
-                    cacheToUse.suspend();
+                    cacheToUse.triggerUpdate(competitor, updateInterval);
             }
         } finally {
             race.getRace().getCourse().unlockAfterRead();
@@ -147,26 +147,26 @@ public class ManeuverCacheDelegate implements ManeuverCache<Competitor, List<Man
     }
     
     
-    public void triggerManeuverCacheRecalculationForAllCompetitors() {
-        if (cachesSuspended) {
-            triggerManeuverCacheInvalidationForAllCompetitors = true;
-        } else {
-            final List<Competitor> shuffledCompetitors = new ArrayList<>();
-            for (Competitor competitor : (race.getRace().getCompetitors())) {
-                shuffledCompetitors.add(competitor);
-            }
-            Collections.shuffle(shuffledCompetitors);
-            for (Competitor competitor : shuffledCompetitors) {
-                triggerManeuverCacheRecalculation(competitor);
-            }
-        }
-    }
-
-    public void triggerManeuverCacheRecalculation(final Competitor competitor) {
-        if (cachesSuspended) {
-            triggerManeuverCacheInvalidationForAllCompetitors = true;
-        } else {
-            triggerUpdate(competitor, /* updateInterval */null);
-        }
-    }
+//    public void triggerManeuverCacheRecalculationForAllCompetitors() {
+//        if (cachesSuspended) {
+//            triggerManeuverCacheInvalidationForAllCompetitors = true;
+//        } else {
+//            final List<Competitor> shuffledCompetitors = new ArrayList<>();
+//            for (Competitor competitor : (race.getRace().getCompetitors())) {
+//                shuffledCompetitors.add(competitor);
+//            }
+//            Collections.shuffle(shuffledCompetitors);
+//            for (Competitor competitor : shuffledCompetitors) {
+//                triggerManeuverCacheRecalculation(competitor);
+//            }
+//        }
+//    }
+//
+//    public void triggerManeuverCacheRecalculation(final Competitor competitor) {
+//        if (cachesSuspended) {
+//            triggerManeuverCacheInvalidationForAllCompetitors = true;
+//        } else {
+//            triggerUpdate(competitor, /* updateInterval */null);
+//        }
+//    }
 }

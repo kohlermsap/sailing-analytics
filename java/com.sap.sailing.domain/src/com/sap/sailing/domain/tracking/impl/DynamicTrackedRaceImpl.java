@@ -339,7 +339,7 @@ DynamicTrackedRace, GPSTrackListener<Competitor, GPSFixMoving> {
             }
         }
         updated(/* time point */null);
-        maneuverCache.triggerManeuverCacheRecalculationForAllCompetitors();
+        triggerManeuverCacheRecalculationForAllCompetitors();
     }
 
     @Override
@@ -350,7 +350,7 @@ DynamicTrackedRace, GPSTrackListener<Competitor, GPSFixMoving> {
             getOrCreateWindTrack(windSource).setMillisecondsOverWhichToAverage(millisecondsOverWhichToAverageWind);
         }
         updated(/* time point */null);
-        maneuverCache.triggerManeuverCacheRecalculationForAllCompetitors();
+        triggerManeuverCacheRecalculationForAllCompetitors();
         notifyListenersWindAveragingChanged(oldMillisecondsOverWhichToAverageWind, millisecondsOverWhichToAverageWind);
     }
 
@@ -407,7 +407,7 @@ DynamicTrackedRace, GPSTrackListener<Competitor, GPSFixMoving> {
                 final GPSFix firstFixAfter = result.getFirstFixAfter(fixTimePoint);
                 invalidateDistancesFromStarboardSideOfStartLineProjectedOntoLineCache(TimeRange.create(lastFixBefore==null?null:lastFixBefore.getTimePoint(),
                         firstFixAfter==null?null:firstFixAfter.getTimePoint()));
-                maneuverCache.triggerManeuverCacheRecalculationForAllCompetitors();
+                triggerManeuverCacheRecalculationForAllCompetitors();
                 notifyListeners(fix, mark, firstFixInTrack, addedOrReplaced);
             }
 
@@ -924,7 +924,7 @@ DynamicTrackedRace, GPSTrackListener<Competitor, GPSFixMoving> {
                 getRace().getCourse().unlockAfterRead();
             }
             updated(timePointOfLatestEvent);
-            maneuverCache.triggerManeuverCacheRecalculation(competitor);
+            triggerManeuverCacheRecalculation(competitor);
             // update the race times like start, end and the leg times
             if (requiresStartTimeUpdate) {
                 invalidateStartTime();
@@ -1214,7 +1214,7 @@ DynamicTrackedRace, GPSTrackListener<Competitor, GPSFixMoving> {
         invalidateDistancesFromStarboardSideOfStartLineProjectedOntoLineCache(TimeRange.create(
                 fix.getTimePoint().minus(getMillisecondsOverWhichToAverageSpeed()),
                 fix.getTimePoint().plus(getMillisecondsOverWhichToAverageSpeed())));
-        maneuverCache.triggerManeuverCacheRecalculation(competitor);
+        triggerManeuverCacheRecalculation(competitor);
         notifyListeners(fix, competitor, addedOrReplaced);
         // getAndSet call is atomic which means, that it can be ensured that the listeners are notified only once
         final boolean oldGPSFixReceived = gpsFixReceived.getAndSet(true);
