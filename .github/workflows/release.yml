@@ -78,12 +78,12 @@ jobs:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '8'
           mvn-toolchain-id: 'JavaSE-1.8'
-      - name: Install JDK 17
+      - name: Install JDK 25
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin' # See 'Supported distributions' for available options
-          java-version: '17'
-          mvn-toolchain-id: 'JavaSE-17'
+          java-version: '25'
+          mvn-toolchain-id: 'JavaSE-25'
       - name: Setup Android SDK
         uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
         with:
@@ -131,7 +131,7 @@ jobs:
           reporter: java-junit
           fail-on-error: true
       - name: Build Release
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/docker-24' || startsWith(github.ref, 'refs/heads/releases/') }}
+        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/docker-24' || github.ref == 'refs/heads/docker-25' || startsWith(github.ref, 'refs/heads/releases/') }}
         shell: bash
         run: |
           ./configuration/buildAndUpdateProduct.sh -u -L ${{ github.event.inputs.skip_tests == 'true' && '-n untested' || '' }} release
@@ -148,14 +148,14 @@ jobs:
             retention-days: 90
       - name: Upload distribution artifact
         uses: actions/upload-artifact@v4
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/docker-24' || startsWith(github.ref, 'refs/heads/releases/') }}
+        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/docker-24' || github.ref == 'refs/heads/docker-25' || startsWith(github.ref, 'refs/heads/releases/') }}
         with:
             name: ${{ env.SIMPLE_VERSION_INFO }}
             path: dist/**/*
             retention-days: 90
       - name: Create Release
         id: create_release
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/docker-24' || startsWith(github.ref, 'refs/heads/releases/') }}
+        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/docker-24' || github.ref == 'refs/heads/docker-25' || startsWith(github.ref, 'refs/heads/releases/') }}
         uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
         with:
           tag_name: ${{ env.SIMPLE_VERSION_INFO }}
@@ -164,7 +164,7 @@ jobs:
           prerelease: false
       - name: Upload Release Asset tar.gz
         id: upload-release-asset-tar-gz
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/docker-24' || startsWith(github.ref, 'refs/heads/releases/') }}
+        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/docker-24' || github.ref == 'refs/heads/docker-25' || startsWith(github.ref, 'refs/heads/releases/') }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -175,7 +175,7 @@ jobs:
           asset_content_type: application/x-tar
       - name: Upload Release Asset release_notes.txt
         id: upload-release-asset-release-notes-txt
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/docker-24' || startsWith(github.ref, 'refs/heads/releases/') }}
+        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/docker-24' || github.ref == 'refs/heads/docker-25' || startsWith(github.ref, 'refs/heads/releases/') }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

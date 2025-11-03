@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Dev
 Bundle-SymbolicName: com.google.gwt.servlet
 Automatic-Module-Name: com.google.gwt.servlet
-Bundle-Version: 2.11.1
+Bundle-Version: 2.12.2
 Bundle-Vendor: GOOGLE
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: lib/gwt-servlet.jar,
@@ -26,7 +26,6 @@ Export-Package: com.google.gwt.activity.shared,
  com.google.gwt.core.shared,
  com.google.gwt.core.shared.impl,
  com.google.gwt.debug.client,
- com.google.gwt.dev.protobuf,
  com.google.gwt.dev.util,
  com.google.gwt.dom.builder.client,
  com.google.gwt.dom.builder.shared,
@@ -89,7 +88,6 @@ Export-Package: com.google.gwt.activity.shared,
  com.google.gwt.text.shared,
  com.google.gwt.text.shared.testing,
  com.google.gwt.thirdparty.debugging.sourcemap,
- com.google.gwt.thirdparty.debugging.sourcemap.proto,
  com.google.gwt.thirdparty.guava.common.annotations,
  com.google.gwt.thirdparty.guava.common.base,
  com.google.gwt.thirdparty.guava.common.base.internal,

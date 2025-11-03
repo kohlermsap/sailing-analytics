@@ -513,7 +513,7 @@ public class SliderBar extends FocusPanel implements RequiresResize, HasValue<Do
                 break;
             // Mousewheel events
             case Event.ONMOUSEWHEEL:
-                int velocityY = event.getMouseWheelVelocityY();
+                final double velocityY = event.getDeltaY();
                 event.preventDefault();
                 if (velocityY > 0) {
                     shiftRight(1);

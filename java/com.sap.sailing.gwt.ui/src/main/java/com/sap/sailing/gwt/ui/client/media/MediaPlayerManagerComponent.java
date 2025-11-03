@@ -131,7 +131,6 @@ public class MediaPlayerManagerComponent extends AbstractComponent<MediaPlayerSe
         this.popupPositionProvider = popupPositionProvider;
         this.settings = settings;
         this.storageServiceAvailable = new FileStorageServiceConnectionTestObservable(sailingServiceWrite);
-        Window.addCloseHandler(this);
         Window.addWindowClosingHandler(this);
         userService.addUserStatusEventHandler(new UserStatusEventHandler() {
             @Override
