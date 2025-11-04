@@ -14,7 +14,7 @@ import com.sap.sailing.domain.common.quadtree.QuadTree;
 import com.sap.sse.common.Distance;
 import com.sap.sse.common.TimePoint;
 
-public class DeclinationServiceImpl implements DeclinationService {
+public class DeclinationServiceImplWithStore implements DeclinationService {
     private final Distance defaultMaxDistance;
     private final DeclinationStore persistentStore;
     private final DeclinationImporter declinationImporter;
@@ -29,7 +29,7 @@ public class DeclinationServiceImpl implements DeclinationService {
      */
     private final Map<Integer, QuadTree<Declination>> importerCache;
     
-    public DeclinationServiceImpl(Distance defaultMaxDistance, DeclinationImporter declinationImporter) {
+    public DeclinationServiceImplWithStore(Distance defaultMaxDistance, DeclinationImporter declinationImporter) {
         this.declinationImporter = declinationImporter;
         this.defaultMaxDistance = defaultMaxDistance;
         this.yearStore = new HashMap<Integer, QuadTree<Declination>>();

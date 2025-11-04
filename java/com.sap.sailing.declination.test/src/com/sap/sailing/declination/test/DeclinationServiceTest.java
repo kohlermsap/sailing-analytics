@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import com.sap.sailing.declination.Declination;
 import com.sap.sailing.declination.DeclinationService;
 import com.sap.sailing.declination.impl.DeclinationImporter;
-import com.sap.sailing.declination.impl.DeclinationServiceImpl;
+import com.sap.sailing.declination.impl.DeclinationServiceImplWithStore;
 import com.sap.sailing.domain.common.impl.CentralAngleDistance;
 import com.sap.sailing.domain.common.impl.DegreePosition;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
@@ -23,7 +23,7 @@ public abstract class DeclinationServiceTest<I extends DeclinationImporter> exte
     
     @BeforeEach
     public void setUp() {
-        service = new DeclinationServiceImpl(new CentralAngleDistance(1./180.*Math.PI), importer);
+        service = new DeclinationServiceImplWithStore(new CentralAngleDistance(1./180.*Math.PI), importer);
     }
     
     @Test

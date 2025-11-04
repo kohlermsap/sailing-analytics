@@ -2,6 +2,8 @@ package com.sap.sailing.declination.impl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 /*      License Statement from the NOAA
 * The WMM source code is in the public domain and not licensed or
@@ -14,24 +16,115 @@ import java.io.IOException;
 
 import java.util.GregorianCalendar;
 
+import com.sap.sse.common.Duration;
+import com.sap.sse.common.Named;
+import com.sap.sse.common.TimePoint;
+
 /**
  * <p>
  * Class to calculate magnetic declination, magnetic field strength, inclination etc. for any point on the earth.
  * </p>
  * <p>
  * Adapted from the geomagc software and World Magnetic Model of the NOAA Satellite and Information Service, National
- * Geophysical Data Center
+ * Geophysical Data Center. Caching removed to make stateless, except for the reading of the coefficients file.
+ * Results are now returned as instances of the inner class {@link Result}.
  * </p>
  * http://www.ngdc.noaa.gov/geomag/WMM/DoDWMM.shtml
  * <p>
  * © Deep Pradhan, 2017
  * </p>
  */
-class Geomagnetism {
+class Geomagnetism implements Named {
+    private static final long serialVersionUID = -2814152697634383730L;
+
+    class Result {
+        /** Geomagnetic declination (decimal degrees) [opposite of variation, positive Eastward/negative Westward] */
+        private final double declination;
+
+        /** Geomagnetic inclination/dip angle (degrees) [positive downward] */
+        private final double inclination;
+
+        /** Geomagnetic field intensity/strength (nano Teslas) */
+        private final double intensity;
+
+        /** Geomagnetic horizontal field intensity/strength (nano Teslas) */
+        private final double bh;
+
+        /** Geomagnetic vertical field intensity/strength (nano Teslas) [positive downward] */
+        private final double bz;
+
+        /** Geomagnetic North South (northerly component) field intensity/strength (nano Tesla) */
+        private final double bx;
+
+        /** Geomagnetic East West (easterly component) field intensity/strength (nano Teslas) */
+        private final double by;
+
+        public Result(double declination, double inclination, double intensity, double bh, double bz, double bx, double by) {
+            this.declination = declination;
+            this.inclination = inclination;
+            this.intensity = intensity;
+            this.bh = bh;
+            this.bz = bz;
+            this.bx = bx;
+            this.by = by;
+        }
+
+        /** @return Geomagnetic declination (degrees) [opposite of variation, positive Eastward/negative Westward] */
+        double getDeclination() {
+            return declination;
+        }
+
+        /** @return Geomagnetic inclination/dip angle (degrees) [positive downward] */
+        double getInclination() {
+            return inclination;
+        }
+
+        /** @return Geomagnetic field intensity/strength (nano Teslas) */
+        double getIntensity() {
+            return intensity;
+        }
+
+        /** @return Geomagnetic horizontal field intensity/strength (nano Teslas) */
+        double getHorizontalIntensity() {
+            return bh;
+        }
+
+        /** @return Geomagnetic vertical field intensity/strength (nano Teslas) [positive downward] */
+        double getVerticalIntensity() {
+            return bz;
+        }
+
+        /** @return Geomagnetic North South (northerly component) field intensity/strength (nano Tesla) */
+        double getNorthIntensity() {
+            return bx;
+        }
+
+        /** @return Geomagnetic East West (easterly component) field intensity/strength (nano Teslas) */
+        double getEastIntensity() {
+            return by;
+        }
+        
+        String getModelName() {
+            return getName();
+        }
+        
+        TimePoint getModelIssueTimePoint() {
+            return getIssueTimePoint();
+        }
+    }
+    
+    private final static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy");
+
+    private final TimePoint startOfValidity;
+    
     /**
      * Initialise the instance without calculations
+     * 
+     * @param cofReader
+     *            a reader for a file in .COF format, such as WMM2025.COF; expects to find trailing lines with at least
+     *            "999999" in them
      */
-    Geomagnetism(BufferedReader r) throws IOException {
+    Geomagnetism(BufferedReader cofReader) throws IOException, ParseException {
         // Initialize constants
         maxord = MAX_DEG;
         sp[0] = 0;
@@ -39,12 +132,16 @@ class Geomagnetism {
         dp[0][0] = 0;
         c[0][0] = 0;
         cd[0][0] = 0;
-        final String headerLine = r.readLine();
-        epoch = Double.parseDouble(headerLine.trim().split("\\s+")[0]);
+        final String headerLine = cofReader.readLine();
+        final String[] headerFields = headerLine.trim().split("\\s+");
+        epoch = Double.parseDouble(headerFields[0]);
+        startOfValidity = TimePoint.of(new GregorianCalendar((int) epoch, 1, 1, 0, 0, 0).getTimeInMillis()).plus(Duration.ONE_HOUR.times(365.0*24.0*(epoch-((int) epoch))));
+        name = headerFields[1];
+        issueTimePoint = TimePoint.of(simpleDateFormat.parse(headerFields[2]));
         String[] tokens;
         double gnm, hnm, dgnm, dhnm;
         String line;
-        while (!(line=r.readLine()).startsWith("999999")) {
+        while (!(line=cofReader.readLine()).startsWith("999999")) {
             tokens = line.trim().split("\\s+");
             final int n = Integer.parseInt(tokens[0]);
             final int m = Integer.parseInt(tokens[1]);
@@ -84,7 +181,6 @@ class Geomagnetism {
         }
         k[1][1] = 0;
         fm[0] = 0;
-        otime = oalt = olat = olon = -1000;
     }
 
     /**
@@ -99,7 +195,7 @@ class Geomagnetism {
      * @param calendar
      *            Calendar for date of calculation
      */
-    void calculate(double longitude, double latitude, double altitude, GregorianCalendar calendar) {
+    Result calculate(double longitude, double latitude, double altitude, GregorianCalendar calendar) {
         double rlon = Math.toRadians(longitude), rlat = Math.toRadians(latitude),
                 altitudeKm = Double.isNaN(altitude) ? 0 : altitude / 1000,
                 yearFraction = calendar.get(GregorianCalendar.YEAR)
@@ -111,54 +207,46 @@ class Geomagnetism {
         sp[1] = srlon;
         cp[1] = crlon;
         // Convert from geodetic coords. to spherical coords.
-        if (altitudeKm != oalt || latitude != olat) {
-            double q = Math.sqrt(a2 - c2 * srlat2), q1 = altitudeKm * q,
-                    q2 = ((q1 + a2) / (q1 + b2)) * ((q1 + a2) / (q1 + b2)),
-                    r2 = ((altitudeKm * altitudeKm) + 2 * q1 + (a4 - c4 * srlat2) / (q * q));
-            ct = srlat / Math.sqrt(q2 * crlat2 + srlat2);
-            st = Math.sqrt(1 - (ct * ct));
-            r = Math.sqrt(r2);
-            d = Math.sqrt(a2 * crlat2 + b2 * srlat2);
-            ca = (altitudeKm + d) / r;
-            sa = c2 * crlat * srlat / (r * d);
-        }
-        if (longitude != olon) {
-            for (int m = 2; m <= maxord; m++) {
-                sp[m] = sp[1] * cp[m - 1] + cp[1] * sp[m - 1];
-                cp[m] = cp[1] * cp[m - 1] - sp[1] * sp[m - 1];
-            }
+        double q = Math.sqrt(a2 - c2 * srlat2), q1 = altitudeKm * q,
+                q2 = ((q1 + a2) / (q1 + b2)) * ((q1 + a2) / (q1 + b2)),
+                r2 = ((altitudeKm * altitudeKm) + 2 * q1 + (a4 - c4 * srlat2) / (q * q));
+        ct = srlat / Math.sqrt(q2 * crlat2 + srlat2);
+        st = Math.sqrt(1 - (ct * ct));
+        r = Math.sqrt(r2);
+        d = Math.sqrt(a2 * crlat2 + b2 * srlat2);
+        ca = (altitudeKm + d) / r;
+        sa = c2 * crlat * srlat / (r * d);
+        for (int m = 2; m <= maxord; m++) {
+            sp[m] = sp[1] * cp[m - 1] + cp[1] * sp[m - 1];
+            cp[m] = cp[1] * cp[m - 1] - sp[1] * sp[m - 1];
         }
         double aor = IAU66_RADIUS / r, ar = aor * aor, br = 0, bt = 0, bp = 0, bpp = 0, par, parp, temp1, temp2;
         for (int n = 1; n <= maxord; n++) {
             ar = ar * aor;
             for (int m = 0, d3 = 1, d4 = (n + m + d3) / d3; d4 > 0; d4--, m += d3) {
                 // Compute unnormalized associated legendre polynomials and derivatives via recursion relations
-                if (altitudeKm != oalt || latitude != olat) {
-                    if (n == m) {
-                        snorm[n + m * 13] = st * snorm[n - 1 + (m - 1) * 13];
-                        dp[m][n] = st * dp[m - 1][n - 1] + ct * snorm[n - 1 + (m - 1) * 13];
+                if (n == m) {
+                    snorm[n + m * 13] = st * snorm[n - 1 + (m - 1) * 13];
+                    dp[m][n] = st * dp[m - 1][n - 1] + ct * snorm[n - 1 + (m - 1) * 13];
+                }
+                if (n == 1 && m == 0) {
+                    snorm[n + m * 13] = ct * snorm[n - 1 + m * 13];
+                    dp[m][n] = ct * dp[m][n - 1] - st * snorm[n - 1 + m * 13];
+                }
+                if (n > 1 && n != m) {
+                    if (m > n - 2) {
+                        snorm[n - 2 + m * 13] = 0;
                     }
-                    if (n == 1 && m == 0) {
-                        snorm[n + m * 13] = ct * snorm[n - 1 + m * 13];
-                        dp[m][n] = ct * dp[m][n - 1] - st * snorm[n - 1 + m * 13];
+                    if (m > n - 2) {
+                        dp[m][n - 2] = 0;
                     }
-                    if (n > 1 && n != m) {
-                        if (m > n - 2) {
-                            snorm[n - 2 + m * 13] = 0;
-                        }
-                        if (m > n - 2) {
-                            dp[m][n - 2] = 0;
-                        }
-                        snorm[n + m * 13] = ct * snorm[n - 1 + m * 13] - k[m][n] * snorm[n - 2 + m * 13];
-                        dp[m][n] = ct * dp[m][n - 1] - st * snorm[n - 1 + m * 13] - k[m][n] * dp[m][n - 2];
-                    }
+                    snorm[n + m * 13] = ct * snorm[n - 1 + m * 13] - k[m][n] * snorm[n - 2 + m * 13];
+                    dp[m][n] = ct * dp[m][n - 1] - st * snorm[n - 1 + m * 13] - k[m][n] * dp[m][n - 2];
                 }
                 // Time adjust the gauss coefficients
-                if (yearFraction != otime) {
-                    tc[m][n] = c[m][n] + dt * cd[m][n];
-                    if (m != 0) {
-                        tc[n][m - 1] = c[n][m - 1] + dt * cd[n][m - 1];
-                    }
+                tc[m][n] = c[m][n] + dt * cd[m][n];
+                if (m != 0) {
+                    tc[n][m - 1] = c[n][m - 1] + dt * cd[n][m - 1];
                 }
                 // Accumulate terms of the spherical harmonic expansions
                 par = ar * snorm[n + m * 13];
@@ -193,19 +281,16 @@ class Geomagnetism {
         // bx must be the east-west field component
         // by must be the north-south field component
         // bz must be the vertical field component.
-        bx = -bt * ca - br * sa;
-        by = bp;
-        bz = bt * sa - br * ca;
+        final double bx = -bt * ca - br * sa;
+        final double by = bp;
+        final double bz = bt * sa - br * ca;
         // Compute declination (dec), inclination (dip) and total intensity (ti)
-        bh = Math.sqrt((bx * bx) + (by * by));
-        intensity = Math.sqrt((bh * bh) + (bz * bz));
+        final double bh = Math.sqrt((bx * bx) + (by * by));
+        final double intensity = Math.sqrt((bh * bh) + (bz * bz));
         // Calculate the declination.
-        declination = Math.toDegrees(Math.atan2(by, bx));
-        inclination = Math.toDegrees(Math.atan2(bz, bh));
-        otime = yearFraction;
-        oalt = altitudeKm;
-        olat = latitude;
-        olon = longitude;
+        final double declination = Math.toDegrees(Math.atan2(by, bx));
+        final double inclination = Math.toDegrees(Math.atan2(bz, bh));
+        return new Result(declination, inclination, intensity, bh, bz, bx, by);
     }
 
     /**
@@ -218,8 +303,8 @@ class Geomagnetism {
      * @param altitude
      *            Altitude in metres (with respect to WGS-1984 ellipsoid)
      */
-    void calculate(double longitude, double latitude, double altitude) {
-        calculate(longitude, latitude, altitude, new GregorianCalendar());
+    Result calculate(double longitude, double latitude, double altitude) {
+        return calculate(longitude, latitude, altitude, new GregorianCalendar());
     }
 
     /**
@@ -230,45 +315,30 @@ class Geomagnetism {
      * @param latitude
      *            Latitude in decimal degrees
      */
-    void calculate(double longitude, double latitude) {
-        calculate(longitude, latitude, 0);
+    Result calculate(double longitude, double latitude) {
+        return calculate(longitude, latitude, 0);
+    }
+    
+    /** @return The date in years, for the start of the valid time of the fit coefficients */
+    public double getEpoch() {
+        return epoch;
     }
 
-    /** @return Geomagnetic declination (degrees) [opposite of variation, positive Eastward/negative Westward] */
-    double getDeclination() {
-        return declination;
+    public TimePoint getStartOfValidity() {
+        return startOfValidity;
     }
 
-    /** @return Geomagnetic inclination/dip angle (degrees) [positive downward] */
-    double getInclination() {
-        return inclination;
+    public String getName() {
+        return name;
     }
 
-    /** @return Geomagnetic field intensity/strength (nano Teslas) */
-    double getIntensity() {
-        return intensity;
+    public TimePoint getIssueTimePoint() {
+        return issueTimePoint;
     }
+    private final String name;
 
-    /** @return Geomagnetic horizontal field intensity/strength (nano Teslas) */
-    double getHorizontalIntensity() {
-        return bh;
-    }
-
-    /** @return Geomagnetic vertical field intensity/strength (nano Teslas) [positive downward] */
-    double getVerticalIntensity() {
-        return bz;
-    }
-
-    /** @return Geomagnetic North South (northerly component) field intensity/strength (nano Tesla) */
-    double getNorthIntensity() {
-        return bx;
-    }
-
-    /** @return Geomagnetic East West (easterly component) field intensity/strength (nano Teslas) */
-    double getEastIntensity() {
-        return by;
-    }
-
+    private final TimePoint issueTimePoint;
+    
     /** Mean radius of IAU-66 ellipsoid, in km */
     private static final double IAU66_RADIUS = 6371.2;
 
@@ -280,30 +350,6 @@ class Geomagnetism {
 
     /** The maximum number of degrees of the spherical harmonic model */
     private static final int MAX_DEG = 12;
-
-    /** Geomagnetic declination (decimal degrees) [opposite of variation, positive Eastward/negative Westward] */
-    private double declination = 0;
-
-    /** Geomagnetic inclination/dip angle (degrees) [positive downward] */
-    private double inclination = 0;
-
-    /** Geomagnetic field intensity/strength (nano Teslas) */
-    private double intensity = 0;
-
-    /** Geomagnetic horizontal field intensity/strength (nano Teslas) */
-    private double bh;
-
-    /** Geomagnetic vertical field intensity/strength (nano Teslas) [positive downward] */
-    private double bz;
-
-    /** Geomagnetic North South (northerly component) field intensity/strength (nano Tesla) */
-    private double bx;
-
-    /** Geomagnetic East West (easterly component) field intensity/strength (nano Teslas) */
-    private double by;
-
-    /** The maximum order of spherical harmonic model */
-    private int maxord;
 
     /** The Gauss coefficients of main geomagnetic model (nt) */
     private double c[][] = new double[300][300];
@@ -328,16 +374,13 @@ class Geomagnetism {
     private double fn[] = new double[13];
     private double fm[] = new double[13];
 
+    /** The maximum order of spherical harmonic model */
+    private int maxord;
+
     /** The associated Legendre polynomials for m = 1 (unnormalized) */
     private double pp[] = new double[13];
 
     private double k[][] = new double[13][13];
-
-    /**
-     * The variables otime (old time), oalt (old altitude), olat (old latitude), olon (old longitude), are used to store
-     * the values used from the previous calculation to save on calculation time if some inputs don't change
-     */
-    private double otime, oalt, olat, olon;
 
     /** The date in years, for the start of the valid time of the fit coefficients */
     private double epoch;
