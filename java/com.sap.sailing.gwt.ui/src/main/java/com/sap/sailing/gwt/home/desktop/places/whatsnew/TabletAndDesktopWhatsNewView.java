@@ -82,14 +82,12 @@ public class TabletAndDesktopWhatsNewView extends Composite implements WhatsNewV
         raceCommitteeAppNotesAnchor.setHref(raceCommitteeAppNotesNavigation.getTargetUrl());
         inSightAppNotesAnchor.setHref(inSightAppNotesNavigation.getTargetUrl());
         buoyPingerAppNotesAnchor.setHref(buoyPingerAppNotesNavigation.getTargetUrl());
-        if (ClientConfiguration.getInstance().isBrandingActive()) {
-            String brandName = ClientConfiguration.getInstance().getBrandTitle(Optional.empty());
-            sailingAnalyticsNotesAnchor.setText(i18n.solutionsAnalyticsHeadline(brandName));
-            sailingSimulatorNotesAnchor.setText(i18n.strategySimulator());
-            raceCommitteeAppNotesAnchor.setText(i18n.solutionsRaceHeadline(brandName));
-            inSightAppNotesAnchor.setText(i18n.solutionsInSightHeadline(brandName));
-            buoyPingerAppNotesAnchor.setText(i18n.solutionsBuoyPingerHeadline(brandName));
-        }
+        final String brandName = ClientConfiguration.getInstance().getBrandTitle(Optional.empty());
+        sailingAnalyticsNotesAnchor.setText(i18n.solutionsAnalyticsHeadline(brandName));
+        sailingSimulatorNotesAnchor.setText(i18n.strategySimulator());
+        raceCommitteeAppNotesAnchor.setText(i18n.solutionsRaceHeadline(brandName));
+        inSightAppNotesAnchor.setText(i18n.solutionsInSightHeadline(brandName));
+        buoyPingerAppNotesAnchor.setText(i18n.solutionsBuoyPingerHeadline(brandName));
         links = Arrays.asList(new Anchor[] { sailingAnalyticsNotesAnchor, sailingSimulatorNotesAnchor, raceCommitteeAppNotesAnchor, inSightAppNotesAnchor, buoyPingerAppNotesAnchor });
         contentWidgets = Arrays.asList(new HTML[] { sailingAnalyticsNotes, sailingSimulatorNotes, raceCommitteeAppNotes, inSightAppNotes, buoyPingerAppNotes });
         switch(navigationTab) {
