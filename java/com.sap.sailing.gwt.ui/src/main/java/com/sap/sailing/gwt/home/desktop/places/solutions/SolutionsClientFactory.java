@@ -7,5 +7,4 @@ import com.sap.sailing.gwt.ui.client.SailingServiceAsync;
 public interface SolutionsClientFactory extends SailingClientFactory {
     SolutionsView createSolutionsView(SolutionsNavigationTabs navigationTab);
     SailingServiceAsync getSailingService();
-    
 }
