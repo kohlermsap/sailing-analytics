@@ -42,7 +42,6 @@ public class MapPanel extends FlowPanel {
   public void add(Widget child) {
     super.add(child);
     onAttach();
-    RootPanel.detachOnWindowClose(this);
   }
 
 }
