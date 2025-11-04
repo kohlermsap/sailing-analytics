@@ -23,7 +23,13 @@ import com.sap.sse.gwt.client.ErrorReporter;
 import com.sap.sse.gwt.client.celltable.EntityIdentityComparator;
 import com.sap.sse.gwt.client.celltable.RefreshableSelectionModel;
 import com.sap.sse.gwt.client.panels.LabeledAbstractFilterablePanel;
+import com.sap.sse.security.shared.AdminRole;
 import com.sap.sse.security.shared.HasPermissions;
+import com.sap.sse.security.shared.HasPermissions.DefaultActions;
+import com.sap.sse.security.shared.ServerAdminRole;
+import com.sap.sse.security.shared.WildcardPermission;
+import com.sap.sse.security.shared.dto.RoleWithSecurityDTO;
+import com.sap.sse.security.shared.dto.UserDTO;
 import com.sap.sse.security.ui.client.UserService;
 import com.sap.sse.security.ui.client.component.AccessControlledButtonPanel;
 import com.sap.sse.security.ui.client.component.SelectedElementsCountingButton;
@@ -78,6 +84,34 @@ abstract class IPBlocklistTableWrapper
         mainPanel.setSpacing(5);
     }
 
+    // admin, server admin and those with the permission can all unlock
+    private boolean canUnlock() {
+        final UserDTO user = userService.getCurrentUser();
+        final Iterable<RoleWithSecurityDTO> roles = user.getRoles();
+        boolean isAdmin = false;
+        boolean isServerAdmin = false;
+        boolean isDeleteActionPermittedOnDomain = false;
+        for (RoleWithSecurityDTO role : roles) {
+            isAdmin = role.getName().equals(AdminRole.getInstance().getName());
+            if (isAdmin) {
+                break;
+            }
+            isServerAdmin = role.getName().equals(ServerAdminRole.getInstance().getName());
+            if (isServerAdmin) {
+                break;
+            }
+        }
+        final Iterable<WildcardPermission> permissions = user.getPermissions();
+        for (WildcardPermission permission : permissions) {
+            isDeleteActionPermittedOnDomain = permission.toString()
+                    .equals(securedDomainType.getStringPermission(DefaultActions.DELETE));
+            if (isDeleteActionPermittedOnDomain) {
+                break;
+            }
+        }
+        return isAdmin || isServerAdmin || isDeleteActionPermittedOnDomain;
+    }
+
     private AccessControlledButtonPanel composeButtonPanel() {
         final AccessControlledButtonPanel buttonPanel = new AccessControlledButtonPanel(userService, securedDomainType);
         final Button refreshbutton = buttonPanel.addAction(getStringMessages().refresh(), () -> true, new Command() {
@@ -87,27 +121,29 @@ abstract class IPBlocklistTableWrapper
             }
         });
         refreshbutton.ensureDebugId("refreshButton");
-        final Button unlockButton = new SelectedElementsCountingButton<IpToTimedLockDTO>(getStringMessages().unlock(),
-                getSelectionModel(), new ClickHandler() {
-                    @Override
-                    public void onClick(ClickEvent event) {
-                        for (IpToTimedLockDTO e : getSelectionModel().getSelectedSet()) {
-                            unlockIP(e.ip, new AsyncCallback<Void>() {
-                                @Override
-                                public void onFailure(Throwable caught) {
-                                    errorReporter.reportError(errorMessageOnDataFailureString);
-                                }
+        if (canUnlock()) {
+            final Button unlockButton = new SelectedElementsCountingButton<IpToTimedLockDTO>(
+                    getStringMessages().unlock(), getSelectionModel(), new ClickHandler() {
+                        @Override
+                        public void onClick(ClickEvent event) {
+                            for (IpToTimedLockDTO e : getSelectionModel().getSelectedSet()) {
+                                unlockIP(e.ip, new AsyncCallback<Void>() {
+                                    @Override
+                                    public void onFailure(Throwable caught) {
+                                        errorReporter.reportError(errorMessageOnDataFailureString);
+                                    }
 
-                                @Override
-                                public void onSuccess(Void result) {
-                                    filterField.remove(e);
-                                }
-                            });
+                                    @Override
+                                    public void onSuccess(Void result) {
+                                        filterField.remove(e);
+                                    }
+                                });
+                            }
                         }
-                    }
-                });
-        unlockButton.ensureDebugId("unlockButton");
-        buttonPanel.insertWidgetAtPosition(unlockButton, 1);
+                    });
+            unlockButton.ensureDebugId("unlockButton");
+            buttonPanel.insertWidgetAtPosition(unlockButton, 1);
+        }
         return buttonPanel;
     }
 
