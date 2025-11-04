@@ -22,8 +22,8 @@ public class ReadCredentialsTest {
         try {
             ((CredentialsImpl) c).fetchToken();
             fail("Expected an unauthorized (401) error code");
-        } catch (IOException e) {
-            assertTrue(e.getMessage().contains("401")); // expected
+        } catch (SecurityException e) {
+            assertTrue(e.getMessage().contains("Authentication failed: Unauthorized")); // expected
         }
     }
 }

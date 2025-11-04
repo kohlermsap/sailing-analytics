@@ -67,7 +67,8 @@ import com.sap.sse.common.impl.MillisecondsTimePoint;
 public class BGSImporter extends DeclinationImporter {
 //    private static final String URL_PATTERN = "http://geomag.bgs.ac.uk/web_service/GMModels/bggm/2015/?latitude=%f&longitude=%f&altitude=0&date=%d-%d-%d&format=xml"; 
 //    private static final String URL_PATTERN = "http://geomag.bgs.ac.uk/web_service/GMModels/wmm/2020/?latitude=%f&longitude=%f&altitude=0&date=%d-%d-%d&format=xml"; 
-    private static final String URL_PATTERN = "http://geomag.bgs.ac.uk/web_service/GMModels/igrf/13/?latitude=%f&longitude=%f&altitude=0&date=%d-%d-%d&format=xml"; 
+    private static final String URL_PATTERN_PRE_2025 = "http://geomag.bgs.ac.uk/web_service/GMModels/igrf/13/?latitude=%f&longitude=%f&altitude=0&date=%d-%d-%d&format=xml"; 
+    private static final String URL_PATTERN_POST_2025 = "https://geomag.bgs.ac.uk/web_service/GMModels/wmm/2025?latitude=%f&longitude=%f&altitude=0&date=%d-%d-%d&format=xml";
     
     private static class XmlElementHandler extends DefaultHandler {
         private Date dateAsDecimalYear;
@@ -156,7 +157,8 @@ public class BGSImporter extends DeclinationImporter {
             throws IOException, ParserConfigurationException, SAXException {
         final Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
         cal.setTime(timePoint.asDate());
-        final URL url = new URL(String.format(URL_PATTERN, position.getLatDeg(), position.getLngDeg(), cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH)));
+        final int year = cal.get(Calendar.YEAR);
+        final URL url = new URL(String.format(year >= 2025 ? URL_PATTERN_POST_2025 : URL_PATTERN_PRE_2025, position.getLatDeg(), position.getLngDeg(), year, cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH)));
         return getDeclinationFromXml(url.openStream());
     }
 }
