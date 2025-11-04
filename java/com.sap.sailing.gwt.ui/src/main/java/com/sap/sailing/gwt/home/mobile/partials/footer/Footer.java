@@ -69,7 +69,6 @@ public class Footer extends Composite {
             copyrightDiv.getStyle().setDisplay(NONE);
             languageSelector.setLabelText(StringMessages.INSTANCE.whitelabelFooterLanguage());
             supportAnchor.getStyle().setDisplay(Display.NONE);
-            whatsNewLinkUi.getElement().getStyle().setDisplay(Display.NONE);
             jobsAnchor.getStyle().setDisplay(Display.NONE);
             privacyAnchor.getStyle().setDisplay(Display.NONE);
         } else {
