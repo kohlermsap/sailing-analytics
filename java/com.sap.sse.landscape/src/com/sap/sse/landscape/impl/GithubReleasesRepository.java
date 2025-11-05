@@ -80,6 +80,18 @@ public class GithubReleasesRepository extends AbstractReleaseRepository implemen
         this.lastFetchOfNewestReleases = null;
     }
     
+    @Override
+    public Release getLatestRelease(String releaseNamePrefix) {
+        Release result = null;
+        for (final Release release : this) { // invokes the iterator() method
+            if (release.getBaseName().equals(releaseNamePrefix)) {
+                result = release;
+                break; // here we assume that releases are enumerated from newest to oldest
+            }
+        }
+        return result;
+    }
+
     private String getRepositoryPath() {
         return owner+"/"+repositoryName;
     }

@@ -24,7 +24,6 @@ public abstract class AbstractReleaseRepository implements ReleaseRepository {
             if (release.getBaseName().equals(releaseNamePrefix) &&
                     (result == null || release.getCreationDate().after(result.getCreationDate()))) {
                 result = release;
-                break;
             }
         }
         return result;

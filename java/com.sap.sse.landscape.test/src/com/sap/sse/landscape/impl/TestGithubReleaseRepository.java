@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.sap.sse.common.Util;
@@ -56,5 +57,11 @@ public class TestGithubReleaseRepository {
     public void testLinkToNextPageFromLaste() {
         assertNull(
                 repository.getNextPageURL("<https://api.github.com/repositories/790295432/releases?per_page=100&page=7>; rel=\"prev\", <https://api.github.com/repositories/790295432/releases?per_page=100&page=1>; rel=\"first\""));
+    }
+    
+    @Disabled("Goes against a harsh GitHub rate limit of 60 requests per hour, so enable only for one-time manual tests")
+    @Test
+    public void testOldDocker17ReleaseExists() {
+        assertFalse(Util.isEmpty(Util.filter(repository, release->release.getName().equals("docker-17-202404262046"))));
     }
 }
