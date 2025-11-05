@@ -16,6 +16,6 @@ public class TestReleaseRepository {
 
     @Test
     public void testForAtLeastOneMasterRelease() {
-        assertNotNull(SailingReleaseRepository.INSTANCE.getLatestMasterRelease());
+        assertNotNull(SailingReleaseRepository.INSTANCE.getLatestDefaultRelease());
     }
 }

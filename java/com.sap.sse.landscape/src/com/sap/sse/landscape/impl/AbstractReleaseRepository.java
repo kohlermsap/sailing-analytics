@@ -7,23 +7,16 @@ import com.sap.sse.landscape.Release;
 import com.sap.sse.landscape.ReleaseRepository;
 
 public abstract class AbstractReleaseRepository implements ReleaseRepository {
-    private final String mainReleaseNamePrefix;
-    private final String repositoryBase;
+    private final String defaultReleaseNamePrefix;
     
-    public AbstractReleaseRepository(String repositoryBase, String mainReleaseNamePrefix) {
+    public AbstractReleaseRepository(String defaultReleaseNamePrefix) {
         super();
-        this.repositoryBase = repositoryBase;
-        this.mainReleaseNamePrefix = mainReleaseNamePrefix;
+        this.defaultReleaseNamePrefix = defaultReleaseNamePrefix;
     }
 
     @Override
-    public String getRepositoryBase() {
-        return repositoryBase;
-    }
-
-    @Override
-    public String getMainReleaseNamePrefix() {
-        return mainReleaseNamePrefix;
+    public String getDefaultReleaseNamePrefix() {
+        return defaultReleaseNamePrefix;
     }
     
     protected abstract Iterable<Release> getAvailableReleases();

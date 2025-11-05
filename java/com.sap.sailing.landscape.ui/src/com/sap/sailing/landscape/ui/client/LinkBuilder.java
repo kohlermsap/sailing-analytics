@@ -2,6 +2,7 @@ package com.sap.sailing.landscape.ui.client;
 
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.sap.sailing.landscape.SailingReleaseRepository;
 import com.sap.sailing.landscape.ui.shared.SailingAnalyticsProcessDTO;
 import com.sap.sailing.landscape.ui.shared.SailingApplicationReplicaSetDTO;
 import com.sap.sse.common.Builder;
@@ -128,8 +129,7 @@ public class LinkBuilder implements Builder<LinkBuilder, SafeHtml> {
     }
 
     private String getReleaseNotesLink(final String version) {
-        // TODO bug6173: can we figure this out from the ReleaseRepository, asking a Release specified by "version"? See Release.getReleaseNotesURL()
-        return "https://github.com/SAP/sailing-analytics/releases/download/" + version + "/release-notes.txt";
+        return SailingReleaseRepository.INSTANCE.getRelease(version).getReleaseNotesURL().toString();
     }
 
     /**
