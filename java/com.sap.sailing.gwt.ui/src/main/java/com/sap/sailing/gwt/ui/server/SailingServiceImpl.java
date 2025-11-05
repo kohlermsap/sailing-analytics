@@ -502,15 +502,20 @@ import com.sap.sse.replication.ReplicationService;
 import com.sap.sse.security.SecurityService;
 import com.sap.sse.security.SessionUtils;
 import com.sap.sse.security.shared.AccessControlListAnnotation;
+import com.sap.sse.security.shared.AdminRole;
 import com.sap.sse.security.shared.HasPermissions;
 import com.sap.sse.security.shared.HasPermissions.DefaultActions;
 import com.sap.sse.security.shared.RoleDefinition;
+import com.sap.sse.security.shared.ServerAdminRole;
 import com.sap.sse.security.shared.TypeRelativeObjectIdentifier;
+import com.sap.sse.security.shared.WildcardPermission;
 import com.sap.sse.security.shared.dto.SecuredDTO;
 import com.sap.sse.security.shared.dto.StrippedUserGroupDTO;
 import com.sap.sse.security.shared.impl.AccessControlList;
+import com.sap.sse.security.shared.impl.Role;
 import com.sap.sse.security.shared.impl.SecuredSecurityTypes;
 import com.sap.sse.security.shared.impl.SecuredSecurityTypes.ServerActions;
+import com.sap.sse.security.shared.impl.User;
 import com.sap.sse.security.shared.impl.UserGroup;
 import com.sap.sse.security.ui.server.SecurityDTOFactory;
 import com.sap.sse.security.ui.server.SecurityDTOUtil;
@@ -6116,11 +6121,67 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
 
     @Override
     public HashMap<String, TimedLock> getClientIPBasedTimedLocksForUserCreation() {
-        return getSecurityService().getClientIPBasedTimedLocksForUserCreation();
+        final SecurityService securityService = getSecurityService();
+        final User user = securityService.getCurrentUser();
+        boolean isAuthorized = false;
+        for (Role role : user.getRoles()) {
+            if (role.getName().equals(AdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+            if (role.getName().equals(ServerAdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+        };
+        if (!isAuthorized) {
+            for (WildcardPermission permission : user.getPermissions()) {
+                final boolean hasPermission = permission.toString()
+                        .equals(SecuredDomainType.IP_BLOCKLIST_FOR_USER_CREATION_ABUSE
+                                .getStringPermission(DefaultActions.READ));
+                if (hasPermission) {
+                    isAuthorized = true;
+                    break;
+                }
+            }
+        }
+        if (isAuthorized) {
+            return securityService.getClientIPBasedTimedLocksForUserCreation();
+        } else {
+            throw new UnauthorizedException();
+        }
     }
 
     @Override
     public HashMap<String, TimedLock> getClientIPBasedTimedLocksForBearerTokenAbuse() {
-        return getSecurityService().getClientIPBasedTimedLocksForBearerTokenAbuse();
+        final SecurityService securityService = getSecurityService();
+        final User user = securityService.getCurrentUser();
+        boolean isAuthorized = false;
+        for (Role role : user.getRoles()) {
+            if (role.getName().equals(AdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+            if (role.getName().equals(ServerAdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+        };
+        if (!isAuthorized) {
+            for (WildcardPermission permission : user.getPermissions()) {
+                final boolean hasPermission = permission.toString()
+                        .equals(SecuredDomainType.IP_BLOCKLIST_FOR_BEARER_TOKEN_ABUSE
+                                .getStringPermission(DefaultActions.READ));
+                if (hasPermission) {
+                    isAuthorized = true;
+                    break;
+                }
+            }
+        }
+        if (isAuthorized) {
+            return securityService.getClientIPBasedTimedLocksForBearerTokenAbuse();
+        } else {
+            throw new UnauthorizedException();
+        }
     }
 }

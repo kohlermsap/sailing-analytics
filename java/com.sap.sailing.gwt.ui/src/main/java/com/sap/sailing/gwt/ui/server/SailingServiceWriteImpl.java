@@ -393,12 +393,18 @@ import com.sap.sse.gwt.server.filestorage.FileStorageServiceDTOUtils;
 import com.sap.sse.gwt.shared.filestorage.FileStorageServiceDTO;
 import com.sap.sse.gwt.shared.filestorage.FileStorageServicePropertyErrorsDTO;
 import com.sap.sse.security.Action;
+import com.sap.sse.security.SecurityService;
 import com.sap.sse.security.shared.HasPermissions.DefaultActions;
+import com.sap.sse.security.shared.AdminRole;
 import com.sap.sse.security.shared.QualifiedObjectIdentifier;
 import com.sap.sse.security.shared.RoleDefinition;
+import com.sap.sse.security.shared.ServerAdminRole;
 import com.sap.sse.security.shared.TypeRelativeObjectIdentifier;
+import com.sap.sse.security.shared.WildcardPermission;
 import com.sap.sse.security.shared.impl.Ownership;
+import com.sap.sse.security.shared.impl.Role;
 import com.sap.sse.security.shared.impl.SecuredSecurityTypes;
+import com.sap.sse.security.shared.impl.User;
 import com.sap.sse.security.shared.impl.SecuredSecurityTypes.ServerActions;
 import com.sap.sse.security.shared.impl.UserGroup;
 import com.sap.sse.security.ui.server.SecurityDTOUtil;
@@ -4197,12 +4203,68 @@ public class SailingServiceWriteImpl extends SailingServiceImpl implements Saili
     }
 
     @Override
-    public void releaseUserCreationLockOnIp(String ip) {
-        getService().getSecurityService().releaseUserCreationLockOnIp(ip);
+    public void releaseUserCreationLockOnIp(String ip) throws UnauthorizedException {
+        final SecurityService securityService = getService().getSecurityService();
+        final User user = securityService.getCurrentUser();
+        boolean isAuthorized = false;
+        for (Role role : user.getRoles()) {
+            if (role.getName().equals(AdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+            if (role.getName().equals(ServerAdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+        };
+        if (!isAuthorized) {
+            for (WildcardPermission permission : user.getPermissions()) {
+                final boolean hasPermission = permission.toString()
+                        .equals(SecuredDomainType.IP_BLOCKLIST_FOR_USER_CREATION_ABUSE
+                                .getStringPermission(DefaultActions.READ));
+                if (hasPermission) {
+                    isAuthorized = true;
+                    break;
+                }
+            }
+        }
+        if (isAuthorized) {
+            securityService.releaseUserCreationLockOnIp(ip);
+        } else {
+            throw new UnauthorizedException();
+        }
     }
 
     @Override
-    public void releaseBearerTokenLockOnIp(String ip) {
-        getService().getSecurityService().releaseBearerTokenLockOnIp(ip);
+    public void releaseBearerTokenLockOnIp(String ip) throws UnauthorizedException {
+        final SecurityService securityService = getService().getSecurityService();
+        final User user = securityService.getCurrentUser();
+        boolean isAuthorized = false;
+        for (Role role : user.getRoles()) {
+            if (role.getName().equals(AdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+            if (role.getName().equals(ServerAdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+        };
+        if (!isAuthorized) {
+            for (WildcardPermission permission : user.getPermissions()) {
+                final boolean hasPermission = permission.toString()
+                        .equals(SecuredDomainType.IP_BLOCKLIST_FOR_BEARER_TOKEN_ABUSE
+                                .getStringPermission(DefaultActions.READ));
+                if (hasPermission) {
+                    isAuthorized = true;
+                    break;
+                }
+            }
+        }
+        if (isAuthorized) {
+            securityService.releaseBearerTokenLockOnIp(ip);
+        } else {
+            throw new UnauthorizedException();
+        }
     }
 }
