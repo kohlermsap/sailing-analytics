@@ -207,7 +207,7 @@ public class DeclinationStore {
             existingDeclinationRecord = storedDeclinations.get(point);
         }
         if (existingDeclinationRecord == null
-                || DeclinationServiceImpl.timeAndSpaceDistance(existingDeclinationRecord.getPosition().getDistance(point),
+                || DeclinationServiceImplWithStore.timeAndSpaceDistance(existingDeclinationRecord.getPosition().getDistance(point),
                 timePoint, existingDeclinationRecord.getTimePoint()) > 0.1) {
             // less than ~6 nautical miles and/or ~.6 months off
             fetchAndAppendDeclination(timePoint, point, importer, out);

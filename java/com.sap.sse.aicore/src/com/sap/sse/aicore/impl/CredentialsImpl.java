@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -119,8 +120,14 @@ public class CredentialsImpl implements Credentials {
                 .build();
         final JSONParser jsonParser = new JSONParser();
         final HttpResponse response = client.execute(postRequest);
-        if (response.getStatusLine().getStatusCode() >= 400) {
-            throw new IOException("Error obtaining client token: "+response.getStatusLine().getReasonPhrase()+" ("+response.getStatusLine().getStatusCode()+")");
+        final int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode == 401) {
+            throw new SecurityException("Authentication failed: "+response.getStatusLine().getReasonPhrase());
+        } else if (statusCode == 403) {
+            throw new AccessControlException("Authorization failed: " + response.getStatusLine().getReasonPhrase());
+        }
+        if (statusCode >= 400) {
+            throw new IOException("Error obtaining client token: "+response.getStatusLine().getReasonPhrase()+" ("+statusCode+")");
         }
         final JSONObject tokenJson = (JSONObject) jsonParser.parse(new InputStreamReader(response.getEntity().getContent()));
         return (String) tokenJson.get(ACCESS_TOKEN);

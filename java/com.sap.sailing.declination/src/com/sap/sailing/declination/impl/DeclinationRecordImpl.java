@@ -6,33 +6,13 @@ import com.sap.sse.common.Bearing;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.impl.DegreeBearingImpl;
 
-public class DeclinationRecordImpl implements Declination {
+public class DeclinationRecordImpl extends AbstractDeclinationRecord implements Declination {
     private static final long serialVersionUID = 6918630656182340186L;
-    private final Position position;
-    private final TimePoint timePoint;
-    private final Bearing bearing;
     private final Bearing annualChange;
+    
     public DeclinationRecordImpl(Position position, TimePoint timePoint, Bearing bearing, Bearing annualChange) {
-        super();
-        this.position = position;
-        this.timePoint = timePoint;
-        this.bearing = bearing;
+        super(position, timePoint, bearing);
         this.annualChange = annualChange;
-    }
-
-    @Override
-    public Position getPosition() {
-        return position;
-    }
-
-    @Override
-    public TimePoint getTimePoint() {
-        return timePoint;
-    }
-
-    @Override
-    public Bearing getBearing() {
-        return bearing;
     }
 
     @Override
@@ -50,5 +30,4 @@ public class DeclinationRecordImpl implements Declination {
     public String toString() {
         return ""+getTimePoint()+"@"+getPosition()+": "+getBearing()+", "+getAnnualChange()+"/year";
     }
-
 }

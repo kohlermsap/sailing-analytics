@@ -138,6 +138,10 @@ public class AIAgentImpl implements AIAgent {
                 chatSession = createChatSession();
             } catch (UnsupportedOperationException | URISyntaxException | IOException | ParseException e) {
                 throw new RuntimeException(e);
+            } catch (SecurityException e) {
+                aiCore.setCredentials(null);
+                logger.warning("Invalid credentials; clearing (setting to null).");
+                throw e;
             }
         } else {
             chatSession = null;

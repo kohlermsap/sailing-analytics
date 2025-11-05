@@ -3,12 +3,10 @@ package com.sap.sailing.declination;
 import java.io.IOException;
 import java.text.ParseException;
 
-import com.sap.sailing.declination.impl.BGSImporter;
 import com.sap.sailing.declination.impl.DeclinationImporter;
-import com.sap.sailing.declination.impl.DeclinationServiceImpl;
+import com.sap.sailing.declination.impl.WMMCalculatorDeclinationService;
 import com.sap.sailing.domain.common.Mile;
 import com.sap.sailing.domain.common.Position;
-import com.sap.sailing.domain.common.impl.CentralAngleDistance;
 import com.sap.sse.common.Distance;
 import com.sap.sse.common.TimePoint;
 
@@ -17,7 +15,7 @@ public interface DeclinationService {
      * A default implementation with a spatial default precision of 60 {@link Mile#METERS_PER_GEOGRAPHICAL_MILE
      * nautical miles} which equals the length of an arc with one degree on a meridian.
      */
-    DeclinationService INSTANCE = new DeclinationServiceImpl(new CentralAngleDistance(1./180.*Math.PI), new BGSImporter());
+    DeclinationService INSTANCE = new WMMCalculatorDeclinationService();
     
     /**
      * Obtains declination information with the default precision of this declination service in time and space
