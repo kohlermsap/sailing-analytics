@@ -19,6 +19,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.sap.sse.common.Duration;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.landscape.Release;
@@ -33,8 +34,6 @@ import com.sap.sse.util.HttpUrlConnectionHelper;
  * harsh rate limit of only 60 requests per hour when used without authentication.<p>
  * 
  * TODO Concurrency Control! What, if multiple requests or iterations are run on this repository object concurrently?<p>
- * 
- * TODO implement a cool-down period, e.g., one minute, during which the first releases page is loaded only once<p>
  * 
  * @author Axel Uhl (d043530)
  */
@@ -68,12 +67,17 @@ public class GithubReleasesRepository extends AbstractReleaseRepository implemen
     
     private boolean cacheContainsOldestRelease;
     
+    private TimePoint lastFetchOfNewestReleases;
+    
+    private final static Duration RELOAD_NEWEST_RELEASES_AFTER_DURATION = Duration.ONE_MINUTE;
+    
     public GithubReleasesRepository(String owner, String repositoryName, String defaultReleaseNamePrefix) {
         super(defaultReleaseNamePrefix);
         this.owner = owner;
         this.repositoryName = repositoryName;
         this.releasesByPublishingTimePoint = new TreeMap<>();
         this.cacheContainsOldestRelease = false;
+        this.lastFetchOfNewestReleases = null;
     }
     
     private String getRepositoryPath() {
@@ -91,6 +95,13 @@ public class GithubReleasesRepository extends AbstractReleaseRepository implemen
     }
     
     /**
+     * If {@link GithubReleasesRepository#lastFetchOfNewestReleases} is {@code null} or older than the
+     * {@link GithubReleasesRepository#RELOAD_NEWEST_RELEASES_AFTER_DURATION}, the page with newest releases is actually
+     * loaded. Otherwise, we assume that within the
+     * {@link GithubReleasesRepository#RELOAD_NEWEST_RELEASES_AFTER_DURATION} interval changes are sufficiently
+     * unlikely, so we will set the {@link #cachedReleasesIterator} to directly serve the current contents of the cache.
+     * <p>
+     * 
      * Always fetches the first page from the {@code /releases} end point and starts constructing and
      * {@link GithubReleasesRepository#releasesByPublishingTimePoint caching} releases, until a publishing time point
      * overlap with {@link GithubReleasesRepository#releasesByPublishingTimePoint} is found. Iteration then starts from
@@ -128,9 +139,16 @@ public class GithubReleasesRepository extends AbstractReleaseRepository implemen
         
         private ReleaseIterator() throws MalformedURLException, IOException, ParseException {
             nextPageURL = getReleasesURL();
-            cachedReleasesIterator = null;
-            while (nextPageURL != null && cachedReleasesIterator == null) {
-                loadNextPage(/* olderThan */ null);
+            final TimePoint now = TimePoint.now();
+            if (lastFetchOfNewestReleases != null && lastFetchOfNewestReleases.until(now)
+                    .compareTo(RELOAD_NEWEST_RELEASES_AFTER_DURATION) < 0) {
+                cachedReleasesIterator = releasesByPublishingTimePoint.descendingMap().values().iterator();
+            } else {
+                cachedReleasesIterator = null;
+                while (nextPageURL != null && cachedReleasesIterator == null) {
+                    lastFetchOfNewestReleases = now;
+                    loadNextPage(/* olderThan */ null);
+                }
             }
         }
         
