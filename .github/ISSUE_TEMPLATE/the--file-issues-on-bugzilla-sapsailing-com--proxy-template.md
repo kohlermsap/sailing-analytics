@@ -1,6 +1,6 @@
 ---
-name: The "File Issues on bugzilla.sapsailing.com" Proxy Template
-about: Ask users to reports bugs and issues on https://bugzilla.sapsailing.com instead
+name: File Issues on bugzilla.sapsailing.com
+about: Please report bugs and issues on https://bugzilla.sapsailing.com instead
 title: ''
 labels: ''
 assignees: ''
