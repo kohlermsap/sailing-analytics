@@ -65,10 +65,10 @@ public class TabletAndDesktopWhatsNewView extends Composite implements WhatsNewV
         inSightAppNotes.setHTML(WhatsNewResources.INSTANCE.getInSightAppNotesHtml().getText());
         buoyPingerAppNotes.setHTML(WhatsNewResources.INSTANCE.getBuoyPingerAppNotesHtml().getText());
         if (ClientConfiguration.getInstance().isBrandingActive()) {
-            setBrandedHeadlineInWidget(raceCommitteeAppNotes, "h4", "What's New - {0} Sailing Race Manager");
-            setBrandedHeadlineInWidget(sailingAnalyticsNotes, "h4", "What's New - {0} Sailing Analytics");
-            setBrandedHeadlineInWidget(inSightAppNotes, "h4", "What's New - Sail Insight powered by {0}");
-            setBrandedHeadlineInWidget(buoyPingerAppNotes, "h4", "What's New - {0} Sailing Buoy Pinger");
+            setBrandedElementTextById(raceCommitteeAppNotes, "raceManagerHeadline", "What's New - {0} Sailing Race Manager");
+            setBrandedElementTextById(sailingAnalyticsNotes, "sailingAnalyticsHeadline", "What's New - {0} Sailing Analytics");
+            setBrandedElementTextById(inSightAppNotes, "inSightHeadline", "What's New - Sail Insight powered by {0}");
+            setBrandedElementTextById(buoyPingerAppNotes, "buoyPingerHeadline", "What's New - {0} Sailing Buoy Pinger");
         }
         // set notes navigation
         sailingAnalyticNotesNavigation = placesNavigator.getWhatsNewNavigation(WhatsNewNavigationTabs.SailingAnalytics); 
@@ -83,11 +83,18 @@ public class TabletAndDesktopWhatsNewView extends Composite implements WhatsNewV
         inSightAppNotesAnchor.setHref(inSightAppNotesNavigation.getTargetUrl());
         buoyPingerAppNotesAnchor.setHref(buoyPingerAppNotesNavigation.getTargetUrl());
         final String brandName = ClientConfiguration.getInstance().getBrandTitle(Optional.empty());
-        sailingAnalyticsNotesAnchor.setText(i18n.solutionsAnalyticsHeadline(brandName));
         sailingSimulatorNotesAnchor.setText(i18n.strategySimulator());
-        raceCommitteeAppNotesAnchor.setText(i18n.solutionsRaceHeadline(brandName));
-        inSightAppNotesAnchor.setText(i18n.solutionsInSightHeadline(brandName));
-        buoyPingerAppNotesAnchor.setText(i18n.solutionsBuoyPingerHeadline(brandName));
+        if (ClientConfiguration.getInstance().isBrandingActive()) {
+            sailingAnalyticsNotesAnchor.setText(i18n.solutionsAnalyticsHeadline(brandName));
+            raceCommitteeAppNotesAnchor.setText(i18n.solutionsRaceHeadline(brandName));
+            inSightAppNotesAnchor.setText(i18n.solutionsInSightHeadline(brandName));
+            buoyPingerAppNotesAnchor.setText(i18n.solutionsBuoyPingerHeadline(brandName));
+        } else {
+            sailingAnalyticsNotesAnchor.setText(i18n.solutionsAnalyticsHeadline(""));
+            raceCommitteeAppNotesAnchor.setText(i18n.solutionsRaceHeadline(""));
+            inSightAppNotesAnchor.setText(i18n.sailInSightName());
+            buoyPingerAppNotesAnchor.setText(i18n.solutionsBuoyPingerHeadline(""));
+        }
         links = Arrays.asList(new Anchor[] { sailingAnalyticsNotesAnchor, sailingSimulatorNotesAnchor, raceCommitteeAppNotesAnchor, inSightAppNotesAnchor, buoyPingerAppNotesAnchor });
         contentWidgets = Arrays.asList(new HTML[] { sailingAnalyticsNotes, sailingSimulatorNotes, raceCommitteeAppNotes, inSightAppNotes, buoyPingerAppNotes });
         switch(navigationTab) {
@@ -163,15 +170,29 @@ public class TabletAndDesktopWhatsNewView extends Composite implements WhatsNewV
          }
     }
 
-    private void setBrandedHeadlineInWidget(HTML contentWidget, String tagName, String templateWithBrandPlaceholder) {
+    private void setBrandedElementTextById(HTML contentWidget, String elementId, String templateWithBrandPlaceholder) {
         String brandName = ClientConfiguration.getInstance().getBrandTitle(Optional.empty());
         Element container = contentWidget.getElement();
-        NodeList<Element> elements = container.getElementsByTagName(tagName);
-        if (elements == null || elements.getLength() == 0) {
+        Element target = findElementById(container, elementId);
+        if (target == null) {
             return;
         }
-        Element target = elements.getItem(0);
         String text = templateWithBrandPlaceholder.replace("{0}", brandName);
         target.setInnerText(text);
     }
+
+    private Element findElementById(Element root, String elementId) {
+        if (elementId.equals(root.getId())) {
+            return root;
+        }
+        NodeList<Element> all = root.getElementsByTagName("*");
+        for (int i = 0; i < all.getLength(); i++) {
+            Element el = all.getItem(i);
+            if (elementId.equals(el.getId())) {
+                return el;
+            }
+        }
+        return null;
+    }
+
 }

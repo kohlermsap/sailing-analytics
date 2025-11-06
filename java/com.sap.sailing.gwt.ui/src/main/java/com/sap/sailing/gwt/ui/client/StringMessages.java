@@ -2538,6 +2538,7 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages,
     String contentSailingRaceManager(String brandName);
     String sailingRaceManagerReadMore();
     String sailInSight(String brandName);
+    String sailInSightName();
     String contentSailInSight(String brandName);
     String sailInSightReadMore();
     String sailingBuoyPinger(String brandName);
