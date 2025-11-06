@@ -2,7 +2,6 @@ package com.sap.sailing.landscape.ui.client;
 
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.sap.sailing.landscape.SailingReleaseRepository;
 import com.sap.sailing.landscape.ui.shared.SailingAnalyticsProcessDTO;
 import com.sap.sailing.landscape.ui.shared.SailingApplicationReplicaSetDTO;
 import com.sap.sse.common.Builder;
@@ -128,10 +127,6 @@ public class LinkBuilder implements Builder<LinkBuilder, SafeHtml> {
         return (port == 443 ? "https" : "http") + "://" + host + ":" + port + "/gwt/status";
     }
 
-    private String getReleaseNotesLink(final String version) {
-        return SailingReleaseRepository.INSTANCE.getRelease(version).getReleaseNotesURL().toString();
-    }
-
     /**
      * Checks if an attribute is null and throws an exception if so. 
      *
@@ -194,7 +189,7 @@ public class LinkBuilder implements Builder<LinkBuilder, SafeHtml> {
             case Version:
                 checkAttribute(replicaSet, "Replicaset");
                 final String version = replicaSet.getVersion();
-                final String releaseNotesLink = getReleaseNotesLink(version);
+                final String releaseNotesLink = replicaSet.getReleaseNotesLink();
                 appendEc2Link(builder, releaseNotesLink, version);
                 break;
             case MasterHost:

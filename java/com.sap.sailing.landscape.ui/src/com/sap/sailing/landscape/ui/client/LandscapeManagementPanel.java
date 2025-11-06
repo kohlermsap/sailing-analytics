@@ -948,9 +948,9 @@ public class LandscapeManagementPanel extends SimplePanel {
                                         applicationReplicaSetToDefineLandingPageFor.getMaster(),
                                         applicationReplicaSetToDefineLandingPageFor.getReplicas(),
                                         applicationReplicaSetToDefineLandingPageFor.getVersion(),
+                                        applicationReplicaSetToDefineLandingPageFor.getReleaseNotesLink(),
                                         applicationReplicaSetToDefineLandingPageFor.getHostname(),
-                                        newDefaultRedirect,
-                                        applicationReplicaSetToDefineLandingPageFor.getAutoScalingGroupAmiId()));
+                                        newDefaultRedirect, applicationReplicaSetToDefineLandingPageFor.getAutoScalingGroupAmiId()));
                                 Notification.notify(stringMessages.successfullyUpdatedLandingPage(), NotificationType.SUCCESS);
                             }
                         });
