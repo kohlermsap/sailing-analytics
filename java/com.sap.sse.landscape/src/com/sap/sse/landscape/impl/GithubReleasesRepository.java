@@ -8,6 +8,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -65,6 +67,7 @@ public class GithubReleasesRepository extends AbstractReleaseRepository implemen
     private static final SimpleDateFormat isoDateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
     private final static String GITHUB_API_BASE_URL = "https://api.github.com";
     private final static String GITHUB_BASE_URL = "https://github.com";
+    private final static int NUMBER_OF_RELEASES_PER_PAGE = 100; // default would be 30; maximum is 100
     private final String owner;
     private final String repositoryName;
     
@@ -89,6 +92,19 @@ public class GithubReleasesRepository extends AbstractReleaseRepository implemen
     private final ConcurrentNavigableMap<TimePoint, Release> releasesByPublishingTimePoint;
     
     private boolean cacheContainsOldestRelease;
+    
+    /**
+     * If {@link #cacheContainsOldestRelease} is {@code false}, meaning the cache hasn't seen all releases back to the oldest
+     * one, this field holds the URL of the next page to load that will obtain older releases. Note that if newer releases
+     * have been published since loading the so far oldest cached releases, one or more newer releases may have slipped
+     * into that next page. But page loading of older releases will add only releases effectively older than the oldest
+     * release in the cache so far.<p>
+     * 
+     * It starts out with {@link #getReleasesURL()}.<p>
+     * 
+     * Will be {@code null} if {@link #cacheContainsOldestRelease} is {@code true}.
+     */
+    private String nextPageURLForOlderReleases;
     
     private TimePoint lastFetchOfNewestReleases;
     
@@ -123,121 +139,33 @@ public class GithubReleasesRepository extends AbstractReleaseRepository implemen
      */
     private class ReleaseIterator implements Iterator<Release> {
         /**
-         * Initialized to the URL for loading the first page of releases; each call to
-         * {@link #loadNextPage(TimePoint)} changes this to the next page, or {@code null}
-         * if the last page was loaded.
-         */
-        private String nextPageURL;
-
-        /**
-         * Takes precedence if not {@code null} and still having elements; enumerates the cached releases, starting from
-         * the newest (last in the cache) to the oldest (first in the cache). When fully consumed, page loading has to
-         * continue until releases published earlier than the oldest one from the
-         * {@link GithubReleasesRepository#releasesByPublishingTimePoint cache} are found.
+         * Used to enumerate the cached elements; will get assigned a new iterator after having reached the "old" end of
+         * the cache and {@link GithubReleasesRepository#loadPageWithNextOlderReleases() loading more older releases}.
          */
         private Iterator<Release> cachedReleasesIterator;
         
         private ReleaseIterator() throws MalformedURLException, IOException, ParseException {
             synchronized (GithubReleasesRepository.this) {
-                nextPageURL = getReleasesURL();
                 final TimePoint now = TimePoint.now();
                 if (lastFetchOfNewestReleases != null && lastFetchOfNewestReleases.until(now)
                         .compareTo(RELOAD_NEWEST_RELEASES_AFTER_DURATION) < 0) {
                     logger.fine(()->"No need to fetch page with newest releases; did that at "+lastFetchOfNewestReleases);
-                    cachedReleasesIterator = releasesByPublishingTimePoint.descendingMap().values().iterator();
                 } else {
                     logger.fine(()->"Need to fetch page with newest releases because last request was at "+
                             (lastFetchOfNewestReleases==null?"<never>":lastFetchOfNewestReleases));
-                    cachedReleasesIterator = null;
-                    while (nextPageURL != null && cachedReleasesIterator == null) {
-                        lastFetchOfNewestReleases = now;
-                        loadNextPage(/* olderThan */ null);
-                    }
+                    lastFetchOfNewestReleases = now;
+                    fillCacheWithNewestReleases();
                 }
+                cachedReleasesIterator = releasesByPublishingTimePoint.descendingMap().values().iterator();
             }
         }
         
-        /**
-         * Loads the page of releases referenced by {@link #nextPageURL}.
-         * <p>
-         * 
-         * If {@code olderThan} is {@code null}, only the releases newer than the newest entry in the cache are loaded
-         * into the cache, and {@link #cachedReleasesIterator} is set to the newest element in the cache if and only if
-         * the cache was empty when this method was called, or the page contained a release not newer than the newest
-         * release in the cache. This also means that if with {@code olderThan==null} the
-         * {@link #cachedReleasesIterator} is {@code null} after this method returns, one or more calls will be required
-         * to create an "overlap" with the cache before starting the iteration. This is required because we guarantee
-         * the cache to be "contiguous" in terms of the releases that exist.
-         * <p>
-         * 
-         * If {@code olderThan} is not {@code null}, only releases published before {@code olderThan} are added to the
-         * cache, and {@link #cachedReleasesIterator} is set to the newest element added to the cache, or set to
-         * {@code null} if no release was added to the cache by this call.
-         * <p>
-         * Precondition: {@link #nextPageURL} is not {@code null}; and the calling thread owns the object monitor of
-         * the enclosing {@link GithubReleasesRepository} instance.
-         * <p>
-         * Postcondition: {@link GithubReleasesRepository#cacheContainsOldestRelease} is {@code true} if and only if
-         * this invocation has loaded the last page of releases that exist
-         * 
-         * @param olderThan
-         *            if {@code null}, releases newer than the newest release from the cache will be added to the cache,
-         *            and the {@link #cachedReleasesIterator} will be set to the then newest cache element; if not
-         *            {@code null}, only releases published before {@code olderThan} will be loaded, and
-         *            {@link #cachedReleasesIterator} is then set to the newest of the older releases loaded, if any, or
-         *            to {@code null} if no releases older than {@code olderThan} were found during this invocation.
-         */
-        private void loadNextPage(TimePoint olderThan) throws MalformedURLException, IOException, ParseException {
-            assert Thread.holdsLock(GithubReleasesRepository.this);
-            cachedReleasesIterator = null;
-            logger.info("Requesting releases page "+nextPageURL+(olderThan==null?"":(" looking for releases older than "+olderThan)));
-            final URLConnection connection = HttpUrlConnectionHelper.redirectConnection(new URL(nextPageURL));
-            final InputStream index = (InputStream) connection.getContent();
-            final String xRatelimitRemaining = connection.getHeaderField("x-ratelimit-remaining");
-            if (xRatelimitRemaining != null && Integer.valueOf(xRatelimitRemaining) <= 0) {
-                throw new RuntimeException("You hit the rate limit of "+connection.getHeaderField("x-ratelimit-limit"));
-            }
-            final String linkHeader = connection.getHeaderField("link");
-            nextPageURL = getNextPageURL(linkHeader);
-            logger.fine(()->nextPageURL==null?"This was the last page":("Next page will be "+nextPageURL));
-            cacheContainsOldestRelease = cacheContainsOldestRelease || nextPageURL == null; // in this case we have seen and cached the last (oldest) page of releases
-            final JSONArray releasesJson = (JSONArray) new JSONParser().parse(new InputStreamReader(index));
-            boolean addedAtLeastOneReleaseToCache = false;
-            final boolean cacheWasEmpty = releasesByPublishingTimePoint.isEmpty();
-            for (final Object releaseObject : releasesJson) {
-                final Pair<TimePoint, GithubRelease> publishedAtAndRelease = getPublishedAtAndReleaseFromJson((JSONObject) releaseObject);
-                if (olderThan == null) { // looking for releases published after the newest cache entry
-                    if (cacheWasEmpty || publishedAtAndRelease.getA().after(releasesByPublishingTimePoint.lastKey())) {
-                        addedAtLeastOneReleaseToCache = true;
-                        releasesByPublishingTimePoint.put(publishedAtAndRelease.getA(), publishedAtAndRelease.getB());
-                    } else {
-                        cachedReleasesIterator = releasesByPublishingTimePoint.descendingMap().values().iterator();
-                    }
-                } else { // looking for releases published before olderThan
-                    if (publishedAtAndRelease.getA().before(olderThan)) {
-                        addedAtLeastOneReleaseToCache = true;
-                        releasesByPublishingTimePoint.put(publishedAtAndRelease.getA(), publishedAtAndRelease.getB());
-                    }
-                }
-            }
-            if (olderThan == null) {
-                if (cacheWasEmpty) {
-                    cachedReleasesIterator = releasesByPublishingTimePoint.descendingMap().values().iterator();
-                }
-            } else {
-                if (addedAtLeastOneReleaseToCache) {
-                    cachedReleasesIterator = releasesByPublishingTimePoint.descendingMap().tailMap(olderThan, /* inclusive */ false).values().iterator();
-                }
-            }
-        }
-
         @Override
         public boolean hasNext() {
             synchronized (GithubReleasesRepository.this) {
                 // - we're delivering from the cache and the cache has more elements, or
-                // - we've reached the end of the cache but the cache doesn't contain the oldest release and we can load more pages
-                return cachedReleasesIterator != null && cachedReleasesIterator.hasNext()
-                    || !cacheContainsOldestRelease && nextPageURL != null;
+                // - we've reached the end of the cache but the cache doesn't contain the oldest release so we can load more pages
+                return cachedReleasesIterator.hasNext() || !cacheContainsOldestRelease;
             }
         }
 
@@ -245,37 +173,28 @@ public class GithubReleasesRepository extends AbstractReleaseRepository implemen
         public Release next() {
             synchronized (GithubReleasesRepository.this) {
                 final Release result;
-                if (cachedReleasesIterator != null && cachedReleasesIterator.hasNext()) {
-                    result = getNextElementFromCacheIterator();
+                if (cachedReleasesIterator.hasNext()) {
+                    result = cachedReleasesIterator.next();
                 } else {
                     if (cacheContainsOldestRelease) {
                         throw new NoSuchElementException();
                     } else {
-                        while (nextPageURL != null && cachedReleasesIterator == null) {
-                            try {
-                                loadNextPage(/* olderThan */ releasesByPublishingTimePoint.firstKey());
-                            } catch (IOException | ParseException e) {
-                                throw new RuntimeException(e);
-                            }
+                        final TimePoint oldestReleaseSoFar = releasesByPublishingTimePoint.firstKey();
+                        try {
+                            loadPageWithNextOlderReleases();
+                        } catch (IOException | ParseException e) {
+                            throw new RuntimeException(e);
                         }
-                        if (cachedReleasesIterator == null || !cachedReleasesIterator.hasNext()) {
+                        cachedReleasesIterator = releasesByPublishingTimePoint.headMap(oldestReleaseSoFar).descendingMap().values().iterator();
+                        if (!cachedReleasesIterator.hasNext()) {
                             throw new NoSuchElementException();
                         } else {
-                            result = getNextElementFromCacheIterator();
+                            result = cachedReleasesIterator.next();
                         }
                     }
                 }
                 return result;
             }
-        }
-
-        private Release getNextElementFromCacheIterator() {
-            final Release result;
-            result = cachedReleasesIterator.next();
-            if (!cachedReleasesIterator.hasNext()) {
-                cachedReleasesIterator = null;
-            }
-            return result;
         }
     }
     
@@ -285,7 +204,104 @@ public class GithubReleasesRepository extends AbstractReleaseRepository implemen
         this.repositoryName = repositoryName;
         this.releasesByPublishingTimePoint = new ConcurrentSkipListMap<>();
         this.cacheContainsOldestRelease = false;
+        this.nextPageURLForOlderReleases = getReleasesURL();
         this.lastFetchOfNewestReleases = null;
+    }
+    
+    /**
+     * Loads a page of releases from {@code pageURL} and returns the link to the next page, or {@code null} if this was
+     * the last page available (therefore containing the oldest releases). The releases loaded are added to the cache if
+     * they are outside of the contiguous time range between oldest and newest publishing date as it was found in the
+     * cache when this method is invoked.
+     * <p>
+     * 
+     * The method makes no changes to the cache or any other state of this instance.
+     * 
+     * @return the link to the next page in the returned pair's {@link Pair#getA() A component}, and the sequence of
+     *         releases loaded from that page with their publishing time points, ordered from newest to oldest.
+     */
+    private synchronized Pair<String, Iterable<Pair<TimePoint, GithubRelease>>> getReleasesFromPage(String pageURL) throws IOException, ParseException {
+        logger.info("Requesting releases page "+pageURL);
+        final URLConnection connection = HttpUrlConnectionHelper.redirectConnection(new URL(pageURL));
+        final InputStream index = (InputStream) connection.getContent();
+        final String xRatelimitRemaining = connection.getHeaderField("x-ratelimit-remaining");
+        logger.fine(()->""+xRatelimitRemaining+" requests left in this hour");
+        if (xRatelimitRemaining != null && Integer.valueOf(xRatelimitRemaining) <= 0) {
+            throw new RuntimeException("You hit the rate limit of "+connection.getHeaderField("x-ratelimit-limit"));
+        }
+        final String linkHeader = connection.getHeaderField("link");
+        final String nextPageURL = getNextPageURL(linkHeader);
+        logger.fine(()->nextPageURL==null?"This was the last page":("Next page will be "+nextPageURL));
+        final List<Pair<TimePoint, GithubRelease>> publishingTimePointsAndReleases = new LinkedList<>();
+        final JSONArray releasesJson = (JSONArray) new JSONParser().parse(new InputStreamReader(index));
+        for (final Object releaseObject : releasesJson) {
+            publishingTimePointsAndReleases.add(getPublishedAtAndReleaseFromJson((JSONObject) releaseObject));
+        }
+        return new Pair<>(nextPageURL, publishingTimePointsAndReleases);
+    }
+    
+    /**
+     * Loads at least one page of releases, starting with {@link #getReleasesURL()}. The method ensures that a time-wise
+     * overlap with any pre-existing cache entries is established so that the cache entries are a contiguous prefix of
+     * the list of all releases that exist in the repository.
+     * <p>
+     * 
+     * In particular, if the cache is empty when this method is called, only the first page needs loading.
+     * <p>
+     * 
+     * If the cache already contained one or more releases when this method is called, page loading continues
+     * with the next page until a page contains a release published not after the newest release in the cache
+     * at the time when this method was called.
+     */
+    private synchronized void fillCacheWithNewestReleases() throws IOException, ParseException {
+        final boolean cacheWasEmpty = releasesByPublishingTimePoint.isEmpty();
+        final TimePoint publishingTimePointOfLatestReleaseSoFar = cacheWasEmpty ? null : releasesByPublishingTimePoint.lastKey();
+        String nextPageURL = getReleasesURL();
+        boolean overlap = false;
+        do {
+            final Pair<String, Iterable<Pair<TimePoint, GithubRelease>>> pageResults = getReleasesFromPage(nextPageURL);
+            for (final Pair<TimePoint, GithubRelease> publishingTimePointAndRelease : pageResults.getB()) {
+                overlap = !cacheWasEmpty && !publishingTimePointAndRelease.getA().after(publishingTimePointOfLatestReleaseSoFar);
+                if (cacheWasEmpty || publishingTimePointAndRelease.getA().after(publishingTimePointOfLatestReleaseSoFar)) {
+                    releasesByPublishingTimePoint.put(publishingTimePointAndRelease.getA(), publishingTimePointAndRelease.getB());
+                }
+            }
+            nextPageURL = pageResults.getA();
+            if (cacheWasEmpty) {
+                rememberNextPageForOlderReleases(nextPageURL);
+            }
+        } while (!cacheWasEmpty && !overlap);
+    }
+
+    private void rememberNextPageForOlderReleases(String nextPageURL) {
+        nextPageURLForOlderReleases = nextPageURL;
+        if (nextPageURL == null) {
+            cacheContainsOldestRelease = true;
+        }
+    }
+    
+    /**
+     * Loads the page referenced by {@link #nextPageURLForOlderReleases}, adjusting that very field to point to either
+     * the next older page or {@code null}, and adjusting {@link #cacheContainsOldestRelease} accordingly. Releases
+     * older than the so far oldest release are added to the cache. If {@link #cacheContainsOldestRelease} is
+     * {@code false}, the process continues until at least one older release has been added to the cache.<p>
+     * 
+     * Precondition: {@code !}{@link #cacheContainsOldestRelease} {@code && }{@link #nextPageURLForOlderReleases}{@code != null}
+     */
+    private synchronized void loadPageWithNextOlderReleases() throws IOException, ParseException {
+        assert !cacheContainsOldestRelease;
+        final TimePoint publishingTimePointOfOldestReleaseInCacheSoFar = releasesByPublishingTimePoint.firstKey();
+        boolean addedAtLeastOneReleaseToCache = false;
+        do {
+            final Pair<String, Iterable<Pair<TimePoint, GithubRelease>>> pageResults = getReleasesFromPage(nextPageURLForOlderReleases);
+            for (final Pair<TimePoint, GithubRelease> publishedAtAndRelease : pageResults.getB()) {
+                if (publishedAtAndRelease.getA().before(publishingTimePointOfOldestReleaseInCacheSoFar)) {
+                    addedAtLeastOneReleaseToCache = true;
+                    releasesByPublishingTimePoint.put(publishedAtAndRelease.getA(), publishedAtAndRelease.getB());
+                }
+            }
+            rememberNextPageForOlderReleases(pageResults.getA());
+        } while (!addedAtLeastOneReleaseToCache && !cacheContainsOldestRelease);            
     }
     
     @Override
@@ -305,7 +321,7 @@ public class GithubReleasesRepository extends AbstractReleaseRepository implemen
     }
     
     private String getReleasesURL() {
-        return GITHUB_API_BASE_URL+"/repos/"+getRepositoryPath()+"/releases?per_page=100";
+        return GITHUB_API_BASE_URL+"/repos/"+getRepositoryPath()+"/releases?per_page="+NUMBER_OF_RELEASES_PER_PAGE;
     }
 
     @Override
