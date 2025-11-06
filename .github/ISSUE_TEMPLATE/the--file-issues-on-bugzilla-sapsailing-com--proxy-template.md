@@ -1,7 +1,7 @@
 ---
 name: File Issues on bugzilla.sapsailing.com
 about: Please report bugs and issues on https://bugzilla.sapsailing.com instead
-title: ''
+title: 'Do not report issues here. Please to go https://bugzilla.sapsailing.com'
 labels: ''
 assignees: ''
 
