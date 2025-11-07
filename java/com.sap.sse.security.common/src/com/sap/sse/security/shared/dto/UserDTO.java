@@ -59,7 +59,22 @@ public class UserDTO extends
         Util.addAll(roles, this.getRolesInternal());
         this.lockedUntil = lockedUntil;
     }
-    
+
+    public UserDTO copyWithTimePoint(TimePoint lockedUntil) {
+        final List<AccountDTO> accountsCopy = new ArrayList<AccountDTO>();
+        Util.addAll(this.accounts, accountsCopy);
+        final HashSet<RoleWithSecurityDTO> rolesCopy = new HashSet<>();
+        Util.addAll(this.roles, rolesCopy);
+        final List<WildcardPermissionWithSecurityDTO> permissionsCopy = new ArrayList<WildcardPermissionWithSecurityDTO>();
+        for (WildcardPermission wp : this.getPermissions()) {
+            permissionsCopy.add((WildcardPermissionWithSecurityDTO) wp);
+        }
+        final List<StrippedUserGroupDTO> groupsCopy = new ArrayList<StrippedUserGroupDTO>();
+        Util.addAll(this.groups, groupsCopy);
+        return new UserDTO(this.getName(), this.email, this.fullName, this.company, this.locale, this.emailValidated,
+                accountsCopy, rolesCopy, this.defaultTenantForCurrentServer, permissionsCopy, groupsCopy, lockedUntil);
+    }
+
     @Override
     protected Set<RoleWithSecurityDTO> getRolesInternal() {
         return roles;

@@ -250,27 +250,33 @@ extends TableWrapper<UserDTO, S, StringMessages, TR> {
     }
 
     private Consumer<UserDTO> onManageLockPressed(StringMessages stringMessages, ErrorReporter errorReporter) {
-        return user -> {
-            final boolean isLocked = user.getLockedUntil().after(TimePoint.now());
+        return selectedUser -> {
+            final boolean isLocked = selectedUser.getLockedUntil().after(TimePoint.now());
             if (isLocked) {
-                final String userName = user.getName();
+                final String userName = selectedUser.getName();
                 final boolean didConfirm = Window.confirm(stringMessages.doYouReallyWantToUnlockUser(userName));
                 if (didConfirm) {
-                    getUserManagementWriteService().unlockUser(
-                        userName,
-                        new AsyncCallback<SuccessInfo>() {
-                            @Override
-                            public void onSuccess(SuccessInfo result) {
-                                Window.alert(stringMessages.unlockSucceededFor(userName));
+                    getUserManagementWriteService().unlockUser(userName, new AsyncCallback<SuccessInfo>() {
+                        @Override
+                        public void onSuccess(SuccessInfo result) {
+                            Window.alert(stringMessages.unlockSucceededFor(userName));
+                            final List<UserDTO> usersWithUpdate = new ArrayList<UserDTO>();
+                            for (UserDTO user : getAllUsers()) {
+                                if (user.getFullName() == selectedUser.getFullName()) {
+                                    usersWithUpdate.add(user.copyWithTimePoint(null));
+                                } else {                                    
+                                    usersWithUpdate.add(user);
+                                }
                             }
-                            
-                            @Override
-                            public void onFailure(Throwable caught) {
-                                Window.alert(stringMessages.unlockFailedFor(userName));
-                                errorReporter.reportError(caught.getMessage());
-                            }
+                            filterField.updateAll(usersWithUpdate);
                         }
-                    );
+
+                        @Override
+                        public void onFailure(Throwable caught) {
+                            Window.alert(stringMessages.unlockFailedFor(userName));
+                            errorReporter.reportError(caught.getMessage());
+                        }
+                    });
                 }
             } else {
                 Window.alert(stringMessages.userIsAlreadyUnlocked());
