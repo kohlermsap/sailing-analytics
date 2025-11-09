@@ -14,8 +14,6 @@ import com.sap.sse.security.shared.impl.SecuredSecurityTypes;
  *
  */
 public class ServerAdminRole extends RolePrototype {
-    private static final long serialVersionUID = -4196925850206436676L;
-
     private static final ServerAdminRole INSTANCE = new ServerAdminRole();
 
     ServerAdminRole() {

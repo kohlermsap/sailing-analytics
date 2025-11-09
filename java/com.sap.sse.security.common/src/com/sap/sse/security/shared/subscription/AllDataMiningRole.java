@@ -10,7 +10,6 @@ import com.sap.sse.security.shared.impl.SecuredSecurityTypes;
  * Specifies a role that when associated to a user gives access to the date mining functionality on all servers.
  */
 public class AllDataMiningRole extends RolePrototype {
-    private static final long serialVersionUID = 6671501683896115261L;
     private static final UUID ROLE_ID = UUID.fromString("de4205b5-ccf9-49b2-91e1-9a41b4db166b");
     private static final AllDataMiningRole INSTANCE = new AllDataMiningRole();
 
