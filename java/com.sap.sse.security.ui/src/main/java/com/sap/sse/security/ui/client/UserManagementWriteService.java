@@ -78,8 +78,11 @@ public interface UserManagementWriteService extends UserManagementService {
             throws UserManagementException, org.apache.shiro.authz.UnauthorizedException;
 
     SuccessInfo deleteUser(String username) throws UnauthorizedException, org.apache.shiro.authz.UnauthorizedException;
-
+    
     SuccessInfo unlockUser(String username) throws UnauthorizedException, org.apache.shiro.authz.UnauthorizedException;
+
+    Set<SuccessInfo> unlockUsers(Set<String> usernames)
+            throws UnauthorizedException, org.apache.shiro.authz.UnauthorizedException;
 
     Set<SuccessInfo> deleteUsers(Set<String> usernames)
             throws UnauthorizedException, org.apache.shiro.authz.UnauthorizedException;

@@ -30,7 +30,10 @@ public class UserManagementPanelPO extends PageArea {
     private WebElement createUserButton;
     
     @FindBy(how = BySeleniumId.class, using = "DeleteUserButton")
-    private WebElement deleteUserButton;
+    private WebElement deleteUserButton;    
+    
+    @FindBy(how = BySeleniumId.class, using = "UnlockUserButton")
+    private WebElement unlockUserButton;
     
     @FindBy(how = BySeleniumId.class, using = "UserNameTextbox")
     private WebElement userNameTextbox;
@@ -150,6 +153,31 @@ public class UserManagementPanelPO extends PageArea {
 
     public void deleteSelectedUser() {
         deleteUserButton.click();
+    }
+
+    public void unlockSelectedUsers() {
+        final List<DataEntryPO> selection = getUserTable().getSelectedEntries();
+        final List<String> selectedUsersNames = new ArrayList<String>();
+        for (DataEntryPO dataEntryPO : selection) {
+            final String username = dataEntryPO.getColumnContent("User name");
+            selectedUsersNames.add(username);
+        }
+        unlockUserButton.click();
+        // confirmation dialog
+        waitForAlertAndAccept();
+        // response dialog
+        waitForAlertAndAccept();
+        // wait until all locked untils of previously selected then unlocked users are blanked out
+        waitUntil(() -> {
+            for (String selectedUsersName : selectedUsersNames) {
+                final String lockedUntilVal = findUser(selectedUsersName).getColumnContent("Locked until");
+                if (!lockedUntilVal.equals("")) {
+                    return false;
+                }
+            }
+            return true;
+        });
+        
     }
     
     public void unlockUser(String name) {

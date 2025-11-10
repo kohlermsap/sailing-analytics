@@ -382,20 +382,29 @@ public class UserManagementWriteServiceImpl extends UserManagementServiceImpl im
             if (!getSecurityService().hasCurrentUserExplicitPermissions(user, UserActions.MANAGE_LOCK)) {
                 logger.info("You are not permitted to manage locking on user " + username);
                 return new SuccessInfo(false, "You are not permitted to manage locking on user " + username,
-                        /* redirectURL */ null, null);
+                        /* redirectURL */ null, null, username);
             }
             try {
                 getSecurityService().resetUserTimedLock(username);
                 logger.info("Reset lock on user: " + username + ".");
-                return new SuccessInfo(true, "Reset lock on user: " + username + ".", /* redirectURL */ null, null);
+                return new SuccessInfo(true, "Reset lock on user: " + username + ".", /* redirectURL */ null, null, username);
             } catch (UserManagementException e) {
                 logger.info("Could not reset lock on user: " + username + ".");
-                return new SuccessInfo(false, "Could not reset lock on user " + username, /* redirectURL */ null, null);
+                return new SuccessInfo(false, "Could not reset lock on user " + username, /* redirectURL */ null, null, username);
             }
         } else {
             logger.info("Could not reset lock on user: " + username + ".");
-            return new SuccessInfo(false, "Could not reset lock on user " + username, /* redirectURL */ null, null);
+            return new SuccessInfo(false, "Could not reset lock on user " + username, /* redirectURL */ null, null, username);
         }
+    }
+    
+    @Override
+    public Set<SuccessInfo> unlockUsers(Set<String> usernames) throws UnauthorizedException {
+        final Set<SuccessInfo> result = new HashSet<>();
+        for (String username : usernames) {
+            result.add(unlockUser(username));
+        }
+        return result;
     }
     
     @Override

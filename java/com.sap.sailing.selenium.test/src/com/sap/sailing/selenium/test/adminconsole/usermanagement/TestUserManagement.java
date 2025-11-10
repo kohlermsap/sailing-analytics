@@ -123,6 +123,27 @@ public class TestUserManagement extends AbstractSeleniumTest {
                         TEST_USER_NAME, TEST_USER_PASSWORD + UserManagementPanelPO.PASSWORD_COMPLEXITY_SALT));
     }
 
+    @SeleniumTestCase
+    public void testUnlockSelectionOfUsers() throws InterruptedException {
+        // at admin
+        UserManagementPanelPO userManagementPanel = goToUserManagementPanel();
+        createUser(userManagementPanel);
+        // logout so test user can login
+        AuthenticationMenuPO authenticationMenu = logoutAndGoToAdminConsolePage().getAuthenticationMenu();
+        attemptAbusiveLogins(TEST_USER_NAME, "wrongPassword", 5, authenticationMenu);
+        // 16s lock window in place now, sufficient to log into admin, unlock user
+        // and return till test user can login, within the erstwhile lock window
+        assertTrue(authenticationMenu.attemptLogin("admin", "admin"));
+        userManagementPanel = goToUserManagementPanel();
+        userManagementPanel.selectUser(TEST_USER_NAME);
+        userManagementPanel.unlockSelectedUsers();
+        // logout and correct login within now-unlocked lock window
+        authenticationMenu = logoutAndGoToAdminConsolePage().getAuthenticationMenu();
+        assertTrue(
+                authenticationMenu.attemptLogin(
+                        TEST_USER_NAME, TEST_USER_PASSWORD + UserManagementPanelPO.PASSWORD_COMPLEXITY_SALT));
+    }
+
     private void attemptAbusiveLogins(final String username, final String wrongPassword, final int attempts, AuthenticationMenuPO authenticationMenu)
             throws InterruptedException {
         // logout so test user can login

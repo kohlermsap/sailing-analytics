@@ -63,6 +63,8 @@ public interface UserManagementWriteServiceAsync extends UserManagementServiceAs
     void deleteUser(String username, AsyncCallback<SuccessInfo> callback);
 
     void unlockUser(String username, AsyncCallback<SuccessInfo> callback);
+
+    void unlockUsers(Set<String> username, AsyncCallback<Set<SuccessInfo>> callback);
     
     void deleteUsers(Set<String> usernames, AsyncCallback<Set<SuccessInfo>> callback);
 

@@ -151,8 +151,9 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages {
     String group();
     String errorDeletingUser(String username, String message);
     String doYouReallyWantToUnlockUser(String name);
-    String unlockSucceededFor(String username);
-    String unlockFailedFor(String username);
+    String doYouReallyWantToUnlockNUsers(int n);
+    String unlockSucceededForUser(String username);
+    String unlockFailedForUser(String username);
     String userIsAlreadyUnlocked();
     String errorTryingToUpdateUser(String username, String message);
     String ownership();
@@ -230,4 +231,6 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages {
     String lockedUntil();
     String passwordAuthenticationCurrentlyLockedForUser();
     String clientCurrentlyLockedForUserCreation();
+    String unlockedSuccessfully();
+    String failedToUnlock();
 }

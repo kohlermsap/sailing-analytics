@@ -259,21 +259,21 @@ extends TableWrapper<UserDTO, S, StringMessages, TR> {
                     getUserManagementWriteService().unlockUser(userName, new AsyncCallback<SuccessInfo>() {
                         @Override
                         public void onSuccess(SuccessInfo result) {
-                            Window.alert(stringMessages.unlockSucceededFor(userName));
-                            final List<UserDTO> usersWithUpdate = new ArrayList<UserDTO>();
+                            Window.alert(stringMessages.unlockSucceededForUser(userName));
+                            final List<UserDTO> usersWithUpdatedEntry = new ArrayList<UserDTO>();
                             for (UserDTO user : getAllUsers()) {
                                 if (user.getFullName() == selectedUser.getFullName()) {
-                                    usersWithUpdate.add(user.copyWithTimePoint(null));
+                                    usersWithUpdatedEntry.add(user.copyWithTimePoint(null));
                                 } else {                                    
-                                    usersWithUpdate.add(user);
+                                    usersWithUpdatedEntry.add(user);
                                 }
                             }
-                            filterField.updateAll(usersWithUpdate);
+                            filterField.updateAll(usersWithUpdatedEntry);
                         }
 
                         @Override
                         public void onFailure(Throwable caught) {
-                            Window.alert(stringMessages.unlockFailedFor(userName));
+                            Window.alert(stringMessages.unlockFailedForUser(userName));
                             errorReporter.reportError(caught.getMessage());
                         }
                     });

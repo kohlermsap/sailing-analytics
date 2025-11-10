@@ -1326,7 +1326,7 @@ implements ReplicableSecurityService, ClearStateTestSupport {
             throw new UserManagementException(UserManagementException.USER_DOES_NOT_EXIST);
         }
         if (user.getTimedLock().isLocked()) {
-            throw new UserManagementException("Password authentication is locked for user "+username);
+            throw new UserManagementException(UserManagementException.PASSWORD_AUTHENTICATION_CURRENTLY_LOCKED_FOR_USER);
         }
         final UsernamePasswordAccount account = (UsernamePasswordAccount) user.getAccount(AccountType.USERNAME_PASSWORD);
         String hashedOldPassword = hashPassword(password, account.getSalt());
