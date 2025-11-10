@@ -600,8 +600,4 @@ public interface SailingService extends RemoteService, RemoteReplicationService 
     List<CourseAreaDTO> getCourseAreaForEventOfLeaderboard(String leaderboardName);
 
     String getGoogleMapsLoaderAuthenticationParams();
-    
-    HashMap<String,TimedLock> getClientIPBasedTimedLocksForUserCreation();
-    
-    HashMap<String,TimedLock> getClientIPBasedTimedLocksForBearerTokenAbuse();
 }

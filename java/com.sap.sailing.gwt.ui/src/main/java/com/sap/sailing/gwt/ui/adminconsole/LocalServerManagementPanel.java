@@ -156,12 +156,12 @@ public class LocalServerManagementPanel extends SimplePanel {
                 stringMessages.unableToLoadIpsBlockedForBearerTokenAbuse(), stringMessages, errorReporter) {
             @Override
             protected void fetchData(AsyncCallback<HashMap<String, TimedLock>> callback) {
-                sailingServiceWrite.getClientIPBasedTimedLocksForBearerTokenAbuse(callback);
+                userService.getUserManagementService().getClientIPBasedTimedLocksForBearerTokenAbuse(callback);
             }
 
             @Override
             protected void unlockIP(String ip, AsyncCallback<Void> asyncCallback) {
-                sailingService.releaseBearerTokenLockOnIp(ip, asyncCallback);
+                userService.getUserManagementWriteService().releaseBearerTokenLockOnIp(ip, asyncCallback);
             }
         };
         panel.setContentWidget(table.asWidget());
@@ -177,12 +177,12 @@ public class LocalServerManagementPanel extends SimplePanel {
                 stringMessages.unableToLoadIpsBlockedForUserCreationAbuse(), stringMessages, errorReporter) {
             @Override
             protected void fetchData(AsyncCallback<HashMap<String, TimedLock>> callback) {
-                sailingServiceWrite.getClientIPBasedTimedLocksForUserCreation(callback);
+                userService.getUserManagementService().getClientIPBasedTimedLocksForUserCreation(callback);
             }
 
             @Override
             protected void unlockIP(String ip, AsyncCallback<Void> asyncCallback) {
-                sailingService.releaseUserCreationLockOnIp(ip, asyncCallback);
+                userService.getUserManagementWriteService().releaseUserCreationLockOnIp(ip, asyncCallback);
             }
         };
         panel.setContentWidget(table.asWidget());

@@ -690,8 +690,4 @@ public interface SailingServiceAsync extends RemoteReplicationServiceAsync {
     void getCourseAreaForEventOfLeaderboard(String leaderboardName, AsyncCallback<List<CourseAreaDTO>> callback);
 
     void getGoogleMapsLoaderAuthenticationParams(AsyncCallback<String> callback);
-    
-    void getClientIPBasedTimedLocksForUserCreation(AsyncCallback<HashMap<String,TimedLock>> callback);
-    
-    void getClientIPBasedTimedLocksForBearerTokenAbuse(AsyncCallback<HashMap<String,TimedLock>> callback);
 }

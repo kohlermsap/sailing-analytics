@@ -762,9 +762,4 @@ public interface SailingServiceWrite extends FileStorageManagementGwtService, Sa
     void resetAIAgentCredentials();
 
     void copyPairingListFromOtherLeaderboard(String sourceLeaderboardName, String targetLeaderboardName, String fromRaceColumnName,
-            String toRaceColumnInclusiveName) throws UnauthorizedException, NotFoundException;
-    
-    void releaseUserCreationLockOnIp(String ip);    
-
-    void releaseBearerTokenLockOnIp(String ip);
-}
+            String toRaceColumnInclusiveName) throws UnauthorizedException, NotFoundException;}

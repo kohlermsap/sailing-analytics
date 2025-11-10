@@ -125,4 +125,8 @@ public interface UserManagementWriteServiceAsync extends UserManagementServiceAs
     void setCORSFilterConfigurationAllowedOrigins(ArrayList<String> allowedOrigins, AsyncCallback<Void> callback);
 
     void fileTakedownNotice(TakedownNoticeRequestContext takedownNoticeRequestContext, AsyncCallback<Void> callback);
+    
+    void releaseUserCreationLockOnIp(String ip, AsyncCallback<Void> asyncCallback);
+    
+    void releaseBearerTokenLockOnIp(String ip, AsyncCallback<Void> asyncCallback);
 }

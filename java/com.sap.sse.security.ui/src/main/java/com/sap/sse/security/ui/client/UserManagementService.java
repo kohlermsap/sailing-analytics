@@ -2,10 +2,12 @@ package com.sap.sse.security.ui.client;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.google.gwt.user.client.rpc.RemoteService;
+import com.sap.sse.common.TimedLock;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.Util.Triple;
 import com.sap.sse.gwt.client.ServerInfoDTO;
@@ -92,4 +94,8 @@ public interface UserManagementService extends RemoteService {
     SecuredDTO addSecurityInformation(SecuredDTO securedDTO);
     
     Pair<Boolean, ArrayList<String>> getCORSFilterConfiguration();
+    
+    HashMap<String,TimedLock> getClientIPBasedTimedLocksForUserCreation() throws UnauthorizedException;
+    
+    HashMap<String,TimedLock> getClientIPBasedTimedLocksForBearerTokenAbuse() throws UnauthorizedException;
 }

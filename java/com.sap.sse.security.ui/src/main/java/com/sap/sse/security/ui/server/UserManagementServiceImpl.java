@@ -24,6 +24,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.sap.sse.ServerInfo;
+import com.sap.sse.common.TimedLock;
 import com.sap.sse.common.Util;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.Util.Triple;
@@ -32,9 +33,11 @@ import com.sap.sse.landscape.aws.common.shared.SecuredAwsLandscapeType;
 import com.sap.sse.security.SecurityService;
 import com.sap.sse.security.interfaces.Credential;
 import com.sap.sse.security.shared.AccessControlListAnnotation;
+import com.sap.sse.security.shared.AdminRole;
 import com.sap.sse.security.shared.HasPermissions;
 import com.sap.sse.security.shared.HasPermissions.DefaultActions;
 import com.sap.sse.security.shared.QualifiedObjectIdentifier;
+import com.sap.sse.security.shared.ServerAdminRole;
 import com.sap.sse.security.shared.TypeRelativeObjectIdentifier;
 import com.sap.sse.security.shared.UnauthorizedException;
 import com.sap.sse.security.shared.UserManagementException;
@@ -50,6 +53,7 @@ import com.sap.sse.security.shared.dto.UserDTO;
 import com.sap.sse.security.shared.dto.UserGroupDTO;
 import com.sap.sse.security.shared.dto.WildcardPermissionWithSecurityDTO;
 import com.sap.sse.security.shared.impl.PermissionAndRoleAssociation;
+import com.sap.sse.security.shared.impl.Role;
 import com.sap.sse.security.shared.impl.SecuredSecurityTypes;
 import com.sap.sse.security.shared.impl.SecuredSecurityTypes.ServerActions;
 import com.sap.sse.security.shared.impl.User;
@@ -412,5 +416,59 @@ public class UserManagementServiceImpl extends RemoteServiceServlet implements U
         getSecurityService().checkCurrentUserServerPermission(ServerActions.CONFIGURE_CORS_FILTER);
         final Pair<Boolean, Set<String>> preResult = getSecurityService().getCORSFilterConfiguration(ServerInfo.getName());
         return preResult == null ? null : new Pair<>(preResult.getA(), new ArrayList<>(preResult.getB()));
+    }
+
+    @Override
+    public HashMap<String, TimedLock> getClientIPBasedTimedLocksForUserCreation() throws UnauthorizedException {
+        final SecurityService securityService = getSecurityService();
+        final User user = securityService.getCurrentUser();
+        boolean isAuthorized = false;
+        for (Role role : user.getRoles()) {
+            if (role.getName().equals(AdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+            if (role.getName().equals(ServerAdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+        };
+        if (!isAuthorized) {
+            // throws UnauthorizedException if fails
+            securityService.checkCurrentUserServerPermission(ServerActions.GET_IPS_BLOCKED_FOR_USER_CREATION_ABUSE);
+            isAuthorized = true;
+        }
+        if (isAuthorized) {
+            return securityService.getClientIPBasedTimedLocksForUserCreation();
+        } else {
+            throw new UnauthorizedException("");
+        }
+    }
+
+    @Override
+    public HashMap<String, TimedLock> getClientIPBasedTimedLocksForBearerTokenAbuse() throws UnauthorizedException {
+        final SecurityService securityService = getSecurityService();
+        final User user = securityService.getCurrentUser();
+        boolean isAuthorized = false;
+        for (Role role : user.getRoles()) {
+            if (role.getName().equals(AdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+            if (role.getName().equals(ServerAdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+        };
+        if (!isAuthorized) {
+            // throws UnauthorizedException if fails
+            securityService.checkCurrentUserServerPermission(ServerActions.GET_IPS_BLOCKED_FOR_BEARER_TOKEN_ABUSE);
+            isAuthorized = true;
+        }
+        if (isAuthorized) {
+            return securityService.getClientIPBasedTimedLocksForBearerTokenAbuse();
+        } else {
+            throw new UnauthorizedException("");
+        }
     }
 }

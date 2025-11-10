@@ -141,4 +141,9 @@ public interface UserManagementWriteService extends UserManagementService {
 
     AccessControlListDTO overrideAccessControlList(QualifiedObjectIdentifier idOfAccessControlledObject,
             AccessControlListDTO acl) throws UnauthorizedException, org.apache.shiro.authz.UnauthorizedException;
+    
+    void releaseUserCreationLockOnIp(String ip) throws UnauthorizedException;
+
+    void releaseBearerTokenLockOnIp(String ip) throws UnauthorizedException;
+
 }

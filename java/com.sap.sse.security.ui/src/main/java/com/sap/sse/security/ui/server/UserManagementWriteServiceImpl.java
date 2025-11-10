@@ -23,9 +23,11 @@ import com.sap.sse.common.media.TakedownNoticeRequestContext;
 import com.sap.sse.security.Action;
 import com.sap.sse.security.SecurityService;
 import com.sap.sse.security.shared.HasPermissions.DefaultActions;
+import com.sap.sse.security.shared.AdminRole;
 import com.sap.sse.security.shared.PermissionChecker;
 import com.sap.sse.security.shared.QualifiedObjectIdentifier;
 import com.sap.sse.security.shared.RoleDefinition;
+import com.sap.sse.security.shared.ServerAdminRole;
 import com.sap.sse.security.shared.TypeRelativeObjectIdentifier;
 import com.sap.sse.security.shared.UnauthorizedException;
 import com.sap.sse.security.shared.UserGroupManagementException;
@@ -740,5 +742,59 @@ public class UserManagementWriteServiceImpl extends UserManagementServiceImpl im
     @Override
     public void fileTakedownNotice(TakedownNoticeRequestContext takedownNoticeRequestContext) throws MailException {
         getSecurityService().fileTakedownNotice(takedownNoticeRequestContext);
+    }
+
+    @Override
+    public void releaseUserCreationLockOnIp(String ip) throws UnauthorizedException {
+        final SecurityService securityService = getSecurityService();
+        final User user = securityService.getCurrentUser();
+        boolean isAuthorized = false;
+        for (Role role : user.getRoles()) {
+            if (role.getName().equals(AdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+            if (role.getName().equals(ServerAdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+        };
+        if (!isAuthorized) {
+            // throws UnauthorizedException if fails
+            securityService.checkCurrentUserServerPermission(ServerActions.UNLOCK_IPS_BLOCKED_FOR_USER_CREATION_ABUSE);
+            isAuthorized = true;
+        }
+        if (isAuthorized) {
+            securityService.releaseUserCreationLockOnIp(ip);
+        } else {
+            throw new UnauthorizedException("");
+        }
+    }
+
+    @Override
+    public void releaseBearerTokenLockOnIp(String ip) throws UnauthorizedException {
+        final SecurityService securityService = getSecurityService();
+        final User user = securityService.getCurrentUser();
+        boolean isAuthorized = false;
+        for (Role role : user.getRoles()) {
+            if (role.getName().equals(AdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+            if (role.getName().equals(ServerAdminRole.getInstance().getName())) {
+                isAuthorized = true;
+                break;
+            }
+        };
+        if (!isAuthorized) {
+            // throws UnauthorizedException if fails
+            securityService.checkCurrentUserServerPermission(ServerActions.UNLOCK_IPS_BLOCKED_FOR_BEARER_TOKEN_ABUSE);
+            isAuthorized = true;
+        }
+        if (isAuthorized) {
+            securityService.releaseBearerTokenLockOnIp(ip);
+        } else {
+            throw new UnauthorizedException("");
+        }
     }
 }
