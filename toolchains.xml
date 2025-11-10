@@ -7,6 +7,17 @@
   <toolchain>
       <type>jdk</type>
       <provides>
+            <version>8</version>
+            <id>JavaSE-1.8</id>
+            <vendor>sun</vendor>
+      </provides>
+      <configuration>
+            <jdkHome>/opt/sapjvm_8/jre</jdkHome>
+      </configuration>
+  </toolchain>
+  <toolchain>
+      <type>jdk</type>
+      <provides>
             <version>1.8</version>
             <id>JavaSE-1.8</id>
             <vendor>sun</vendor>

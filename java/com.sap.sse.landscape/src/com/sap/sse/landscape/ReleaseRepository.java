@@ -12,8 +12,8 @@ public interface ReleaseRepository extends Iterable<Release> {
      * @return the latest build with name prefix {@link #MASTER_RELEASE_NAME_PREFIX} if such a release exists in this
      *         repository, or {@code null} otherwise
      */
-    default Release getLatestMasterRelease() {
-        return getLatestRelease(getMasterReleaseNamePrefix());
+    default Release getLatestDefaultRelease() {
+        return getLatestRelease(getDefaultReleaseNamePrefix());
     }
     
     /**
@@ -26,7 +26,5 @@ public interface ReleaseRepository extends Iterable<Release> {
      */
     Release getRelease(String releaseName);
 
-    String getRepositoryBase();
-
-    String getMasterReleaseNamePrefix();
+    String getDefaultReleaseNamePrefix();
 }

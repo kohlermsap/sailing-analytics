@@ -14,33 +14,37 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.sap.sse.common.Util;
 import com.sap.sse.landscape.Release;
-import com.sap.sse.landscape.ReleaseRepository;
 import com.sap.sse.util.HttpUrlConnectionHelper;
 
-public class ReleaseRepositoryImpl implements ReleaseRepository {
-    private static final Logger logger = Logger.getLogger(ReleaseRepositoryImpl.class.getName());
+/**
+ * Assumes a simple folder exposed by a web server, such as Apache httpd, where the "repository base" references the
+ * folder which shows an "index" of the sub-folders in it, so that we can explore it. Each sub-folder is expected to be
+ * named after the corresponding release and must contain the release-notes.txt file (see
+ * {@link Release#RELEASE_NOTES_FILE_NAME}) as well as the .tar.gz file (see {@link Release#ARCHIVE_EXTENSION}) that
+ * represents the actual release file.
+ * 
+ * @author Axel Uhl (d043530)
+ *
+ */
+public class FolderBasedReleaseRepositoryImpl extends AbstractReleaseRepository {
+    private static final Logger logger = Logger.getLogger(FolderBasedReleaseRepositoryImpl.class.getName());
     private final String repositoryBase;
-    
-    private final String masterReleaseNamePrefix;
-    
-    public ReleaseRepositoryImpl(String repositoryBase, String masterReleaseNamePrefix) {
-        super();
+
+    public FolderBasedReleaseRepositoryImpl(String repositoryBase, String defaultReleaseNamePrefix) {
+        super(defaultReleaseNamePrefix);
         this.repositoryBase = repositoryBase;
-        this.masterReleaseNamePrefix = masterReleaseNamePrefix;
     }
 
-    @Override
-    public String getRepositoryBase() {
+    private String getRepositoryBase() {
         return repositoryBase;
     }
 
     @Override
-    public String getMasterReleaseNamePrefix() {
-        return masterReleaseNamePrefix;
+    public Iterator<Release> iterator() {
+        return getAvailableReleases().iterator();
     }
-    
+
     private Iterable<Release> getAvailableReleases() {
         final List<Release> result = new LinkedList<>();
         try {
@@ -57,7 +61,7 @@ public class ReleaseRepositoryImpl implements ReleaseRepository {
             final Matcher m = pattern.matcher(contents);
             int lastMatch = 0;
             while (m.find(lastMatch)) {
-                result.add(new ReleaseImpl(m.group(1), this));
+                result.add(new FolderBasedReleaseImpl(m.group(1), getRepositoryBase()));
                 lastMatch = m.end();
             }
         } catch (IOException e) {
@@ -66,27 +70,4 @@ public class ReleaseRepositoryImpl implements ReleaseRepository {
         }
         return result;
     }
-    
-    @Override
-    public Iterator<Release> iterator() {
-        return getAvailableReleases().iterator();
-    }
-
-    @Override
-    public Release getLatestRelease(String releaseNamePrefix) {
-        Release result = null;
-        for (final Release release : getAvailableReleases()) {
-            if (release.getBaseName().equals(releaseNamePrefix) &&
-                    (result == null || release.getCreationDate().after(result.getCreationDate()))) {
-                result = release;
-            }
-        }
-        return result;
-    }
-
-    @Override
-    public Release getRelease(String releaseName) {
-        return Util.first(Util.filter(getAvailableReleases(), r->r.getName().equals(releaseName)));
-    }
-
 }

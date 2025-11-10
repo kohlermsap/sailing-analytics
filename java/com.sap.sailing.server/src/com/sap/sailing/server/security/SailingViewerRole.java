@@ -11,8 +11,6 @@ import com.sap.sse.security.shared.impl.SecuredSecurityTypes;
  * page and basic analytical frontends.
  */
 public class SailingViewerRole extends RolePrototype {
-    private static final long serialVersionUID = 3291793984984443193L;
-
     private static final SailingViewerRole INSTANCE = new SailingViewerRole();
 
     SailingViewerRole() {

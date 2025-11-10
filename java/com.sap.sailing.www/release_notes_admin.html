@@ -23,6 +23,16 @@
         <div class="mainContent">
           <h2 class="releaseHeadline">Release Notes - Administration Console</h2>
           <div class="innerContent">
+          <h2 class="articleSubheadline">November 2025</h2>
+          <ul class="bulletList">
+                <li>The Landscape Management panel as well as the <tt>refreshInstance.sh</tt> shell script
+                    now use GitHub releases instead of <tt>releases.sapsailing.com</tt> to list and install
+                    latest or specific releases to an environment. In particular, <tt>refreshInstance.sh</tt>
+                    considers the newest 100 releases; the Landscape Management panel can list, select,
+                    and install <em>all</em> releases available. For the time being, and for simplicity,
+                    we decided to not require a GitHub access token, which however will cause a rate limit
+                    of 60 release requests per hour per IP address.</li>
+          </ul>
           <h2 class="articleSubheadline">October 2025</h2>
           <ul class="bulletList">
                 <li>When WindBots sent buffered data, e.g., from previous days, there was a possibility that
