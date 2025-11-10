@@ -10,6 +10,7 @@
 	<!-- <inherits name="com.sap.sailing.gwt.ui.EmulatedJRE" /> -->
 	<inherits name="com.sap.sse.gwt.SSESharedGWT" />
 	<inherits name="com.sap.sse.gwt.AdminConsole" />
+    <inherits name="com.sap.sailing.gwt.ui.AdminConsole" />
     <inherits name="com.sap.sse.SSECommon" />
     <inherits name="com.sap.sse.landscape.common.SSELandscapeCommon"/>
     <inherits name="com.sap.sse.landscape.aws.common.SSELandscapeAWSCommon" />
