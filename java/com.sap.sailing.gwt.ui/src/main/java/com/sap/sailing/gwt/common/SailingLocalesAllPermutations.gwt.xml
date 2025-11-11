@@ -13,8 +13,8 @@
         
         but there can be other i18n bundles.
         
-        the build script switches references to *SinglePermutation* 
-        to *SinglePermutation* in gwt modules with the "-b" option.
+        the build script switches references to *AllPermutations* 
+        to *AllPermutations* in gwt modules with the "-b" option.
                   
     -->
     

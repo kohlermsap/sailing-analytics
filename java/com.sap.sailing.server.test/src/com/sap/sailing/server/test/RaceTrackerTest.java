@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.sap.sailing.domain.base.RaceDefinition;
+import com.sap.sailing.domain.test.AbstractTracTracLiveTest;
 import com.sap.sailing.domain.racelog.impl.EmptyRaceLogStore;
 import com.sap.sailing.domain.regattalog.impl.EmptyRegattaLogStore;
 import com.sap.sailing.domain.tracking.RaceHandle;
@@ -60,9 +61,8 @@ public class RaceTrackerTest {
             liveUri = new URI("tcp://" + TracTracConnectionConstants.HOST_NAME + ":" + TracTracConnectionConstants.PORT_LIVE);
             storedUri = new URI("tcp://" + TracTracConnectionConstants.HOST_NAME + ":" + TracTracConnectionConstants.PORT_STORED);
         }
-        
         courseDesignUpdateUri = new URI("http://tracms.traclive.dk/update_course");
-        tracTracApiToken = "tracTest";
+        tracTracApiToken = AbstractTracTracLiveTest.getTracTracApiToken();
     }
     
     @BeforeEach

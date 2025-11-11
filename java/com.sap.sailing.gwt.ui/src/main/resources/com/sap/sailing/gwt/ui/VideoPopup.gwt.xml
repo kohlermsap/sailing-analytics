@@ -25,7 +25,7 @@
     <entry-point class="com.sap.sailing.gwt.ui.client.media.popup.VideoPopupWindow" />
 
     <!-- module containing locale configuration -->
-    <inherits name='com.sap.sailing.gwt.common.SailingLocalesSinglePermutation' />
+    <inherits name='com.sap.sailing.gwt.common.SailingLocalesAllPermutations' />
     
     <source path='client' />
     <source path='actions'/>

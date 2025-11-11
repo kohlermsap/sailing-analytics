@@ -32,7 +32,7 @@
 	<set-property name="gwt.logging.systemHandler" value="ENABLED" />
 
 	<!-- module containing locale configuration -->
-	<inherits name='com.sap.sailing.gwt.common.SailingLocalesSinglePermutation' />
+	<inherits name='com.sap.sailing.gwt.common.SailingLocalesAllPermutations' />
 
 <!-- 	<inherits name='com.sap.sailing.gwt.ui.SourceActions' /> -->
 	<inherits name='com.sap.sailing.gwt.ui.SourceAdminConsole' />
