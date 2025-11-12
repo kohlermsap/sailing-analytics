@@ -34,21 +34,21 @@ As a reference, review the project:
 
 1. **Create a new web application project**
 
-   * Navigate to `File → New → Create Web Application Project`
+   * Navigate to `Eclipse → File → New → Plug-in Development → Plug-in Project`
    * Place it under the `java` folder in your workspace
+   *  A branding bundle must register its implementation of `BrandingConfiguration` in the **OSGi Service Registry**. So, provide an `Activator` that registers your Branding Service.
 
 2. **Register your bundle**
 
    * Add the new bundle to the following files:
 
      * `raceanalysis.product`
-     * Root `pom.xml` (in the `java` folder)
+     * `pom.xml` in the `git/java` folder
      * `feature.xml` (within `com.sap.sse.feature`)
 
-3. **Consult workspace documentation**
    More information about project and bundle requirements can be found here:
-   `https://wiki.sapsailing.com/wiki/info/landscape/typical-development-scenarios.md#adding-an-osgi-bundle` and
-   `https://wiki.sapsailing.com/wiki/info/general/workspace-bundles-projects-structure.md`
+   [Adding an OSGi bundle](https://wiki.sapsailing.com/wiki/info/landscape/typical-development-scenarios.md#adding-an-osgi-bundle) and
+   [Bundles structure](https://wiki.sapsailing.com/wiki/info/general/workspace-bundles-projects-structure.md)
 
 ---
 
@@ -60,29 +60,12 @@ Create your own configuration class, for example:
 YourBrandNameBrandingConfiguration.java
 ```
 
-This class must **implement** the `BrandingConfiguration` interface (see: `SAPBrandingConfiguration.java`).
+This class must **implement** the `BrandingConfiguration` interface (see: `SAPBrandingConfiguration.java`). All current configuration methods' purpose is explained in the Javadoc on the interface itself: see `java/com.sap.sse.branding/src/com/sap/sse/branding/shared/BrandingConfiguration.java` implementation.
 
 You can override methods to define your custom branding behavior.
-Some methods rely on `sailingServerStringMessages`, which works similarly to message resources.
+Some methods rely on `SailingServerStringMessages`, which works similarly to message resources. Provide English and German (de) messages together for any new text added to branding.
 Localization details can be found here:
-`https://wiki.sapsailing.com/wiki/howto/development/i18n.md`
-
-### Overview of Key Configuration Methods
-
-| Method                                                                                                       | Purpose                                                                                                                                     |
-| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `getId()`                                                                                                    | Returns the brand ID (used in system properties).                                                                                           |
-| `getDefaultBrandingLogoURL()`                                                                                | Main logo (headers, favicon, etc.).                                                                                                         |
-| `getGreyTransparentLogoURL()`                                                                                | Transparent logo used inside the **Race Tracking** tab. |
-| `getBrandTitle()`                                                                                            | Brand display name.                                                                                                                         |
-| `getSolutionsInSailingImageURL()`, `getSailingRaceManagerAppImageURL()`, `getSailInSightAppImageURL()`, etc. | Images shown in the **Solutions** tab.                                                                                                      |
-| Footer getters (e.g., `getFooterCopyright()`, `getFooterLegalLink()`)                                        | Footer links and copyright. Empty values are hidden.                                                                                        |
-| Social getters (e.g., `getSportsOn()`, `getFollowSports()`, `getFacebookLink()`)                             | Social links on the Home page footer. Optional.                                                                                             |
-| `getWelcomeToSailingAnalytics()`, `getWelcomeToSailingAnalyticsBody()`                                       | Welcome widget messages.                                                                                                                    |
-| `getMoreLoginInformationNotificationsURL()`, `getMoreLoginInformationSettingsURL()`, etc.                    | Popup images for “more login information” (you need to log out in order to test it locally).                       |
-| `getInSailingContent()`                                                                                      | HTML/text under “YourBrandName in Sailing” in the **Solutions** tab (HTML allowed).                                                         |
-
----
+[Translation and i18n](https://wiki.sapsailing.com/wiki/howto/development/i18n.md).
 
 ## 4. Adding New Branding Attributes
 
@@ -155,7 +138,11 @@ StringMessages.INSTANCE.actualStringMessage()
 2. **Search for branding**
 
    ```text
-   ss brand
+   osgi> ss brand
+   Framework is active.
+
+   id  State       Bundle
+   108 ACTIVE      com.sap.sse.branding.sap (1.2.3)
    ```
 
 3. **Toggle branding on/off**
@@ -165,7 +152,7 @@ StringMessages.INSTANCE.actualStringMessage()
    stop 108
    ```
 
-   *(ID `108` corresponds to branding.)*
+   *(ID `108` corresponds to branding for this example.)*
 
 4. **Disconnect**
 
