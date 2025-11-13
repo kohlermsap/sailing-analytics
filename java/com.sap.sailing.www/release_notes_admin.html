@@ -23,11 +23,34 @@
         <div class="mainContent">
           <h2 class="releaseHeadline">Release Notes - Administration Console</h2>
           <div class="innerContent">
+          <h2 class="articleSubheadline">November 2025</h2>
+          <ul class="bulletList">
+                <li>The Landscape Management panel as well as the <tt>refreshInstance.sh</tt> shell script
+                    now use GitHub releases instead of <tt>releases.sapsailing.com</tt> to list and install
+                    latest or specific releases to an environment. In particular, <tt>refreshInstance.sh</tt>
+                    considers the newest 100 releases; the Landscape Management panel can list, select,
+                    and install <em>all</em> releases available. For the time being, and for simplicity,
+                    we decided to not require a GitHub access token, which however will cause a rate limit
+                    of 60 release requests per hour per IP address.</li>
+          </ul>
           <h2 class="articleSubheadline">October 2025</h2>
           <ul class="bulletList">
                 <li>When WindBots sent buffered data, e.g., from previous days, there was a possibility that
                     under some circumstances this data may have interfered with live data, leading, e.g.,
                     to "jumping" WindBot positions. This has now been fixed.<p>
+                <li>Upgraded the TracAPI to version 5.0.0. This version now secures access to TracTrac events
+                    with a new authentication and authorization scheme based on API tokens that are used
+                    to authenticate users. TracTrac can then authorize those users for read or read/write
+                    access to specific events. Such API tokens can be obtained from the new version of
+                    the TracTrac event manager.<p>
+                    The API token also replaces the username/password authentication scheme for the update
+                    back channel from which TracTrac can optionally receive updates coming from the Race
+                    Manager app, such as race start times, race aborts, or course configurations.<p>
+                    Use the new "Test Connection" button in the dialog for editing TracTrac connections
+                    to check your token's validity. If you see permission "rest_api" in the response, you're good
+                    for reading/receiving data. If you also see permission "rest_api_write" then you can also update
+                    the event through the API, e.g., through update handlers that send race start times
+                    and course updates.</li>
                 <li>For the following system properties, alternative environment variables have been introduced:
                     <ul>
                         <li><tt>AWS_S3_TEST_S3ACCESSID</tt> for <tt>aws.s3.test.s3AccessId</tt></li>

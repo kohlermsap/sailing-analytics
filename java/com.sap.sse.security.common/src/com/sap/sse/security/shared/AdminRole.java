@@ -1,7 +1,6 @@
 package com.sap.sse.security.shared;
 
 public class AdminRole extends RolePrototype {
-    private static final long serialVersionUID = 3291793984984443193L;
     
     private static final AdminRole INSTANCE = new AdminRole();
     private static final String UUID_STRING = "dc77e3d1-d405-435e-8699-ce7245f6fd7a";

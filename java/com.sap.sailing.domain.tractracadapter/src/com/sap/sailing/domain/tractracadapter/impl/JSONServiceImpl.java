@@ -18,17 +18,18 @@ import org.json.simple.parser.JSONParser;
 
 import com.sap.sailing.domain.tractracadapter.JSONService;
 import com.sap.sailing.domain.tractracadapter.RaceRecord;
+import com.sap.sse.common.Util;
 import com.sap.sse.util.HttpUrlConnectionHelper;
 
 public class JSONServiceImpl implements JSONService {
     private final String regattaName;
     private final List<RaceRecord> raceRecords;
     
-    public JSONServiceImpl(URL jsonURL, boolean loadLiveAndStoredURI) throws IOException, ParseException, org.json.simple.parser.ParseException, URISyntaxException {
-        this(jsonURL, /* race ID == null means load all race records */ null, loadLiveAndStoredURI);
+    public JSONServiceImpl(URL jsonURL, boolean loadLiveAndStoredURI, String tracTracApiToken) throws IOException, ParseException, org.json.simple.parser.ParseException, URISyntaxException {
+        this(jsonURL, /* race ID == null means load all race records */ null, loadLiveAndStoredURI, tracTracApiToken);
     }
 
-    private RaceRecord createRaceRecord(URL jsonURL, boolean loadLiveAndStoredURI, JSONObject jsonRaceEntry, String defaultUpdateURI)
+    private RaceRecord createRaceRecord(URL jsonURL, boolean loadLiveAndStoredURI, JSONObject jsonRaceEntry, String defaultUpdateURI, String tracTracApiToken)
             throws URISyntaxException, IOException {
         RaceRecord raceRecord = new RaceRecord(jsonURL, regattaName,
                 (String) jsonRaceEntry.get("name"), (String) jsonRaceEntry.get("url_html"),
@@ -41,7 +42,7 @@ public class JSONServiceImpl implements JSONService {
                 (String) jsonRaceEntry.get("status"), 
                 (String) jsonRaceEntry.get("visibility"), 
                 Boolean.valueOf((Boolean) jsonRaceEntry.get("has_replay")),
-                /*loadLiveAndStoreURI*/ loadLiveAndStoredURI, defaultUpdateURI);
+                /*loadLiveAndStoreURI*/ loadLiveAndStoredURI, defaultUpdateURI, tracTracApiToken);
         return raceRecord;
     }
     
@@ -50,8 +51,11 @@ public class JSONServiceImpl implements JSONService {
      *            if {@code null}, add all races found to the {@link #raceRecords}; otherwise, add only the race whose
      *            ID matches
      */
-    public JSONServiceImpl(URL jsonURL, String raceEntryId, boolean loadLiveAndStoredURI) throws IOException, ParseException, org.json.simple.parser.ParseException, URISyntaxException {
+    public JSONServiceImpl(URL jsonURL, String raceEntryId, boolean loadLiveAndStoredURI, String tracTracApiToken) throws IOException, ParseException, org.json.simple.parser.ParseException, URISyntaxException {
         final URLConnection connection = jsonURL.openConnection();
+        if (Util.hasLength(tracTracApiToken)) {
+            connection.setRequestProperty("Authorization", "Bearer "+tracTracApiToken);
+        }
         final Charset charset = HttpUrlConnectionHelper.getCharsetFromConnectionOrDefault(connection, "UTF-8");
         JSONObject jsonObject = parseJSONObject(connection.getInputStream(), charset);
         raceRecords = new ArrayList<RaceRecord>();
@@ -60,7 +64,7 @@ public class JSONServiceImpl implements JSONService {
         for (Object raceEntry : (JSONArray) jsonObject.get("races")) {
             JSONObject jsonRaceEntry = (JSONObject) raceEntry;
             if (raceEntryId == null || jsonRaceEntry.get("id").equals(raceEntryId)) {
-                RaceRecord raceRecord = createRaceRecord(jsonURL, loadLiveAndStoredURI, jsonRaceEntry, defaultUpdateURI);
+                RaceRecord raceRecord = createRaceRecord(jsonURL, loadLiveAndStoredURI, jsonRaceEntry, defaultUpdateURI, tracTracApiToken);
                 raceRecords.add(raceRecord);
             }
         }

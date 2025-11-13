@@ -23,7 +23,7 @@
         <entry-point class='com.sap.sailing.gwt.ui.raceboard.EmbeddedMapAndWindChartEntryPoint'/>
     
     <!-- module containing locale configuration -->
-    <inherits name='com.sap.sailing.gwt.common.SailingLocalesSinglePermutation' />
+    <inherits name='com.sap.sailing.gwt.common.SailingLocalesAllPermutations' />
 
     <inherits name='com.sap.sailing.gwt.ui.SourceCommon' />
     <inherits name='com.sap.sailing.gwt.ui.SourceClient' />

@@ -10,7 +10,6 @@ import com.sap.sse.security.shared.impl.SecuredSecurityTypes;
  * Specifies a role that when associated to a user gives access to the date mining functionality on archive server.
  */
 public class ArchiveDataMiningRole extends RolePrototype {
-    private static final long serialVersionUID = 6671501683896115261L;
     private static final UUID ROLE_ID = UUID.fromString("f2993a7a-c08d-11ec-9d64-0242ac120002");
     private static final ArchiveDataMiningRole INSTANCE = new ArchiveDataMiningRole();
 

@@ -18,7 +18,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.sap.sse.InvalidDateException;
+import com.sap.sse.common.Duration;
 import com.sap.sse.common.TimePoint;
+import com.sap.sse.common.Util;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
 import com.sap.sse.util.DateParser;
 import com.sap.sse.util.HttpUrlConnectionHelper;
@@ -49,7 +51,7 @@ public class RaceRecord {
     public RaceRecord(URL jsonURL, String regattaName, String name, String replayURL, String paramURLAsString,
             String ID, String trackingstarttime, String trackingendtime, String racestarttime,
             String commaSeparatedBoatClassNames, String status, String visibility, boolean hasReplay, boolean loadLiveAndStoredURI,
-            String defaultUpdateURI)
+            String defaultUpdateURI, String tracTracApiToken)
             throws URISyntaxException, IOException {
         super();
         this.regattaName = regattaName;
@@ -109,7 +111,7 @@ public class RaceRecord {
             throw e;
         }
         if (loadLiveAndStoredURI) {
-            Map<String, String> paramURLContents = parseParams(paramURL);
+            Map<String, String> paramURLContents = parseParams(paramURL, tracTracApiToken);
             String liveURIAsString = paramURLContents.get(LIVE_URI_PROPERTY);
             liveURI = liveURIAsString == null ? null : new URI(liveURIAsString);
             String storedURIAsString = paramURLContents.get(STORED_URI_PROPERTY);
@@ -142,10 +144,17 @@ public class RaceRecord {
         return technicalEventName;
     }
     
-    private Map<String, String> parseParams(URL paramURL) throws IOException {
+    private Map<String, String> parseParams(URL paramURL, String tracTracApiToken) throws IOException {
         Map<String, String> result = new HashMap<String, String>();
         Pattern pattern = Pattern.compile("^([^:]*):(.*)$");
-        final URLConnection connection = HttpUrlConnectionHelper.redirectConnection(paramURL);
+        final URLConnection connection = HttpUrlConnectionHelper.redirectConnection(paramURL,
+                /* timeout */ Duration.ONE_MINUTE,
+                /* pre-connection modifier adds authorization header: */
+                c -> {
+                         if (Util.hasLength(tracTracApiToken)) {
+                             c.setRequestProperty("Authorization", "Bearer "+tracTracApiToken);
+                         }
+                     });
         final Charset charset = HttpUrlConnectionHelper.getCharsetFromConnectionOrDefault(connection, "UTF-8");
         BufferedReader r = new BufferedReader(new InputStreamReader(connection.getInputStream(), charset));
         String line;

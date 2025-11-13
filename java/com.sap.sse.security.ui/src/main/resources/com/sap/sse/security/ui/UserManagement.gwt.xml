@@ -12,7 +12,7 @@
   
   <inherits name="com.google.gwt.resources.Resources" />
   
-  <inherits name="com.sap.sse.security.ui.SecurityLocalesSinglePermutation" />
+  <inherits name="com.sap.sse.security.ui.SecurityLocalesAllPermutations" />
   <inherits name="com.sap.sse.security.ui.LoginPanel"/>
   
   <!-- Specify the paths for translatable code                    -->

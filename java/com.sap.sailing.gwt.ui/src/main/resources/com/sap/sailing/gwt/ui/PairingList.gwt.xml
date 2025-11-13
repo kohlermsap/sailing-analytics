@@ -24,7 +24,7 @@
     <entry-point class='com.sap.sailing.gwt.ui.pairinglist.PairingListEntryPoint' />
 
     <!-- module containing locale configuration -->
-    <inherits name='com.sap.sailing.gwt.common.SailingLocalesSinglePermutation' />
+    <inherits name='com.sap.sailing.gwt.common.SailingLocalesAllPermutations' />
 
     <inherits name='com.sap.sailing.gwt.ui.SourceLeaderboard' />
     <inherits name='com.sap.sailing.gwt.ui.SourceCommon' />

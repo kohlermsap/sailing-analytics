@@ -12,6 +12,7 @@
 	<inherits name="com.sap.sse.datamining.DataMiningAnnotations" />
 	
 	<source path="ui/client"/>
-        <source path="ui/images"/>	
+    <source path="ui/images"/>  
+    <source path="ui/svg"/>  
 	
 </module>

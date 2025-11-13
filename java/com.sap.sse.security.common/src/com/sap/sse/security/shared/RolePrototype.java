@@ -4,13 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import com.sap.sse.common.NamedWithID;
 import com.sap.sse.common.Util;
+import com.sap.sse.common.WithID;
 
-public abstract class RolePrototype implements NamedWithID {
-
-    private static final long serialVersionUID = -3911998376131317304L;
-    
+public abstract class RolePrototype implements WithID {
     /*
      * Might be used in Stringmessages to identify SubscriptionplanRoles. Do check and validate before changing.
      */
@@ -40,7 +37,7 @@ public abstract class RolePrototype implements NamedWithID {
         }
     }
 
-    @Override
+//    @Override
     public String getName() {
         return name;
     }

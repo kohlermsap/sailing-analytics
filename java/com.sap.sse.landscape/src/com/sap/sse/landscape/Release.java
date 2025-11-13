@@ -1,9 +1,13 @@
 package com.sap.sse.landscape;
 
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.sap.sse.common.Named;
 import com.sap.sse.common.TimePoint;
@@ -15,26 +19,30 @@ import com.sap.sse.common.TimePoint;
  *
  */
 public interface Release extends UserDataProvider, Named {
+    Logger logger = Logger.getLogger(Release.class.getName());
+
     String RELEASE_NOTES_FILE_NAME = "release-notes.txt";
     String ARCHIVE_EXTENSION = ".tar.gz";
     
-    ReleaseRepository getRepository();
-    
-    String getBaseName();
-    
-    TimePoint getCreationDate();
-    
-    default String getFolderURL() {
-        return getRepository().getRepositoryBase()+"/"+getName()+"/";
+    default String getBaseName() {
+        return getName().substring(0, getName().lastIndexOf("-"));
     }
-    
-    default URL getReleaseNotesURL() throws MalformedURLException {
-        return new URL(getFolderURL()+RELEASE_NOTES_FILE_NAME);
+
+    default TimePoint getCreationDate() {
+        final String dateSubstring = getName().substring(getName().lastIndexOf("-")+1);
+        try {
+            final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmm");
+            simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+            return TimePoint.of(simpleDateFormat.parse(dateSubstring));
+        } catch (ParseException e) {
+            logger.log(Level.WARNING, "Error parsing release date "+dateSubstring+". Returning null instead.", e);
+            return null;
+        }
     }
+
+    URL getReleaseNotesURL();
     
-    default URL getDeployableArchiveURL() throws MalformedURLException {
-        return new URL(getFolderURL()+getName()+ARCHIVE_EXTENSION);
-    }
+    URL getDeployableArchiveURL();
     
     @Override
     default Map<ProcessConfigurationVariable, String> getUserData() {

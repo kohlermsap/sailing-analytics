@@ -1,1 +1,1 @@
-15 12 * * * export PATH=/bin:/usr/bin:/usr/local/bin; downloadNewArchivedTracTracEvents.sh /home/trac/static/TracTracTracks "/home/wiki/gitwiki" >/home/wiki/downloadNewArchivedTracTracEvents.out 2>/home/wiki/downloadNewArchivedTracTracEvents.err
+15 12 * * * export PATH=/bin:/usr/bin:/usr/local/bin; . /home/wiki/secrets; export TRACTRAC_API_TOKEN; downloadNewArchivedTracTracEvents.sh /home/trac/static/TracTracTracks "/home/wiki/gitwiki" >/home/wiki/downloadNewArchivedTracTracEvents.out 2>/home/wiki/downloadNewArchivedTracTracEvents.err

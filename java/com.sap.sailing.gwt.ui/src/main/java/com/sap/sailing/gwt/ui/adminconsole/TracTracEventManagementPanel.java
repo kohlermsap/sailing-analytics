@@ -133,8 +133,7 @@ public class TracTracEventManagementPanel extends AbstractEventManagementPanel i
                                         editedConnection.getJsonUrl(), editedConnection.getLiveDataURI(),
                                         editedConnection.getStoredDataURI(),
                                         editedConnection.getUpdateURI(),
-                                        editedConnection.getTracTracUsername(), editedConnection.getTracTracPassword(),
-                                        new MarkedAsyncCallback<Void>(new AsyncCallback<Void>() {
+                                        editedConnection.getTracTracApiToken(), new MarkedAsyncCallback<Void>(new AsyncCallback<Void>() {
                                             @Override
                                             public void onFailure(Throwable caught) {
                                                 reportError("Exception trying to create configuration in DB: "
@@ -450,6 +449,7 @@ public class TracTracEventManagementPanel extends AbstractEventManagementPanel i
         if (selectedConnections.size() == 1) {
             TracTracConfigurationWithSecurityDTO selectedConnection = selectedConnections.iterator().next();
             sailingService.listTracTracRacesInEvent(selectedConnection.getJsonUrl(), listHiddenRaces,
+                    selectedConnection.getTracTracApiToken(),
                     new MarkedAsyncCallback<com.sap.sse.common.Util.Pair<String, List<TracTracRaceRecordDTO>>>(
                 new AsyncCallback<com.sap.sse.common.Util.Pair<String, List<TracTracRaceRecordDTO>>>() {
                     @Override

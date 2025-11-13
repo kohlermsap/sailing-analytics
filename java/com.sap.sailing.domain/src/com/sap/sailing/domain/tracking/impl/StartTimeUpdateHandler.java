@@ -46,10 +46,10 @@ public class StartTimeUpdateHandler extends UpdateHandler implements StartTimeCh
 
     private final RaceAbortedHandler raceAbortedHandler;
     
-    public StartTimeUpdateHandler(URI updateURI, String username, String password,
+    public StartTimeUpdateHandler(URI updateURI, String tracTracApiToken,
             Serializable tracTracEventId, Serializable raceId, Regatta regatta) {
-        super(updateURI, ACTION, username, password, tracTracEventId, raceId);
-        this.raceAbortedHandler = new RaceAbortedHandler(updateURI, username, password, tracTracEventId, raceId);
+        super(updateURI, ACTION, tracTracApiToken, tracTracEventId, raceId);
+        this.raceAbortedHandler = new RaceAbortedHandler(updateURI,tracTracApiToken, tracTracEventId, raceId);
         this.regatta = regatta;
     }
 
@@ -67,7 +67,6 @@ public class StartTimeUpdateHandler extends UpdateHandler implements StartTimeCh
                 HashMap<String, String> additionalParameters = new HashMap<String, String>();
                 additionalParameters.put(FIELD_RACE_START_TIME, String.valueOf(newStartTime.asMillis()));
                 URL startTimeUpdateURL = buildUpdateURL(additionalParameters);
-                
                 logger.info("Using " + eraseSecurityRelatedValuesFromURL(startTimeUpdateURL.toString()) + " for the start time update!");
                 HttpURLConnection connection = (HttpURLConnection) startTimeUpdateURL.openConnection();
                 try {
