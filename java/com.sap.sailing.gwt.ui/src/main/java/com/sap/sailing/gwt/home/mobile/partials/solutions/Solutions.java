@@ -68,6 +68,18 @@ public class Solutions extends Composite {
             sailingBuoyPinger.setImageUrl(ClientConfiguration.getInstance().getBuoyPingerAppImageURL());
             strategySimulator.setImageUrl(ClientConfiguration.getInstance().getSailingSimulatorTrimmedImageURL());
             sailingAnalyticsDetailsAnchor.setInnerText(ClientConfiguration.getInstance().getSailingAnalyticsReadMoreText(Optional.empty()));
+        } else {
+            brandInSailingItem.setVisible(false);
+            sailingAnalyticsItem.setHeaderText(i18n.sailingAnalyticsTitle(""));
+            sailingRaceManager.setHeaderText(i18n.sailingRaceManager(""));
+            sailInSight.setHeaderText(i18n.sailInSightName());
+            sailingBuoyPinger.setHeaderText(i18n.sailingBuoyPinger(""));
+
+            contentSailingAnalytics1.setInnerText(i18n.contentSailingAnalytics1(""));
+            contentSailingAnalytics2.setInnerText(i18n.contentSailingAnalytics2(""));
+            contentSailingRaceManager.setInnerText(i18n.contentSailingRaceManager(""));
+            contentSailInSight.setInnerText(i18n.contentSailInSight(""));
+            contentSailingBuoyPinger.setInnerText(i18n.contentSailingBuoyPinger(""));
         }
         initWhatsNewLink(placesNavigator, WhatsNewNavigationTabs.SailingAnalytics, sailingAnalyticsDetailsAnchor);
         initWhatsNewLink(placesNavigator, WhatsNewNavigationTabs.RaceManagerApp, raceManagerAppDetailsAnchor);

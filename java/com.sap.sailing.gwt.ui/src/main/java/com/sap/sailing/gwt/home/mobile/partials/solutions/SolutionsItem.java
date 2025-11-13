@@ -7,7 +7,7 @@ import com.sap.sailing.gwt.home.mobile.partials.accordion.AccordionItem;
 public class SolutionsItem extends AccordionItem {
 
     @UiConstructor
-    public SolutionsItem(String title, boolean showInitial) {
-        super(title, /* image URL to be set through setImageUrl */ (ImageResource) null, title, showInitial);
+    public SolutionsItem(String title, ImageResource image, boolean showInitial) {
+        super(title, image, title, showInitial);
     }
 }

@@ -70,10 +70,5 @@ public class LoginHintContent extends Composite {
                 }
             }
         });
-
-        if (!ClientConfiguration.getInstance().isBrandingActive()) {
-            moreInfo.getElement().getStyle().setDisplay(Display.NONE);
-        }
-
     }
 }

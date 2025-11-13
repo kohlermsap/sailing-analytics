@@ -28,6 +28,7 @@ import com.sap.sailing.gwt.ui.client.StringMessages;
 import com.sap.sse.gwt.shared.ClientConfiguration;
 import com.google.gwt.dom.client.HeadingElement;
 import com.google.gwt.dom.client.ParagraphElement;
+import com.google.gwt.dom.client.Style.Display;
 
 public class Solutions extends Composite {
     interface SolutionsUiBinder extends UiBinder<Widget, Solutions> {
@@ -126,6 +127,25 @@ public class Solutions extends Composite {
             simulatorDivAlternator.getStyle().setBackgroundImage("url(\'"+ClientConfiguration.getInstance().getSailingSimulatorImageURL()+"\')");
             raceDivGridAlternator.getStyle().setBackgroundImage("url(\'"+ClientConfiguration.getInstance().getSailingRaceManagerAppImageURL()+"\')");
             buoyPingerDivAlternator.getStyle().setBackgroundImage("url(\'"+ClientConfiguration.getInstance().getBuoyPingerAppImageURL()+"\')");
+        } else {
+            inSailingAnchor.setVisible(false);
+            sailingAnalyticsAnchor.setText(i18n.solutionsAnalyticsHeadline(""));
+            raceAnchor.setText(i18n.solutionsRaceHeadline(""));
+            inSightAnchor.setText(i18n.sailInSightName());
+            buoyPingerAnchor.setText(i18n.solutionsBuoyPingerHeadline(""));
+            
+            
+            inSailingDiv.getStyle().setDisplay(Display.NONE);
+            sailingAnalyticsTitleHeader.setInnerText(i18n.sailingAnalyticsTitle(""));
+            contentSailingAnalytics1.setInnerText(i18n.contentSailingAnalytics1(""));
+            contentSailingAnalytics2.setInnerText(i18n.contentSailingAnalytics2(""));
+            sailingRaceManagerHeader.setInnerText(i18n.sailingRaceManager(""));
+            contentSailingRaceManager.setInnerText(i18n.contentSailingRaceManager(""));
+            sailInSightHeader.setInnerText(i18n.sailInSightName());
+            contentSailInSight.setInnerText(i18n.contentSailInSight(""));
+            sailingBuoyPingerHeader.setInnerText(i18n.sailingBuoyPinger(""));
+            contentSailingBuoyPinger.setInnerText(i18n.contentSailingBuoyPinger(""));
+            
         }
         sailingAnalyticsDetailsNavigation = placesNavigator.getWhatsNewNavigation(WhatsNewNavigationTabs.SailingAnalytics);
         raceCommitteeAppDetailsNavigation =  placesNavigator.getWhatsNewNavigation(WhatsNewNavigationTabs.RaceManagerApp);

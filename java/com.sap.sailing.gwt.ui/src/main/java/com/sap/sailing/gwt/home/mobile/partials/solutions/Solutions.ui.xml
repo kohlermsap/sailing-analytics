@@ -5,9 +5,10 @@
         xmlns:sb="urn:import:com.sap.sailing.gwt.home.shared.partials.storebadges">
     <ui:with field="i18n" type="com.sap.sailing.gwt.ui.client.StringMessages" />
     <ui:with field="res" type="com.sap.sailing.gwt.common.client.SharedResources" />
+    <ui:with field="res_local" type="com.sap.sailing.gwt.home.mobile.partials.solutions.SolutionsResources" />
     <a:Accordion>
         <a:item>
-            <s:SolutionsItem ui:field="brandInSailingItem" title="" showInitial="true">
+            <s:SolutionsItem ui:field="brandInSailingItem" image="{res_local.solutionsImage}" title="" showInitial="true">
                 <s:content>
                     <g:HTMLPanel>
                     <div ui:field="inSailingContentDiv"></div>
@@ -16,19 +17,20 @@
             </s:SolutionsItem>
         </a:item>
         <a:item>
-            <s:SolutionsItem ui:field="sailingAnalyticsItem" title="" showInitial="false">
+            <s:SolutionsItem ui:field="sailingAnalyticsItem" title="" image="{res_local.solutionsImage}" showInitial="false">
                 <s:content>
                     <g:HTMLPanel>
                         <p ui:field="contentSailingAnalytics1" />
                         <p ui:field="contentSailingAnalytics2" />
                         <a class="{res.mainCss.button}" ui:field="sailingAnalyticsDetailsAnchor">
+                            <ui:text from="{i18n.sailingRaceManagerReadMore}"/>
                         </a>
                     </g:HTMLPanel>
                 </s:content>
             </s:SolutionsItem>
         </a:item>
         <a:item>
-            <s:SolutionsItem ui:field="sailingRaceManager" title="" showInitial="false">
+            <s:SolutionsItem ui:field="sailingRaceManager" title="" image="{res_local.raceManagerImage}" showInitial="false">
                 <s:content>
                     <g:HTMLPanel>
                         <p ui:field="contentSailingRaceManager" />
@@ -41,7 +43,7 @@
             </s:SolutionsItem>
         </a:item>
         <a:item>
-            <s:SolutionsItem ui:field="sailInSight" title="" showInitial="false">
+            <s:SolutionsItem ui:field="sailInSight" title="" image="{res_local.sailingInsightImage}" showInitial="false">
                 <s:content>
                     <g:HTMLPanel>
                         <p ui:field="contentSailInSight" />
@@ -55,7 +57,7 @@
             </s:SolutionsItem>
         </a:item>
         <a:item>
-            <s:SolutionsItem ui:field="sailingBuoyPinger" title="" showInitial="false">
+            <s:SolutionsItem ui:field="sailingBuoyPinger" title="" image="{res_local.buoyPingerImage}" showInitial="false">
                 <s:content>
                     <g:HTMLPanel>
                         <p ui:field="contentSailingBuoyPinger" />
@@ -68,7 +70,7 @@
             </s:SolutionsItem>
         </a:item>
         <a:item>
-            <s:SolutionsItem ui:field="strategySimulator" title="{i18n.strategySimulator}" showInitial="false">
+            <s:SolutionsItem ui:field="strategySimulator" title="{i18n.strategySimulator}" image="{res_local.simulatorImage}" showInitial="false">
                 <s:content>
                     <g:HTMLPanel>
                         <p>

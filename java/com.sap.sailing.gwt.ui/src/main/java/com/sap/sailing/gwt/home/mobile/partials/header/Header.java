@@ -67,10 +67,8 @@ public class Header extends Composite implements HeaderConstants {
         navigationPathDisplay = new DropdownNavigationPathDisplay();
         addNavigation(placeNavigator.getHomeNavigation(), StringMessages.INSTANCE.home());
         addNavigation(placeNavigator.getEventsNavigation(), StringMessages.INSTANCE.events());
-        if (ClientConfiguration.getInstance().isBrandingActive()) {
-            addNavigation(placeNavigator.getSolutionsNavigation(SolutionsNavigationTabs.SailingAnalytics),
-                    StringMessages.INSTANCE.solutions());
-        }
+        addNavigation(placeNavigator.getSolutionsNavigation(SolutionsNavigationTabs.SailingAnalytics),
+                StringMessages.INSTANCE.solutions());
         addNavigation(placeNavigator.getSubscriptionsNavigation(),
                 StringMessages.INSTANCE.subscriptions());
         HeaderNavigationItem manageEventsNavItem = addNavigation(ADMIN_CONSOLE_PATH,
