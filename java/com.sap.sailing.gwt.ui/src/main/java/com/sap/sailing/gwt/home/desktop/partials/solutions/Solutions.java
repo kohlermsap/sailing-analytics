@@ -117,7 +117,7 @@ public class Solutions extends Composite {
             sailingRaceManagerHeader.setInnerText(i18n.sailingRaceManager(brandName));
             contentSailingRaceManager.setInnerText(i18n.contentSailingRaceManager(brandName));
             sailInSightHeader.setInnerText(i18n.sailInSight(brandName));
-            contentSailInSight.setInnerText(i18n.contentSailInSight(brandName));
+            contentSailInSight.setInnerText(i18n.contentSailInSight(i18n.solutionsInSightHeadline(brandName)));
             sailingBuoyPingerHeader.setInnerText(i18n.sailingBuoyPinger(brandName));
             contentSailingBuoyPinger.setInnerText(i18n.contentSailingBuoyPinger(brandName));
             
@@ -142,7 +142,7 @@ public class Solutions extends Composite {
             sailingRaceManagerHeader.setInnerText(i18n.sailingRaceManager(""));
             contentSailingRaceManager.setInnerText(i18n.contentSailingRaceManager(""));
             sailInSightHeader.setInnerText(i18n.sailInSightName());
-            contentSailInSight.setInnerText(i18n.contentSailInSight(""));
+            contentSailInSight.setInnerText(i18n.contentSailInSight(i18n.sailInSightName()));
             sailingBuoyPingerHeader.setInnerText(i18n.sailingBuoyPinger(""));
             contentSailingBuoyPinger.setInnerText(i18n.contentSailingBuoyPinger(""));
             

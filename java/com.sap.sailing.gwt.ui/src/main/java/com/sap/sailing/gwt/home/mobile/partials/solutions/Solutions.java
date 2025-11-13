@@ -58,7 +58,7 @@ public class Solutions extends Composite {
             contentSailingAnalytics1.setInnerText(i18n.contentSailingAnalytics1(brandName));
             contentSailingAnalytics2.setInnerText(i18n.contentSailingAnalytics2(brandName));
             contentSailingRaceManager.setInnerText(i18n.contentSailingRaceManager(brandName));
-            contentSailInSight.setInnerText(i18n.contentSailInSight(brandName));
+            contentSailInSight.setInnerText(i18n.contentSailInSight(i18n.solutionsInSightHeadline(brandName)));
             contentSailingBuoyPinger.setInnerText(i18n.contentSailingBuoyPinger(brandName));
             
             brandInSailingItem.setImageUrl(ClientConfiguration.getInstance().getSolutionsInSailingImageURL());
@@ -78,7 +78,7 @@ public class Solutions extends Composite {
             contentSailingAnalytics1.setInnerText(i18n.contentSailingAnalytics1(""));
             contentSailingAnalytics2.setInnerText(i18n.contentSailingAnalytics2(""));
             contentSailingRaceManager.setInnerText(i18n.contentSailingRaceManager(""));
-            contentSailInSight.setInnerText(i18n.contentSailInSight(""));
+            contentSailInSight.setInnerText(i18n.contentSailInSight(i18n.sailInSightName()));
             contentSailingBuoyPinger.setInnerText(i18n.contentSailingBuoyPinger(""));
         }
         initWhatsNewLink(placesNavigator, WhatsNewNavigationTabs.SailingAnalytics, sailingAnalyticsDetailsAnchor);
