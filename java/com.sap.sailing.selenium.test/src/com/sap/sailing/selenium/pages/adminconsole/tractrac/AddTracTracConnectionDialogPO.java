@@ -18,6 +18,9 @@ public class AddTracTracConnectionDialogPO extends DataEntryDialogPO {
     
     @FindBy(how = BySeleniumId.class, using = "JsonURLTextBox")
     private WebElement jsonURLTextBox;
+    
+    @FindBy(how = BySeleniumId.class, using = "TracTracApiTokenTextBox")
+    private WebElement tracTracApiTokenTextBox;
 
     protected AddTracTracConnectionDialogPO(WebDriver driver, WebElement element) {
         super(driver, element);
@@ -26,5 +29,10 @@ public class AddTracTracConnectionDialogPO extends DataEntryDialogPO {
     public void setJsonUrl(String jsonUrl) {
         jsonURLTextBox.clear();
         jsonURLTextBox.sendKeys(jsonUrl);
+    }
+    
+    public void setTracTracApiToken(String tracTracApiToken) {
+        tracTracApiTokenTextBox.clear();
+        tracTracApiTokenTextBox.sendKeys(tracTracApiToken);
     }
 }

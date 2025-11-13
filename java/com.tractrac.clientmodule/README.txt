@@ -16,10 +16,50 @@ It contains also some files:
  - Manifest.txt -> manifest used to create the test.jar file
 
 ********************************************
+        TracAPI 5.0.2
+********************************************
+This is a final version. It keeps the backward compatibility.
+
+  Release date: 11/11/2025
+
+ 1) Bugs
+
+ - The Java HTTP client’s automatic redirection did not preserve authentication headers. We now handle HTTP redirects
+ manually to ensure that the headers are retained during redirection. (Reported by Axel Uhl, 10/11/2025)
+
+********************************************
+        TracAPI 5.0.1
+********************************************
+This is a final version. It keeps the backward compatibility.
+
+  Release date: 29/10/2025
+
+ 1) Bugs
+
+ - The library was not compatible with Java 8 (Reported by Axel Uhl, 28/10/2025)
+
+********************************************
+        TracAPI 5.0.0
+********************************************
+This is the final version. It adds authentication to the backend and it is not compatible with versions 4.x.x.
+
+This version introduces authentication to access TracTrac data in the backend. From now on, all resources require
+authentication using API tokens, which can be generated through the TracTrac Event Manager.
+
+This release is not compatible with versions 4.x.x, as it introduces breaking changes to the API.
+
+Breaking Changes from Version 4.x.x
+
+- com.tractrac.model.lib.api.event.IEventFactory: added a new first parameter apiToken to all methods.
+- com.tractrac.subscription.lib.api.ISubscriberFactory:added a new first parameter apiToken to all methods.
+
+  Release date: 23/10/2025
+
+********************************************
         TracAPI 4.0.4
 ********************************************
-This is the final version. It keeps the backward compatibility. This version has been compiled with
-Java 21 but the target compatibility continues being Java 8.
+This is the final version. It keeps the backward compatibility. It was compiled with Java 21, but the target
+compatibility is still Java 8
 
   Release date: 01/10/2025
 

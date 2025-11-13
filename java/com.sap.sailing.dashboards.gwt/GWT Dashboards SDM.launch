@@ -51,6 +51,7 @@
     </listAttribute>
     <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="com.gwtplugins.gwt.eclipse.core.moduleClasspathProvider"/>
     <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
+    <stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17/"/>
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.google.gwt.dev.DevMode"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="com.sap.sailing.dashboards.gwt"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-style PRETTY -logLevel INFO -noserver -incremental -war &quot;${project_loc:com.sap.sailing.dashboards.gwt}&quot; -remoteUI &quot;${gwt_remote_ui_server_port}:${unique_id}&quot; -codeServerPort 9875 -startupUrl /dashboards/RibDashboard.html com.sap.sailing.dashboards.gwt.RibDashboard"/>

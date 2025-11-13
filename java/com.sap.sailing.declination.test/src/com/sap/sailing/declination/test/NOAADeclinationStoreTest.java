@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Disabled;
 
 import com.sap.sailing.declination.impl.NOAAImporter;
 
-@Disabled("US Government Shutdown around 2025-10-01")
 public class NOAADeclinationStoreTest extends DeclinationStoreTest<NOAAImporter> {
     @Override
     @BeforeEach

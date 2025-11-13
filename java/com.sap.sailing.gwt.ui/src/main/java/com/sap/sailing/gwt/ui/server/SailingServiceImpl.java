@@ -1292,9 +1292,9 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
     }
 
     @Override
-    public com.sap.sse.common.Util.Pair<String, List<TracTracRaceRecordDTO>> listTracTracRacesInEvent(String eventJsonURL, boolean listHiddenRaces) throws MalformedURLException, IOException, ParseException, org.json.simple.parser.ParseException, URISyntaxException {
+    public com.sap.sse.common.Util.Pair<String, List<TracTracRaceRecordDTO>> listTracTracRacesInEvent(String eventJsonURL, boolean listHiddenRaces, String tracTracApiToken) throws MalformedURLException, IOException, ParseException, org.json.simple.parser.ParseException, URISyntaxException {
         com.sap.sse.common.Util.Pair<String,List<RaceRecord>> raceRecords;
-        raceRecords = getTracTracAdapter().getTracTracRaceRecords(new URL(eventJsonURL), /*loadClientParam*/ false);
+        raceRecords = getTracTracAdapter().getTracTracRaceRecords(new URL(eventJsonURL), /*loadClientParam*/ false, tracTracApiToken);
         List<TracTracRaceRecordDTO> result = new ArrayList<TracTracRaceRecordDTO>();
         for (RaceRecord raceRecord : raceRecords.getB()) {
             if (listHiddenRaces == false && raceRecord.getRaceVisibility().equals(TracTracConnectionConstants.HIDDEN_VISIBILITY)) {
@@ -1325,7 +1325,7 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
                         ttConfig.getLiveDataURI()==null?null:ttConfig.getLiveDataURI().toString(),
                         ttConfig.getStoredDataURI()==null?null:ttConfig.getStoredDataURI().toString(),
                         ttConfig.getUpdateURI()==null?null:ttConfig.getUpdateURI().toString(),
-                        ttConfig.getTracTracUsername(), /* don't return passwords to the client */ null,
+                        "" /* don't ship API token to the client */, /* tracTracApiTokenAvailable */ Util.hasLength(ttConfig.getTracTracApiToken()),
                         ttConfig.getCreatorName());
                     SecurityDTOUtil.addSecurityInformation(getSecurityService(), config);
                     return config;
@@ -2496,7 +2496,8 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
                     final SwissTimingConfigurationWithSecurityDTO config = new SwissTimingConfigurationWithSecurityDTO(
                             stConfig.getName(), stConfig.getJsonURL(),
                         stConfig.getHostname(), stConfig.getPort(), stConfig.getUpdateURL(),
-                            stConfig.getUpdateUsername(), stConfig.getUpdatePassword(), stConfig.getCreatorName());
+                            "" /* don't ship API token to client */, /* apiTokenAvailable */ Util.hasLength(stConfig.getApiToken()),
+                            stConfig.getCreatorName());
                     SecurityDTOUtil.addSecurityInformation(getSecurityService(), config);
                     return config;
                 });

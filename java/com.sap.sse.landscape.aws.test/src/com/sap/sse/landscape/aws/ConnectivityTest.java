@@ -267,7 +267,7 @@ public class ConnectivityTest<ProcessT extends AwsApplicationProcess<String, Sai
                         }),
                 Optional.of(Tags.with("Name", "MyHost").and("Hello", "World")),
                 "MONGODB_URI=\""+mongoEndpoint.getURI(Optional.of(new DatabaseImpl(mongoEndpoint, "winddbTest")))+"\"",
-                "INSTALL_FROM_RELEASE="+SailingReleaseRepository.INSTANCE.getLatestMasterRelease().getName(),
+                "INSTALL_FROM_RELEASE="+SailingReleaseRepository.INSTANCE.getLatestDefaultRelease().getName(),
                 "SERVER_NAME=\""+serverName+"\"");
         try {
             assertNotNull(host);

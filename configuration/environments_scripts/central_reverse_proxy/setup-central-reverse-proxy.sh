@@ -8,7 +8,8 @@
 # existence of a running webserver accessible under sapsailing.com.
 #
 # Start by launching a new instance, e.g., of type t3.xlarge, in the same AZ
-# as the current Webserver / Central Reverse Proxy. This will become important
+# as the current Webserver / Central Reverse Proxy, and with 100GB of root
+# volume space. This will become important
 # as you will need to detach volumes from the latter to attach them to the
 # new instance.
 #
@@ -173,6 +174,10 @@ cd ~
 # Copies across the key vault and other relevant secrets from the existing
 # central reverse proxy's /root folder:
 rsync -a root@sapsailing.com:/root/{dev-secrets,github_tools_sap.pat,hudson-aws-credentials,key_vault,mail.properties,secrets,ssh-key-reader.token} /root
+# Distribute secrets HTTPD needs for GitHub OAuth client:
+cat /root/secrets | grep GITHUB_OAUTH_CLIENT_ >/usr/share/httpd/secrets
+chmod 660 /usr/share/httpd/secrets
+chown apache:apache /usr/share/httpd/secrets
 scp -o StrictHostKeyChecking=no -r root@sapsailing.com:/etc/letsencrypt /etc
 # add basic test page which won't cause redirect error code if used as a health check.
 cat <<EOF > /var/www/html/index.html

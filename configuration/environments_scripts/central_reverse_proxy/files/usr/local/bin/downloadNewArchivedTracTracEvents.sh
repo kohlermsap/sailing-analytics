@@ -3,6 +3,8 @@
 # Downloads all TracTrac event data based on ${GIT_ROOT}/configuration/tractrac-json-urls
 # into the target directory (specified as $1) for those event URLs whose specific folder
 # does not yet exist in the target directory.
+# The TRACTRAC_API_TOKEN environment variable must contain a TracTrac API token valid for
+# reading the events. It will be passed on to the downloadTracTracEvent script
 TARGET_DIR="${1}"
 if [[ $# -eq 1 ]]; then
     GIT_ROOT=/home/wiki/gitwiki
@@ -14,10 +16,13 @@ for i in `cat "${JSON_URLS_FILE}"`; do
   EVENT_DB="$( basename $( dirname ${i} ) )"
   if [ -d "${TARGET_DIR}/${EVENT_DB}" ]; then
     echo "Directory for event ${EVENT_DB} already found. Not downloading again. Use"
-    echo "  downloadTracTracEvent ${i} ${TARGET_DIR}"
+    echo "  ${GIT_ROOT}/configuration/downloadTracTracEvent ${i} ${TARGET_DIR}"
     echo "to force an update."
   else
     echo "Did not find directory for event ${EVENT_DB} yet in ${TARGET_DIR}. Downloading..."
-    downloadTracTracEvent "${i}" "${TARGET_DIR}"
+    if [ -n "${TRACTRAC_API_TOKEN}" ]; then
+      echo "Using authenticated requests for the params files"
+    fi
+    downloadTracTracEvent "${i}" "${TARGET_DIR}" "${TRACTRAC_API_TOKEN}"
   fi
 done

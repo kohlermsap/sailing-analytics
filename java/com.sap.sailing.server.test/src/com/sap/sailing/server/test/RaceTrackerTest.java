@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.sap.sailing.domain.base.RaceDefinition;
+import com.sap.sailing.domain.test.AbstractTracTracLiveTest;
 import com.sap.sailing.domain.racelog.impl.EmptyRaceLogStore;
 import com.sap.sailing.domain.regattalog.impl.EmptyRegattaLogStore;
 import com.sap.sailing.domain.tracking.RaceHandle;
@@ -39,8 +40,7 @@ public class RaceTrackerTest {
     private final URI liveUri;
     private final URI storedUri;
     private final URI courseDesignUpdateUri;
-    private final String tracTracUsername;
-    private final String tracTracPassword;
+    private final String tracTracApiToken;
     private RacingEventServiceImpl service;
     private RaceHandle raceHandle;
     private TracTracAdapterFactoryImpl tracTracAdapterFactory;
@@ -61,10 +61,8 @@ public class RaceTrackerTest {
             liveUri = new URI("tcp://" + TracTracConnectionConstants.HOST_NAME + ":" + TracTracConnectionConstants.PORT_LIVE);
             storedUri = new URI("tcp://" + TracTracConnectionConstants.HOST_NAME + ":" + TracTracConnectionConstants.PORT_STORED);
         }
-        
         courseDesignUpdateUri = new URI("http://tracms.traclive.dk/update_course");
-        tracTracUsername = "tracTest";
-        tracTracPassword = "tracTest";
+        tracTracApiToken = AbstractTracTracLiveTest.getTracTracApiToken();
     }
     
     @BeforeEach
@@ -74,11 +72,11 @@ public class RaceTrackerTest {
         tracTracAdapterFactory = new TracTracAdapterFactoryImpl();
         raceHandle = tracTracAdapterFactory.getOrCreateTracTracAdapter(service.getBaseDomainFactory()).addTracTracRace(
                 service, paramUrl, liveUri, storedUri, courseDesignUpdateUri, EmptyRaceLogStore.INSTANCE,
-                EmptyRegattaLogStore.INSTANCE, /* timeoutInMilliseconds */60000, tracTracUsername, tracTracPassword,
-                TracTracConnectionConstants.ONLINE_STATUS, TracTracConnectionConstants.ONLINE_VISIBILITY,
-                /* trackWind */ false, /* correctWindDirectionByMagneticDeclination */ false,
-                /* timeoutInMillis */ (int) RaceTracker.TIMEOUT_FOR_RECEIVING_RACE_DEFINITION_IN_MILLISECONDS,
-                /* useOfficialEventsToUpdateRaceLog */ false, new DefaultRaceTrackingHandler());
+                EmptyRegattaLogStore.INSTANCE, /* timeoutInMilliseconds */60000, tracTracApiToken, TracTracConnectionConstants.ONLINE_STATUS,
+                TracTracConnectionConstants.ONLINE_VISIBILITY, /* trackWind */ false,
+                /* correctWindDirectionByMagneticDeclination */ false, /* timeoutInMillis */ (int) RaceTracker.TIMEOUT_FOR_RECEIVING_RACE_DEFINITION_IN_MILLISECONDS,
+                /* useOfficialEventsToUpdateRaceLog */ false,
+                new DefaultRaceTrackingHandler());
         logger.info("Calling raceHandle.getRaces()");
         RaceDefinition race = raceHandle.getRace(); // wait for RaceDefinition to be completely wired in Regatta
         logger.info("Obtained race: "+race);
@@ -135,10 +133,10 @@ public class RaceTrackerTest {
         RaceHandle myRaceHandle = tracTracAdapterFactory.getOrCreateTracTracAdapter(service.getBaseDomainFactory())
                 .addTracTracRace(service, paramUrl, liveUri, storedUri, courseDesignUpdateUri,
                         EmptyRaceLogStore.INSTANCE, EmptyRegattaLogStore.INSTANCE, /* timeoutInMilliseconds */60000,
-                        tracTracUsername, tracTracPassword, TracTracConnectionConstants.ONLINE_STATUS,
-                        TracTracConnectionConstants.ONLINE_VISIBILITY, /* trackWind */ false,
-                        /* correctWindDirectionByMagneticDeclination */ false, /* timeoutInMillis */ (int) RaceTracker.TIMEOUT_FOR_RECEIVING_RACE_DEFINITION_IN_MILLISECONDS,
-                        /* useOfficialEventsToUpdateRaceLog */ false, new DefaultRaceTrackingHandler());
+                        tracTracApiToken, TracTracConnectionConstants.ONLINE_STATUS, TracTracConnectionConstants.ONLINE_VISIBILITY,
+                        /* trackWind */ false, /* correctWindDirectionByMagneticDeclination */ false,
+                        /* timeoutInMillis */ (int) RaceTracker.TIMEOUT_FOR_RECEIVING_RACE_DEFINITION_IN_MILLISECONDS, /* useOfficialEventsToUpdateRaceLog */ false,
+                        new DefaultRaceTrackingHandler());
         TrackedRegatta newTrackedRegatta = myRaceHandle.getTrackedRegatta();
         assertNotSame(oldTrackedRegatta, newTrackedRegatta);
         TrackedRace newTrackedRace = getTrackedRace(newTrackedRegatta);
@@ -165,10 +163,10 @@ public class RaceTrackerTest {
         RaceHandle myRaceHandle = tracTracAdapterFactory.getOrCreateTracTracAdapter(service.getBaseDomainFactory())
                 .addTracTracRace(service, paramUrl, liveUri, storedUri, courseDesignUpdateUri,
                         EmptyRaceLogStore.INSTANCE, EmptyRegattaLogStore.INSTANCE, /* timeoutInMilliseconds */60000,
-                        tracTracUsername, tracTracPassword, TracTracConnectionConstants.ONLINE_STATUS,
-                        TracTracConnectionConstants.ONLINE_VISIBILITY, /* trackWind */ false,
-                        /* correctWindDirectionByMagneticDeclination */ false, /* timeoutInMillis */ (int) RaceTracker.TIMEOUT_FOR_RECEIVING_RACE_DEFINITION_IN_MILLISECONDS,
-                        /* useOfficialEventsToUpdateRaceLog */ false, new DefaultRaceTrackingHandler());
+                        tracTracApiToken, TracTracConnectionConstants.ONLINE_STATUS, TracTracConnectionConstants.ONLINE_VISIBILITY,
+                        /* trackWind */ false, /* correctWindDirectionByMagneticDeclination */ false,
+                        /* timeoutInMillis */ (int) RaceTracker.TIMEOUT_FOR_RECEIVING_RACE_DEFINITION_IN_MILLISECONDS, /* useOfficialEventsToUpdateRaceLog */ false,
+                        new DefaultRaceTrackingHandler());
         TrackedRegatta newTrackedEvent = myRaceHandle.getTrackedRegatta();
         TrackedRace newTrackedRace = getTrackedRace(newTrackedEvent);
         // expecting a new tracked race to be created when starting over with tracking

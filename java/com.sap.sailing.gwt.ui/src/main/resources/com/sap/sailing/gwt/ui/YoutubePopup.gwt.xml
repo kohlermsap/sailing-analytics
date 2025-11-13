@@ -23,7 +23,7 @@
     <inherits name='com.google.gwt.json.JSON' />
 
     <!-- module containing locale configuration -->
-    <inherits name='com.sap.sailing.gwt.common.SailingLocalesSinglePermutation' />
+    <inherits name='com.sap.sailing.gwt.common.SailingLocalesAllPermutations' />
 
     <entry-point class="com.sap.sailing.gwt.ui.client.media.popup.YoutubePopupWindow" />
 

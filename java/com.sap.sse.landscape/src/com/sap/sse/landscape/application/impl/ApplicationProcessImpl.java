@@ -36,7 +36,6 @@ import com.sap.sse.landscape.RotatingFileBasedLog;
 import com.sap.sse.landscape.application.ApplicationProcess;
 import com.sap.sse.landscape.application.ApplicationProcessMetrics;
 import com.sap.sse.landscape.impl.ProcessImpl;
-import com.sap.sse.landscape.impl.ReleaseImpl;
 import com.sap.sse.landscape.ssh.SshCommandChannel;
 import com.sap.sse.shared.util.Wait;
 import com.sap.sse.util.HttpUrlConnectionHelper;
@@ -106,7 +105,7 @@ implements ApplicationProcess<ShardingKey, MetricsT, ProcessT> {
         } else {
             final Matcher matcher = pattern.matcher(versionTxt);
             if (matcher.find()) {
-                result = new ReleaseImpl(matcher.group(1), releaseRepository);
+                result = releaseRepository.getRelease(matcher.group(1));
             } else {
                 result = null;
             }

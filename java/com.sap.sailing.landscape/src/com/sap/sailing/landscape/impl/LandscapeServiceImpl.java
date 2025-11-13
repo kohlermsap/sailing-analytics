@@ -801,7 +801,7 @@ public class LandscapeServiceImpl implements LandscapeService {
     @Override
     public Release getRelease(String releaseNameOrNullForLatestMaster) {
         return releaseNameOrNullForLatestMaster==null
-                ? SailingReleaseRepository.INSTANCE.getLatestMasterRelease()
+                ? SailingReleaseRepository.INSTANCE.getLatestDefaultRelease()
                 : SailingReleaseRepository.INSTANCE.getRelease(releaseNameOrNullForLatestMaster);
     }
 

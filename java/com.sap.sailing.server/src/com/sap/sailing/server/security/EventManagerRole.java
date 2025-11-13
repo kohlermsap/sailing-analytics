@@ -13,7 +13,6 @@ import com.sap.sse.security.shared.impl.SecuredSecurityTypes.ServerActions;
  * server infrastructure configuration.
  */
 public class EventManagerRole extends RolePrototype {
-    private static final long serialVersionUID = 6775068846340911064L;
     private static final EventManagerRole INSTANCE = new EventManagerRole();
 
     EventManagerRole() {

@@ -674,8 +674,7 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages,
     String stopUpdating();
     String startUpdating();
     String currentTime();
-    String tractracUsername();
-    String tractracPassword();
+    String tractracApiToken();
     String operatorEquals();
     String operatorNotEqualTo();
     String operatorLessThan();
@@ -2043,8 +2042,7 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages,
     String audioFiles();
     String selectMedia();
     String swissTimingUpdateURL();
-    String swissTimingUpdateUsername();
-    String swissTimingUpdatePassword();
+    String swissTimingUpdateApiToken();
     String allowResizing();
     String resize();
     String resizeSuccessfull();
@@ -2547,4 +2545,6 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages,
     String strategySimulator();
     String contentStrategySimulator();
     String strategySimulatorReadMore();
+    String testConnection();
+    String tracTracConnectionTestFailed(String message);
 }

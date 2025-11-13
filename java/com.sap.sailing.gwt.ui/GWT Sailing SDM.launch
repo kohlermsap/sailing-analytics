@@ -20,20 +20,6 @@
         <listEntry value="com.sap.sailing.gwt.home.Home"/>
         <listEntry value="com.sap.sailing.gwt.ui.Leaderboard"/>
         <listEntry value="com.sap.sailing.gwt.ui.Simulator"/>
-        <listEntry value="com.sap.sailing.gwt.autoplay.AutoPlay"/>
-        <listEntry value="com.sap.sailing.gwt.ui.YoutubePopup"/>
-        <listEntry value="com.sap.sailing.gwt.ui.VideoPopup"/>
-        <listEntry value="com.sap.sailing.gwt.ui.Simulator"/>
-        <listEntry value="com.sap.sailing.gwt.ui.DataMining"/>
-        <listEntry value="com.sap.sailing.gwt.regattaoverview.RegattaOverview"/>
-        <listEntry value="com.sap.sailing.gwt.ui.RaceBoard"/>
-        <listEntry value="com.sap.sailing.gwt.ui.EmbeddedMapAndWindChart"/>
-        <listEntry value="com.sap.sailing.gwt.ui.Spectator"/>
-        <listEntry value="com.sap.sailing.gwt.ui.Leaderboard"/>
-        <listEntry value="com.sap.sailing.gwt.ui.LeaderboardEditing"/>
-        <listEntry value="com.sap.sailing.gwt.ui.PairingList"/>
-        <listEntry value="com.sap.sailing.gwt.ui.AdminConsole"/>
-        <listEntry value="com.sap.sailing.gwt.home.Home"/>
     </listAttribute>
     <booleanAttribute key="com.gwtplugins.gwt.eclipse.core.SUPERDEVMODE_ENABLED" value="true"/>
     <stringAttribute key="com.gwtplugins.gwt.eclipse.core.URL" value="/gwt/Home.html"/>
