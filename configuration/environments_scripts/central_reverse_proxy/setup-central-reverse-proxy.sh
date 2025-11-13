@@ -82,8 +82,11 @@ terminationCheck "$?"
 ssh -A "root@${IP}" "bash -s" << BUGZILLAEOF &>log.txt
 cd /usr/share/bugzilla/
 # essentials bugzilla
-/usr/bin/perl -MCPAN -e 'install App::cpanminus'
-cpanm --notest SOAP::Lite
+/usr/bin/perl -MCPAN -e 'install App::cpanminus' </dev/null
+echo "Looking for cpanm: $( which cpanm )"
+echo "Trying to install SOAP::Lite"
+/usr/local/bin/cpanm --notest SOAP::Lite </dev/null
+echo "Trying to install other packages, starting with DateTime"
 /usr/bin/perl install-module.pl DateTime
 /usr/bin/perl install-module.pl DateTime::TimeZone
 /usr/bin/perl install-module.pl Email::Sender

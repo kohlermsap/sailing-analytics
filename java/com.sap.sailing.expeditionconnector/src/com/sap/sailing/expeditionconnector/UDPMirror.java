@@ -30,25 +30,26 @@ public class UDPMirror {
             }
             int listeningOnPort = Integer.valueOf(args[c++]);
             byte[] buf = new byte[65536];
-            DatagramSocket udpSocket = new DatagramSocket(listeningOnPort);
-            DatagramPacket received = new DatagramPacket(buf, buf.length);
-            DatagramSocket[] sendingSockets = new DatagramSocket[(args.length - 1) / 2];
-            DatagramPacket[] mirroredPackets = new DatagramPacket[(args.length - 1) / 2];
-            while (c < args.length - 1) {
-                sendingSockets[(c - 1) / 2] = new DatagramSocket();
-                mirroredPackets[(c - 1) / 2] = new DatagramPacket(buf, buf.length, InetAddress.getByName(args[c]),
-                        Integer.valueOf(args[c + 1]));
-                c += 2;
-            }
-            while (true) {
-                udpSocket.receive(received);
-                if (verbose) {
-                    String packetAsString = new String(received.getData(), received.getOffset(), received.getLength()).trim();
-                    System.out.println(packetAsString);
+            try (DatagramSocket udpSocket = new DatagramSocket(listeningOnPort)) {
+                DatagramPacket received = new DatagramPacket(buf, buf.length);
+                DatagramSocket[] sendingSockets = new DatagramSocket[(args.length - 1) / 2];
+                DatagramPacket[] mirroredPackets = new DatagramPacket[(args.length - 1) / 2];
+                while (c < args.length - 1) {
+                    sendingSockets[(c - 1) / 2] = new DatagramSocket();
+                    mirroredPackets[(c - 1) / 2] = new DatagramPacket(buf, buf.length, InetAddress.getByName(args[c]),
+                            Integer.valueOf(args[c + 1]));
+                    c += 2;
                 }
-                for (int i = 0; i < mirroredPackets.length; i++) {
-                    mirroredPackets[i].setLength(received.getLength());
-                    sendingSockets[i].send(mirroredPackets[i]);
+                while (true) {
+                    udpSocket.receive(received);
+                    if (verbose) {
+                        String packetAsString = new String(received.getData(), received.getOffset(), received.getLength()).trim();
+                        System.out.println(packetAsString);
+                    }
+                    for (int i = 0; i < mirroredPackets.length; i++) {
+                        mirroredPackets[i].setLength(received.getLength());
+                        sendingSockets[i].send(mirroredPackets[i]);
+                    }
                 }
             }
         }
