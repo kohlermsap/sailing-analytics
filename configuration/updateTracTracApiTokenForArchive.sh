@@ -13,8 +13,11 @@ else
   OLD_TOKEN="${3}"
   if [ -n "${OLD_TOKEN}" ]; then
     FILTER_FOR_OLD_TOKEN=', "tracTracApiToken": "'${OLD_TOKEN}'"'
+    FILTER_FOR_OLD_TOKEN_FOR_TT_CONFIGS=', "TT_CONFIG_TRACTRAC_API_TOKEN": "'${OLD_TOKEN}'"'
   else
     FILTER_FOR_OLD_TOKEN=""
+    FILTER_FOR_OLD_TOKEN_FOR_TT_CONFIGS=""
   fi
   mongosh --quiet --eval 'EJSON.stringify(db.CONNECTIVITY_PARAMS_FOR_RACES_TO_BE_RESTORED.updateMany({"type": "TRAC_TRAC"'"${FILTER_FOR_OLD_TOKEN}"'}, {$set: {"tracTracApiToken": "'${TOKEN}'"}}, {multi: true}))' "${MONGO_URI}"
+  mongosh --quiet --eval 'EJSON.stringify(db.TRACTRAC_CONFIGURATIONS.updateMany({'"${FILTER_FOR_OLD_TOKEN_FOR_TT_CONFIGS}"'}, {$set: {"TT_CONFIG_TRACTRAC_API_TOKEN": "'${TOKEN}'"}}, {multi: true}))' "${MONGO_URI}"
 fi
