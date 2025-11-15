@@ -12,6 +12,7 @@ A basic rundown of *what's what*, so you can dive into the other documentation m
 - OSGI: A specification for component and module-based programming in Java. Equinox is an implementation of this specification, that we use. There is a MANIFEST.MF for each independent group of classes, known as a bundle, which details the requirements and any exports. These can be added, removed or updated for an application whilst it is running. We use OSGI web bundles which include a `web.xml` descriptor in the target WEB-INF, which can store the static content and any servlets.
 - RabbitMQ: This is a message-passing service. Note: Their tutorials are great and there seems to be good documentation. Pika Python is good for getting familiar with the concepts.
 - Selenium: It is a project that includes the tool we use for automated testing.
+- Shiro: A Java security framework for permissions, authorization and authentication.
 ### Companies
 - SwissTiming: They provide the timing solution at events but ultimately decided to outsource sailing timings to us and TracTrac. They have backup wind sensors if ours fail.
 - TracTrac: The tracking gear used and the client used to interact with the backend. The Domain Factory maps the TracTrac domain to ours. The client runs a thread for receiving the race course definition, the list of competitors, the raw competitor GPS fixes, the mark positions, start/finish times and the mark-rounding times.
