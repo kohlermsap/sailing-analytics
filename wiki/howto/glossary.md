@@ -20,7 +20,7 @@ A basic rundown of *what's what*, so you can dive into the other documentation m
 ## Some basic sailing terminology
 - A **flight** or **fleet** is a subset of all the competitors. The competitors are broken up into fleets if there are too many or if there are special starting and finishing provisions. On the sapsailing.com leaderboard, the fleets are colour-coded.
 - A **jibe** or **gybe** is a manoeuvre whereby the boat points downwind (with the wind) during the turn.
-- **kt** is of course knots.
+- **kt** is knots.
 - A **mark** is any position a boat must pass on a required side.
 - A **tack** is a manoeuvre where the boat turns into the headwind (pointing into the wind) and then through.
 - **Velocity made good** is speed towards or from the wind direction.
