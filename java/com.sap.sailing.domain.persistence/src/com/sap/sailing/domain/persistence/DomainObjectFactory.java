@@ -236,7 +236,6 @@ public interface DomainObjectFactory {
     
     Map<RaceIdentifier, ManeuverRaceFingerprint> loadFingerprintsForManeuverHashes();
 
-
     /**
      * For races that have a {@link MarkPassingRaceFingerprint} stored in the database (see {@link #loadFingerprintsForMarkPassingHashes()})
      * a caller can load the corresponding mark passings with this method.

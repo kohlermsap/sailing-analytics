@@ -3380,21 +3380,21 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
     private ManeuverLoss loadManeuverLoss(Document document) {
         final ManeuverLoss maneuverLoss;
         if (document != null) {
-            final Double distanceDouble = document.getDouble(FieldNames.DISTANCE_SAILED_POMA.name());
+            final Double distanceDouble = document.getDouble(FieldNames.MANEUVER_DISTANCE_SAILED_POMA.name());
             final Distance distance = new MeterDistance(distanceDouble);
-            final Distance distanceIfNorManeuvering = new MeterDistance(document.getDouble(FieldNames.DISTANCE_SAILED_INMPOMA.name()));
-            final double startPositionLatRad = document.getDouble(FieldNames.START_POSITION_LAT_RAD.name());
-            final double startPositionLngRad = document.getDouble(FieldNames.START_POSITION_LNG_RAD.name());
+            final Distance distanceIfNorManeuvering = new MeterDistance(document.getDouble(FieldNames.MANEUVER_DISTANCE_SAILED_INMPOMA.name()));
+            final double startPositionLatRad = document.getDouble(FieldNames.MANEUVER_START_POSITION_LAT_RAD.name());
+            final double startPositionLngRad = document.getDouble(FieldNames.MANEUVER_START_POSITION_LNG_RAD.name());
             final Position startPosition = new RadianPosition(startPositionLatRad, startPositionLngRad);
-            final double endPositionLatRad = document.getDouble(FieldNames.END_POSITION_LAT_RAD.name());
-            final double endPositionLngRad = document.getDouble(FieldNames.END_POSITION_LNG_RAD.name());
+            final double endPositionLatRad = document.getDouble(FieldNames.MANEUVER_END_POSITION_LAT_RAD.name());
+            final double endPositionLngRad = document.getDouble(FieldNames.MANEUVER_END_POSITION_LNG_RAD.name());
             final Position endPosition = new RadianPosition(endPositionLatRad, endPositionLngRad);
-            final Duration duration = Duration.ofMillis(document.getLong(FieldNames.DURATION.name()));
-            final Double SpeedWithBearingBeforeDegrees =  document.getDouble(FieldNames.SPEED_WITH_BEARING_BEFORE_DEGREES.name());
-            final Double SpeedWithBearingBeforeSpeed = document.getDouble(FieldNames.SPEED_WITH_BEARING_BEFORE_SPEED.name());
+            final Duration duration = Duration.ofMillis(document.getLong(FieldNames.MANEUVER_LOSS_DURATION.name()));
+            final Double SpeedWithBearingBeforeDegrees =  document.getDouble(FieldNames.MANEUVER_SPEED_WITH_BEARING_BEFORE_DEGREES.name());
+            final Double SpeedWithBearingBeforeSpeed = document.getDouble(FieldNames.MANEUVER_SPEED_WITH_BEARING_BEFORE_SPEED.name());
             final Bearing bearingBefore = new DegreeBearingImpl(SpeedWithBearingBeforeDegrees);
             final SpeedWithBearing SpeedWithBearingBefore = new KnotSpeedWithBearingImpl(SpeedWithBearingBeforeSpeed, bearingBefore);
-            final Bearing middeManeuverAngle = new DegreeBearingImpl(document.getDouble(FieldNames.DEGREE_BEARING.name()));
+            final Bearing middeManeuverAngle = new DegreeBearingImpl(document.getDouble(FieldNames.MIDDLE_MAEUVER_ANGLE.name()));
             maneuverLoss = new ManeuverLoss(distance, distanceIfNorManeuvering, startPosition, endPosition, duration, SpeedWithBearingBefore, middeManeuverAngle);
         } else {
             maneuverLoss = null;
@@ -3403,20 +3403,20 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
     }
 
     private ManeuverCurveBoundaries loadManeuverCurveBoundaries(Document document) {
-        final TimePoint timePointBefore = TimePoint.of(document.getLong(FieldNames.TIMEPOINT_BEFORE.name()));
-        final TimePoint timePointAfter = TimePoint.of(document.getLong(FieldNames.TIMEPOINT_AFTER.name()));
-        final Double SpeedWithBearingBeforeDegrees = document.getDouble(FieldNames.SPEED_WITH_BEARING_BEFORE_DEGREES.name());
-        final Double SpeedWithBearingBeforeSpeed = document.getDouble(FieldNames.SPEED_WITH_BEARING_BEFORE_SPEED.name());
+        final TimePoint timePointBefore = TimePoint.of(document.getLong(FieldNames.MANEUVER_TIMEPOINT_BEFORE.name()));
+        final TimePoint timePointAfter = TimePoint.of(document.getLong(FieldNames.MANEUVER_TIMEPOINT_AFTER.name()));
+        final Double SpeedWithBearingBeforeDegrees = document.getDouble(FieldNames.MANEUVER_SPEED_WITH_BEARING_BEFORE_DEGREES.name());
+        final Double SpeedWithBearingBeforeSpeed = document.getDouble(FieldNames.MANEUVER_SPEED_WITH_BEARING_BEFORE_SPEED.name());
         final Bearing bearingBefore = new DegreeBearingImpl(SpeedWithBearingBeforeDegrees);
         final SpeedWithBearing SpeedWithBearingBefore = new KnotSpeedWithBearingImpl(SpeedWithBearingBeforeSpeed, bearingBefore);
-        final Double SpeedWithBearingAfterDegrees = document.getDouble(FieldNames.SPEED_WITH_BEARING_AFTER_DEGREES.name());
-        final Double SpeedWithBearingAfterSpeed = document.getDouble(FieldNames.SPEED_WITH_BEARING_AFTER_SPEED.name());
+        final Double SpeedWithBearingAfterDegrees = document.getDouble(FieldNames.MANEUVER_SPEED_WITH_BEARING_AFTER_DEGREES.name());
+        final Double SpeedWithBearingAfterSpeed = document.getDouble(FieldNames.MANEUVER_SPEED_WITH_BEARING_AFTER_SPEED.name());
         final Bearing bearingAfter = new DegreeBearingImpl(SpeedWithBearingAfterSpeed);
         final SpeedWithBearing SpeedWithBearingAfter = new KnotSpeedWithBearingImpl(SpeedWithBearingAfterDegrees, bearingAfter);
-        final double directionChangeInDegrees = document.getDouble(FieldNames.DIRECTION_CHANGE_IN_DEGREES.name());
-        final double lowestSpeedDouble = document.getDouble(FieldNames.LOWEST_SPEED.name());
+        final double directionChangeInDegrees = document.getDouble(FieldNames.MANEUVER_DIRECTION_CHANGE_IN_DEGREES.name());
+        final double lowestSpeedDouble = document.getDouble(FieldNames.MANEUVER_LOWEST_SPEED.name());
         final Speed lowestSpeed = new KnotSpeedImpl(lowestSpeedDouble);
-        final double highestSpeedDouble = document.getDouble(FieldNames.HIGHEST_SPEED.name());
+        final double highestSpeedDouble = document.getDouble(FieldNames.MANEUVER_HIGHEST_SPEED.name());
         final Speed highestSpeed = new KnotSpeedImpl(highestSpeedDouble);
         ManeuverCurveBoundaries maneuverCurveBoundaries = new ManeuverCurveBoundariesImpl(timePointBefore,
                 timePointAfter, SpeedWithBearingBefore, SpeedWithBearingAfter, directionChangeInDegrees, lowestSpeed,

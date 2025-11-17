@@ -250,7 +250,6 @@ public interface MongoObjectFactory {
     
     void removeMarkPassings(RaceIdentifier raceIdentifier);
     
-    
     void storeManeuvers(RaceIdentifier raceIdentifier, ManeuverRaceFingerprint fingerprint, Course course, Map<Competitor, List<Maneuver>> maneuvers);
     
     void removeManeuvers(RaceIdentifier raceIdentifier);

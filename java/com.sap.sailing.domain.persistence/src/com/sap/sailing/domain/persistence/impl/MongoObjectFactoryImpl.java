@@ -2068,29 +2068,29 @@ public class MongoObjectFactoryImpl implements MongoObjectFactory {
     
     private Document storeManeuverLoss(ManeuverLoss maneuverLoss) {
         final Document maneuverLossDoc = new Document();
-        maneuverLossDoc.put(FieldNames.DISTANCE_SAILED_POMA.name(), maneuverLoss.getDistanceSailedIfNotManeuveringProjectedOnMiddleManeuverAngle().getMeters());
-        maneuverLossDoc.put(FieldNames.DISTANCE_SAILED_INMPOMA.name(), maneuverLoss.getDistanceSailedIfNotManeuveringProjectedOnMiddleManeuverAngle().getMeters());
-        maneuverLossDoc.put(FieldNames.START_POSITION_LAT_RAD.name(), maneuverLoss.getManeuverStartPosition().getLatRad());
-        maneuverLossDoc.put(FieldNames.START_POSITION_LNG_RAD.name(), maneuverLoss.getManeuverStartPosition().getLngRad());
-        maneuverLossDoc.put(FieldNames.END_POSITION_LAT_RAD.name(), maneuverLoss.getManeuverStartPosition().getLngRad());
-        maneuverLossDoc.put(FieldNames.END_POSITION_LNG_RAD.name(), maneuverLoss.getManeuverStartPosition().getLngRad());
-        maneuverLossDoc.put(FieldNames.SPEED_WITH_BEARING_BEFORE_DEGREES.name(), maneuverLoss.getSpeedWithBearingBefore().getBearing().getDegrees());
-        maneuverLossDoc.put(FieldNames.SPEED_WITH_BEARING_BEFORE_SPEED.name(), maneuverLoss.getSpeedWithBearingBefore().getKnots());
-        maneuverLossDoc.put(FieldNames.DEGREE_BEARING.name(), maneuverLoss.getMiddleManeuverAngle().getDegrees());
-        maneuverLossDoc.put(FieldNames.DURATION.name(), maneuverLoss.getManeuverDuration().asMillis());
+        maneuverLossDoc.put(FieldNames.MANEUVER_DISTANCE_SAILED_POMA.name(), maneuverLoss.getDistanceSailedIfNotManeuveringProjectedOnMiddleManeuverAngle().getMeters());
+        maneuverLossDoc.put(FieldNames.MANEUVER_DISTANCE_SAILED_INMPOMA.name(), maneuverLoss.getDistanceSailedIfNotManeuveringProjectedOnMiddleManeuverAngle().getMeters());
+        maneuverLossDoc.put(FieldNames.MANEUVER_START_POSITION_LAT_RAD.name(), maneuverLoss.getManeuverStartPosition().getLatRad());
+        maneuverLossDoc.put(FieldNames.MANEUVER_START_POSITION_LNG_RAD.name(), maneuverLoss.getManeuverStartPosition().getLngRad());
+        maneuverLossDoc.put(FieldNames.MANEUVER_END_POSITION_LAT_RAD.name(), maneuverLoss.getManeuverStartPosition().getLngRad());
+        maneuverLossDoc.put(FieldNames.MANEUVER_END_POSITION_LNG_RAD.name(), maneuverLoss.getManeuverStartPosition().getLngRad());
+        maneuverLossDoc.put(FieldNames.MANEUVER_SPEED_WITH_BEARING_BEFORE_DEGREES.name(), maneuverLoss.getSpeedWithBearingBefore().getBearing().getDegrees());
+        maneuverLossDoc.put(FieldNames.MANEUVER_SPEED_WITH_BEARING_BEFORE_SPEED.name(), maneuverLoss.getSpeedWithBearingBefore().getKnots());
+        maneuverLossDoc.put(FieldNames.MIDDLE_MAEUVER_ANGLE.name(), maneuverLoss.getMiddleManeuverAngle().getDegrees());
+        maneuverLossDoc.put(FieldNames.MANEUVER_LOSS_DURATION.name(), maneuverLoss.getManeuverDuration().asMillis());
         return maneuverLossDoc;
     }
 
     private Document storeMainCurveBoundaries(ManeuverCurveBoundaries f, Document d) {
-        d.put(FieldNames.TIMEPOINT_BEFORE.name(), f.getTimePointBefore().asMillis());
-        d.put(FieldNames.TIMEPOINT_AFTER.name(), f.getTimePointAfter().asMillis());
-        d.put(FieldNames.SPEED_WITH_BEARING_BEFORE_DEGREES.name(), f.getSpeedWithBearingBefore().getBearing().getDegrees());
-        d.put(FieldNames.SPEED_WITH_BEARING_BEFORE_SPEED.name(), f.getSpeedWithBearingBefore().getKnots());
-        d.put(FieldNames.SPEED_WITH_BEARING_AFTER_DEGREES.name(), f.getSpeedWithBearingAfter().getBearing().getDegrees());
-        d.put(FieldNames.SPEED_WITH_BEARING_AFTER_SPEED.name(), f.getSpeedWithBearingAfter().getKnots());
-        d.put(FieldNames.DIRECTION_CHANGE_IN_DEGREES.name(), f.getDirectionChangeInDegrees());
-        d.put(FieldNames.LOWEST_SPEED.name(), f.getLowestSpeed().getKnots());
-        d.put(FieldNames.HIGHEST_SPEED.name(), f.getHighestSpeed().getKnots());
+        d.put(FieldNames.MANEUVER_TIMEPOINT_BEFORE.name(), f.getTimePointBefore().asMillis());
+        d.put(FieldNames.MANEUVER_TIMEPOINT_AFTER.name(), f.getTimePointAfter().asMillis());
+        d.put(FieldNames.MANEUVER_SPEED_WITH_BEARING_BEFORE_DEGREES.name(), f.getSpeedWithBearingBefore().getBearing().getDegrees());
+        d.put(FieldNames.MANEUVER_SPEED_WITH_BEARING_BEFORE_SPEED.name(), f.getSpeedWithBearingBefore().getKnots());
+        d.put(FieldNames.MANEUVER_SPEED_WITH_BEARING_AFTER_DEGREES.name(), f.getSpeedWithBearingAfter().getBearing().getDegrees());
+        d.put(FieldNames.MANEUVER_SPEED_WITH_BEARING_AFTER_SPEED.name(), f.getSpeedWithBearingAfter().getKnots());
+        d.put(FieldNames.MANEUVER_DIRECTION_CHANGE_IN_DEGREES.name(), f.getDirectionChangeInDegrees());
+        d.put(FieldNames.MANEUVER_LOWEST_SPEED.name(), f.getLowestSpeed().getKnots());
+        d.put(FieldNames.MANEUVER_HIGHEST_SPEED.name(), f.getHighestSpeed().getKnots());
         return d;
     }
 

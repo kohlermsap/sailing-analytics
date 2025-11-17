@@ -67,7 +67,6 @@ public class ManeuverRaceFingerprintConversionTest extends OnlineTracTracBasedTe
         final MongoClient myFirstMongo = newMongo();
         final MongoDatabase firstDatabase = myFirstMongo.getDatabase(dbConfiguration.getDatabaseName());
         final RaceIdentifier raceIdentifier = trackedRace1.getRaceIdentifier();
-        //List<Competitor> competetors = trackedRace1.getCompetitor(null);
         final Map<Competitor, List<Maneuver>> maneuvers = new HashMap<>();
         for (final Competitor competitor : getRace().getCompetitors()) {
             final List<Maneuver> maneuversForCompetitor = (List<Maneuver>) trackedRace1.getManeuvers(competitor, true);
