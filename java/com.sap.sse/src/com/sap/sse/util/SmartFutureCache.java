@@ -77,7 +77,7 @@ import com.sap.sse.util.impl.KnowsExecutorAndTracingGetImpl;
  * @author Axel Uhl (D043530)
  * 
  */
-public class SmartFutureCache<K, V, U extends UpdateInterval<U>>  {
+public class SmartFutureCache<K, V, U extends UpdateInterval<U>> {
     private static final Logger logger = Logger.getLogger(SmartFutureCache.class.getName());
     
     /**
