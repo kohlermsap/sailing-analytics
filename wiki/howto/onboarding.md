@@ -251,4 +251,6 @@ Solution: This was occurring because the website didn't have any content in the 
 ### Tips for Mac users
 Mac users can install SDKMAN! to manage and install different JDKs.
 
-
+### Extra Reading
+Check out [refactoring patterns](https://refactoring.guru/) as a sort of cheatsheet for the aforementioned design patterns books.
+We also have an [onboarding glossary](https://wiki.sapsailing.com/wiki/howto/glossary).
