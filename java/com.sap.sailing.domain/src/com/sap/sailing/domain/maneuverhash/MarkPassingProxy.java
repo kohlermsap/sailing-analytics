@@ -18,7 +18,7 @@ public class MarkPassingProxy implements MarkPassing {
     private MarkPassing markPassing;
     private final TimePoint timePoint;
     
-    public MarkPassingProxy(TimePoint timePoint, int waypointIndex, Serializable  competitorId, TrackedRace trackedRace ) {
+    public MarkPassingProxy(TimePoint timePoint, int waypointIndex, Serializable  competitorId, TrackedRace trackedRace) {
         super();
         this.timePoint = timePoint;
         this.waypointIndex = waypointIndex;
@@ -28,30 +28,24 @@ public class MarkPassingProxy implements MarkPassing {
     
     @Override
     public TimePoint getTimePoint() {
-        return timePoint;   
+        return timePoint;
     }
 
     @Override
     public Waypoint getWaypoint() {
        Iterable<Waypoint>  waypoints = trackedRace.getRace().getCourse().getWaypoints();
-            return Util.get(waypoints, waypointIndex);
+       return Util.get(waypoints, waypointIndex);
     }
 
     @Override
     public Competitor getCompetitor() {
-        Iterable<Competitor> competitors = trackedRace.getRace().getCompetitors();
-        for (Competitor c : competitors ) {
-            if( c.getId() == competitorId) {
-                return c;
-            }
-        }
-        return null;
+        return trackedRace.getRace().getCompetitorById(competitorId);
     }
 
     @Override
     public MarkPassing getOriginal() {
         isMarkPassing();
-        return markPassing.getOriginal();
+        return markPassing == null ? null : markPassing.getOriginal();
     }
 
     private void isMarkPassing() {

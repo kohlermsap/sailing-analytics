@@ -3366,17 +3366,15 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
         final ManeuverCurveBoundaries mainCurveBoundaries = loadManeuverCurveBoundaries((Document) maneuverDoc.get(FieldNames.MAIN_CURVE_BOUNDARIES.name()));
         final ManeuverCurveBoundaries maneuverCurveWithStableSpeedAndCourseBoundaries = loadManeuverCurveBoundaries((Document) maneuverDoc.get(FieldNames.MANEUVER_CURVE_WITH_STABLE_SPEED_AND_COURSE_BOUNDERIES.name())); 
         final ManeuverLoss maneuverLoss = loadManeuverLoss((Document) maneuverDoc.get(FieldNames.MANEUVER_LOSS.name()));
-        final MarkPassingProxy markPassingProxy = new MarkPassingProxy(timePoint,  waypointIndex, competitor.getId(), trackedRace );// wie kommt man auf das Race?
-        final Maneuver maneuver;
+        final MarkPassing markPassing;
         if (waypointIndex == -1) {
-            maneuver = new ManeuverWithMainCurveBoundariesImpl(type, newTack, position, timePoint, mainCurveBoundaries, maneuverCurveWithStableSpeedAndCourseBoundaries,
-                    maxTurningRateInDegreesPerSecond, /* mark passing */ null, maneuverLoss);
+            markPassing = null;
         } else {
-            final MarkPassing markpassing = new MarkPassingImpl(timePoint, markPassingProxy.getWaypoint(), competitor);
-            maneuver = new ManeuverWithMainCurveBoundariesImpl(type, newTack, position, timePoint, mainCurveBoundaries, maneuverCurveWithStableSpeedAndCourseBoundaries,
-                    maxTurningRateInDegreesPerSecond, markpassing, maneuverLoss);
+            markPassing = new MarkPassingProxy(timePoint, waypointIndex, competitor.getId(), trackedRace);
         }
-        return maneuver;
+        return new ManeuverWithMainCurveBoundariesImpl(type, newTack, position, timePoint, mainCurveBoundaries,
+                maneuverCurveWithStableSpeedAndCourseBoundaries, maxTurningRateInDegreesPerSecond, markPassing,
+                maneuverLoss);
     }
 
     private ManeuverLoss loadManeuverLoss(Document document) {
