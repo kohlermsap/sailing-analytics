@@ -10,16 +10,16 @@ import com.sap.sailing.domain.maneuverhash.ManeuverCache;
 import com.sap.sailing.domain.tracking.Maneuver;
 import com.sap.sse.util.SmartFutureCache.EmptyUpdateInterval;
 
-public class ManeuverFromDatabase implements ManeuverCache<Competitor, List<Maneuver>, EmptyUpdateInterval> {
+public class ManeuversFromDatabase implements ManeuverCache<Competitor, List<Maneuver>, EmptyUpdateInterval> {
     
-    public ManeuverFromDatabase(
+    public ManeuversFromDatabase(
              Map<Competitor, List<Maneuver>> maneuvers) {
         super();
         this.maneuvers = maneuvers;
     }
 
     boolean suspended;
-    private static final Logger logger = Logger.getLogger(ManeuverFromDatabase.class.getName());
+    private static final Logger logger = Logger.getLogger(ManeuversFromDatabase.class.getName());
     Map<Competitor, List<Maneuver>> maneuvers;
 
     public void resume() {
@@ -40,6 +40,6 @@ public class ManeuverFromDatabase implements ManeuverCache<Competitor, List<Mane
     @Override
     public void triggerUpdate(Competitor key, EmptyUpdateInterval updateInterval) {
       logger.log(Level.WARNING, "If Fingerprint matches, no Update should be triggered");
-      //TODO change to smartFutureCache in Delegate
+      // TODO change to smartFutureCache in Delegate
     }
 }
