@@ -61,23 +61,22 @@ public class ManeuverRaceFingerprintConversionTest extends OnlineTracTracBasedTe
 
     @Test
     public void testStoringToAndLoadingFromMongo() throws UnknownHostException, MongoException {
-        ManeuverRaceFingerprintFactory factory = ManeuverRaceFingerprintFactory.INSTANCE;
-        ManeuverRaceFingerprint fingerprint = factory.createFingerprint(trackedRace1);
+        final ManeuverRaceFingerprintFactory factory = ManeuverRaceFingerprintFactory.INSTANCE;
+        final ManeuverRaceFingerprint fingerprint = factory.createFingerprint(trackedRace1);
         assertTrue(fingerprint.matches(trackedRace1));
-        MongoClient myFirstMongo = newMongo();
-        MongoDatabase firstDatabase = myFirstMongo.getDatabase(dbConfiguration.getDatabaseName());
-        RaceIdentifier raceIdentifier = trackedRace1.getRaceIdentifier();
+        final MongoClient myFirstMongo = newMongo();
+        final MongoDatabase firstDatabase = myFirstMongo.getDatabase(dbConfiguration.getDatabaseName());
+        final RaceIdentifier raceIdentifier = trackedRace1.getRaceIdentifier();
         //List<Competitor> competetors = trackedRace1.getCompetitor(null);
         final Map<Competitor, List<Maneuver>> maneuvers = new HashMap<>();
-        for (Competitor competitor : getRace().getCompetitors()) {
-            List<Maneuver> maneuversForCompetitor = (List<Maneuver>) trackedRace1.getManeuvers(competitor, true);
+        for (final Competitor competitor : getRace().getCompetitors()) {
+            final List<Maneuver> maneuversForCompetitor = (List<Maneuver>) trackedRace1.getManeuvers(competitor, true);
             maneuvers.put(competitor,maneuversForCompetitor);
         }
-        //final Map<Competitor, List<Maneuver>> maneuvers = trackedRace1.getManeuvers(null, false);
         new MongoObjectFactoryImpl(firstDatabase).storeManeuvers(raceIdentifier, fingerprint, trackedRace1.getRace().getCourse(), maneuvers);
-        DomainObjectFactory dF = PersistenceFactory.INSTANCE.getDomainObjectFactory(dbConfiguration.getService(), getDomainFactory().getBaseDomainFactory());
-        Map<RaceIdentifier, ManeuverRaceFingerprint> fingerprintHashMap = dF.loadFingerprintsForManeuverHashes();
-        ManeuverRaceFingerprint fingerprintAfterDB = fingerprintHashMap.get(trackedRace1.getRaceIdentifier());
+        final DomainObjectFactory dF = PersistenceFactory.INSTANCE.getDomainObjectFactory(dbConfiguration.getService(), getDomainFactory().getBaseDomainFactory());
+        final Map<RaceIdentifier, ManeuverRaceFingerprint> fingerprintHashMap = dF.loadFingerprintsForManeuverHashes();
+        final ManeuverRaceFingerprint fingerprintAfterDB = fingerprintHashMap.get(trackedRace1.getRaceIdentifier());
         assertTrue(fingerprintAfterDB.matches(trackedRace1), "Original and de-serialized copy are equal");
         final Map<Competitor, List<Maneuver>> maneuversLoaded = dF.loadManeuvers(trackedRace1, trackedRace1.getRace().getCourse());
         assertEquals(maneuvers, maneuversLoaded);

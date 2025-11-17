@@ -2744,8 +2744,6 @@ Replicator {
         }
         return trackedRaceLink;
     }
-    
-    
 
     @Override
     public void stopTracking(Regatta regatta, boolean willBeRemoved) throws MalformedURLException, IOException, InterruptedException {
