@@ -122,7 +122,6 @@ public class TestTracTracRaceAndCompetitorStatusReconciler {
             @Override
             public List<Triple<Leaderboard, RaceColumn, Fleet>> getColumnsWithRaceLogForTrackedRace(
                     RegattaAndRaceIdentifier trackedRaceIdentifier) {
-                // TODO Auto-generated method stub
                 return null;
             }
 
@@ -261,7 +260,6 @@ public class TestTracTracRaceAndCompetitorStatusReconciler {
             @Override
             public List<Triple<Leaderboard, RaceColumn, Fleet>> getColumnsWithRaceLogForTrackedRace(
                     RegattaAndRaceIdentifier trackedRaceIdentifier) {
-                // TODO Auto-generated method stub
                 return null;
             }
         });
