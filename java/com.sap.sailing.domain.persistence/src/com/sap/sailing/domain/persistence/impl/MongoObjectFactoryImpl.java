@@ -2050,32 +2050,23 @@ public class MongoObjectFactoryImpl implements MongoObjectFactory {
                 maneuverDoc.put(FieldNames.POSITION_LAT_RAD.name(), f.getPosition().getLatRad()); 
                 maneuverDoc.put(FieldNames.POSITION_LNG_RAD.name(), f.getPosition().getLngRad()); 
                 maneuverDoc.put(FieldNames.TIMEPOINT.name(), f.getTimePoint().asMillis());
-
                 final Document mainCurveBoundariesDoc = new Document();
                 maneuverDoc.put(FieldNames.MAIN_CURVE_BOUNDARIES.name(), storeMainCurveBoundaries(f.getMainCurveBoundaries(), mainCurveBoundariesDoc)); 
                 final Document maeuverCurveWithStableSpeedAndBoundariesDoc = new Document();
                 maneuverDoc.put(FieldNames.MANEUVER_CURVE_WITH_STABLE_SPEED_AND_COURSE_BOUNDERIES.name(), storeMainCurveBoundaries(f.getManeuverCurveWithStableSpeedAndCourseBoundaries(), maeuverCurveWithStableSpeedAndBoundariesDoc)); 
                 maneuverDoc.put(FieldNames.MAX_TURNING_RATE_IN_DEGREE_PER_SECOUND.name(), f.getMaxTurningRateInDegreesPerSecond());
-                
-                // if umschrieben in einzeiler
-                if (f.getMarkPassing() != null)
-                    maneuverDoc.put(FieldNames.INDEX_OF_PASSED_WAYPOINT.name(), course.getIndexOfWaypoint(f.getMarkPassing().getWaypoint()));
-                else
-                    maneuverDoc.put(FieldNames.INDEX_OF_PASSED_WAYPOINT.name(), -1);
+                maneuverDoc.put(FieldNames.INDEX_OF_PASSED_WAYPOINT.name(), f.getMarkPassing() == null ? -1 : course.getIndexOfWaypoint(f.getMarkPassing().getWaypoint()));
                 maneuverDoc.put(FieldNames.TIME_AS_MILLIS.name(), f.getDuration().asMillis());
-                if (f.getManeuverLoss() != null)
-                    maneuverDoc.put(FieldNames.MANEUVER_LOSS.name(), storemaneuverLoss(f.getManeuverLoss()));
-                else
-                    maneuverDoc.put(FieldNames.MANEUVER_LOSS.name(), null);
+                maneuverDoc.put(FieldNames.MANEUVER_LOSS.name(), f.getManeuverLoss() == null ? null : storeManeuverLoss(f.getManeuverLoss()));
                 maneuverList.add(maneuverDoc); 
             }
-            competitorManeuver.put(FieldNames.MANEUVER.name(), maneuverList);
+            competitorManeuver.put(FieldNames.MANEUVERS.name(), maneuverList);
             result.add(competitorManeuver);
         }
         return result;
     }
     
-    private Document storemaneuverLoss(ManeuverLoss maneuverLoss) {
+    private Document storeManeuverLoss(ManeuverLoss maneuverLoss) {
         final Document maneuverLossDoc = new Document();
         maneuverLossDoc.put(FieldNames.DISTANCE_SAILED_POMA.name(), maneuverLoss.getDistanceSailedIfNotManeuveringProjectedOnMiddleManeuverAngle().getMeters());
         maneuverLossDoc.put(FieldNames.DISTANCE_SAILED_INMPOMA.name(), maneuverLoss.getDistanceSailedIfNotManeuveringProjectedOnMiddleManeuverAngle().getMeters());
@@ -2105,7 +2096,7 @@ public class MongoObjectFactoryImpl implements MongoObjectFactory {
 
     @Override
     public void storeManeuvers(RaceIdentifier raceIdentifier, ManeuverRaceFingerprint fingerprint, Course course, Map<Competitor, List<Maneuver>> maneuvers) {
-        MongoCollection<Document> maneuverCollection = database.getCollection(CollectionNames.MANEUVER.name());
+        MongoCollection<Document> maneuverCollection = database.getCollection(CollectionNames.MANEUVERS.name());
         JSONObject fingerprintjson = fingerprint.toJson();
         final Document query = new Document();
         DomainObjectFactoryImpl.addRaceIdentifierToQuery(query, raceIdentifier);
@@ -2114,13 +2105,13 @@ public class MongoObjectFactoryImpl implements MongoObjectFactory {
         result.put(FieldNames.MANEUVER_FINGERPRINT.name(), fingerprintDoc);
         storeRaceIdentifier(result, raceIdentifier);
         final List<Document> maneuverDoc = storeManeuvers( maneuvers , raceIdentifier, course);
-        result.put(FieldNames.MANEUVER.name(), maneuverDoc);
+        result.put(FieldNames.MANEUVERS.name(), maneuverDoc);
         maneuverCollection.replaceOne(query, result, new ReplaceOptions().upsert(true));
     }
     
     @Override
     public void removeManeuvers(RaceIdentifier raceIdentifier) {
-        MongoCollection<Document> maneuverCollection = database.getCollection(CollectionNames.MANEUVER.name());
+        MongoCollection<Document> maneuverCollection = database.getCollection(CollectionNames.MANEUVERS.name());
         final Document query = new Document();
         DomainObjectFactoryImpl.addRaceIdentifierToQuery(query, raceIdentifier);
         maneuverCollection.deleteOne(query);

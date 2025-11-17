@@ -3293,8 +3293,6 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
         return new Pair<>(waypoint, markPassing);
     }
     
-    // Methods for ManeuverFingerprint -  not finished
-    
     private Pair<RaceIdentifier, ManeuverRaceFingerprint> loadManeuversFingerprint(final Document currentDocument) {
         final RaceIdentifier raceIdentifier = loadRaceIdentifier(currentDocument);
         ManeuverRaceFingerprint fingerprint;
@@ -3309,10 +3307,9 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
         return new Pair<>(raceIdentifier, fingerprint);
     }
     
-    
     @Override
     public Map<RaceIdentifier, ManeuverRaceFingerprint> loadFingerprintsForManeuverHashes() {
-        final MongoCollection<Document> maneuversCollection = database.getCollection(CollectionNames.MANEUVER.name());
+        final MongoCollection<Document> maneuversCollection = database.getCollection(CollectionNames.MANEUVERS.name());
         maneuversCollection.createIndex(new Document()
                 .append(FieldNames.EVENT_NAME.name(), 1)
                 .append(FieldNames.RACE_NAME.name(), 1),
@@ -3336,18 +3333,18 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
         final Document query = new Document();
         RaceIdentifier raceIdentifier = trackedRace.getRaceIdentifier();
         addRaceIdentifierToQuery(query, raceIdentifier);
-        final MongoCollection<Document> maneuversCollection = database.getCollection(CollectionNames.MANEUVER.name());
+        final MongoCollection<Document> maneuversCollection = database.getCollection(CollectionNames.MANEUVERS.name());
         final Document doc = maneuversCollection.find(query).first();
         if (doc != null) {
             result = new HashMap<>();
-            final List<Document> maneuversDoc = doc.getList(FieldNames.MANEUVER.name(), Document.class);
+            final List<Document> maneuversDoc = doc.getList(FieldNames.MANEUVERS.name(), Document.class);
             for (final Document maneuversForOneCompetitorDoc : maneuversDoc) {
                 final Serializable competitorId = maneuversForOneCompetitorDoc.get(FieldNames.COMPETITOR_ID.name(), Serializable.class);
                 final Competitor competitor = baseDomainFactory.getExistingCompetitorById(competitorId);
-                for (final Document maneuvers: maneuversForOneCompetitorDoc.getList(FieldNames.MANEUVER.name(), Document.class)) {
+                for (final Document maneuvers : maneuversForOneCompetitorDoc.getList(FieldNames.MANEUVERS.name(), Document.class)) {
                     final Maneuver maneuver = loadManeuver(competitor, maneuvers, course, trackedRace);
                     result.computeIfAbsent(competitor, c -> new ArrayList<>()).add(maneuver);     
-                    }
+                }
             }
         } else {
             result = null;
