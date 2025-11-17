@@ -244,10 +244,10 @@ import com.sap.sailing.domain.leaderboard.impl.RegattaLeaderboardWithOtherTieBre
 import com.sap.sailing.domain.leaderboard.impl.ThresholdBasedResultDiscardingRuleImpl;
 import com.sap.sailing.domain.leaderboard.meta.LeaderboardGroupMetaLeaderboard;
 import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprint;
+import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprintFactory;
 import com.sap.sailing.domain.maneuverhash.MarkPassingProxy;
-import com.sap.sailing.domain.maneuverhash.impl.ManeuverRaceFingerprintImpl;
 import com.sap.sailing.domain.markpassinghash.MarkPassingRaceFingerprint;
-import com.sap.sailing.domain.markpassinghash.impl.MarkPassingRaceFingerprintImpl;
+import com.sap.sailing.domain.markpassinghash.MarkPassingRaceFingerprintFactory;
 import com.sap.sailing.domain.persistence.DomainObjectFactory;
 import com.sap.sailing.domain.persistence.FieldNames;
 import com.sap.sailing.domain.persistence.MongoRaceLogStoreFactory;
@@ -3253,7 +3253,7 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
         try {
             final JSONObject json = Helpers.toJSONObjectSafe(
                     new JSONParser().parse(((Document) currentDocument.get(FieldNames.MARK_PASSINGS_FINGERPRINT.name())).toJson()));
-            fingerprint = new MarkPassingRaceFingerprintImpl(json);
+            fingerprint = MarkPassingRaceFingerprintFactory.INSTANCE.fromJson(json);
         } catch (JsonDeserializationException | ParseException e) {
             logger.log(Level.WARNING, "Problem de-serializing mark passings from document; ignoring", e);
             fingerprint = null;
@@ -3299,7 +3299,7 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
         try {
             final JSONObject json = Helpers.toJSONObjectSafe(
                     new JSONParser().parse(((Document) currentDocument.get(FieldNames.MANEUVER_FINGERPRINT.name())).toJson()));
-            fingerprint = new ManeuverRaceFingerprintImpl(json);
+            fingerprint = ManeuverRaceFingerprintFactory.INSTANCE.fromJson(json);
         } catch (JsonDeserializationException | ParseException e) {
             logger.log(Level.WARNING, "Problem de-serializing maneuvers from document; ignoring", e);
             fingerprint = null;
