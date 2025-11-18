@@ -51,14 +51,9 @@ public interface DomainFactory extends SharedDomainFactory<RaceLogAndTrackedRace
         }
 
         @Override
-        public List<Triple<Leaderboard, RaceColumn, Fleet>> getColumnsWithRaceLogForTrackedRace(
-                RegattaAndRaceIdentifier trackedRaceIdentifier) {
-            // TODO Auto-generated method stub
+        public List<Triple<Leaderboard, RaceColumn, Fleet>> getColumnsWithRaceLogForTrackedRace(RegattaAndRaceIdentifier trackedRaceIdentifier) {
             return null;
         }
-
-
-
     };
     
     /**
