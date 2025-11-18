@@ -324,7 +324,7 @@ public abstract class TrackedRegattaImpl implements TrackedRegatta {
             long millisecondsOverWhichToAverageWind, long millisecondsOverWhichToAverageSpeed,
             DynamicRaceDefinitionSet raceDefinitionSetToUpdate, boolean useInternalMarkPassingAlgorithm, RaceLogAndTrackedRaceResolver raceLogResolver,
             Optional<ThreadLocalTransporter> threadLocalTransporter, TrackingConnectorInfo trackingConnectorInfo,
-            MarkPassingRaceFingerprintRegistry markPassingRaceFingerprintRegistry,ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry ) {
+            MarkPassingRaceFingerprintRegistry markPassingRaceFingerprintRegistry, ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry ) {
         logger.log(Level.INFO, "Creating DynamicTrackedRaceImpl for RaceDefinition " + raceDefinition.getName());
         DynamicTrackedRaceImpl result = new DynamicTrackedRaceImpl(this, raceDefinition, sidelines, windStore,
                 delayToLiveInMillis, millisecondsOverWhichToAverageWind,
