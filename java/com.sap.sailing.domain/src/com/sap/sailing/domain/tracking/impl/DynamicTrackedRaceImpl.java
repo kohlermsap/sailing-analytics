@@ -58,7 +58,6 @@ import com.sap.sailing.domain.tracking.DynamicTrackedRace;
 import com.sap.sailing.domain.tracking.DynamicTrackedRegatta;
 import com.sap.sailing.domain.tracking.GPSFixTrack;
 import com.sap.sailing.domain.tracking.GPSTrackListener;
-import com.sap.sailing.domain.tracking.Maneuver;
 import com.sap.sailing.domain.tracking.MarkPassing;
 import com.sap.sailing.domain.tracking.RaceAbortedListener;
 import com.sap.sailing.domain.tracking.RaceChangeListener;
@@ -938,123 +937,6 @@ DynamicTrackedRace, GPSTrackListener<Competitor, GPSFixMoving> {
         }
     }
     
-    
-    @Override
-    public void updateManeuvers(Competitor competitor, Iterable<Maneuver> maneuvers) {
-        final CompetitorResult resultFromRaceLog = competitorResultsFromRaceLog.get(competitor);
-        updateManeuversConsideringFinishingTimesFromRaceLog(competitor, maneuvers, resultFromRaceLog);
-    }
-
-    
-    
-    
-    
-
-    private void updateManeuversConsideringFinishingTimesFromRaceLog(Competitor competitor,
-            Iterable<Maneuver> maneuvers, CompetitorResult resultFromRaceLog) {
-        LockUtil.lockForRead(getSerializationLock()); // keep serializer from reading the mark passings collections
-        try {
-//            List<Maneuver> oldManeuvers = new ArrayList<Maneuver>();
-//            TimePoint finishTime = resultFromRaceLog.getFinishingTime();
-//            MarkPassing oldStartMarkPassing = null;
-//            boolean requiresStartTimeUpdate = true;
-//            final Iterable<Maneuver> maneuversForCompetitor = getManeuvers(competitor, false);
-//            lockForRead(maneuversForCompetitor);
-//            try {
-//                for (Maneuver oldMarkPassing : maneuversForCompetitor) {
-//                    if (oldStartMarkPassing == null) {
-//                        oldStartMarkPassing = oldMarkPassing;
-//                    }
-//                    oldMarkPassings.put(oldMarkPassing.getWaypoint(), oldMarkPassing);
-//                }
-//            } finally {
-//                unlockAfterRead(maneuversForCompetitor);
-//            }
-//            final NamedReentrantReadWriteLock markPassingsLock = getMarkPassingsLock(maneuversForCompetitor);
-//            TimePoint timePointOfLatestEvent = new MillisecondsTimePoint(0);
-//            // Make sure that clearMarkPassings and the re-adding of the mark passings are non-interruptible by readers.
-//            // Note that the write lock for the mark passings in order per waypoint is obtained inside
-//            // clearMarkPassings(...) as well as inside the subsequent for-loop. It is important to always first obtain the mark passings lock
-//            // for the competitor mark passings before obtaining the lock for the mark passings in order for the waypoint to avoid
-//            // deadlocks.
-//            getRace().getCourse().lockForRead();
-//            LockUtil.lockForWrite(markPassingsLock);
-//            try {
-//                clearMarkPassings(competitor);
-//                for (MarkPassing markPassing : markPassings) {
-//                    // Now since this caller of this update may not have held the course lock, mark passings
-//                    // may already be obsolete and for waypoints that no longer exist. Check:
-//                    if (getRace().getCourse().getIndexOfWaypoint(markPassing.getWaypoint()) >= 0) {
-//                        // try to find corresponding old start mark passing
-//                        if (oldStartMarkPassing != null
-//                                && markPassing.getWaypoint().equals(oldStartMarkPassing.getWaypoint())) {
-//                            if (markPassing.getTimePoint() != null && oldStartMarkPassing.getTimePoint() != null
-//                                    && markPassing.getTimePoint().equals(oldStartMarkPassing.getTimePoint())) {
-//                                requiresStartTimeUpdate = false;
-//                            }
-//                        }
-//                        if (!Util.contains(getRace().getCourse().getWaypoints(), markPassing.getWaypoint())) {
-//                            StringBuilder courseWaypointsWithID = new StringBuilder();
-//                            boolean first = true;
-//                            for (Waypoint courseWaypoint : getRace().getCourse().getWaypoints()) {
-//                                if (first) {
-//                                    first = false;
-//                                } else {
-//                                    courseWaypointsWithID.append(" -> ");
-//                                }
-//                                courseWaypointsWithID.append(courseWaypoint.toString());
-//                                courseWaypointsWithID.append(" (ID=");
-//                                courseWaypointsWithID.append(courseWaypoint.getId());
-//                                courseWaypointsWithID.append(")");
-//                            }
-//                            logger.severe("Received mark passing " + markPassing + " for race " + getRace()
-//                                    + " for waypoint ID" + markPassing.getWaypoint().getId()
-//                                    + " but the waypoint does not exist in course " + courseWaypointsWithID);
-//                        } else {
-//                            markPassingsForCompetitor.add(markPassing);
-//                        }
-//                        Collection<MarkPassing> markPassingsInOrderForWaypoint = getOrCreateMarkPassingsInOrderAsNavigableSet(markPassing
-//                                .getWaypoint());
-//                        final NamedReentrantReadWriteLock markPassingsLock2 = getMarkPassingsLock(markPassingsInOrderForWaypoint);
-//                        LockUtil.lockForWrite(markPassingsLock2);
-//                        try {
-//                            // The mark passings of competitor have been removed by the call to
-//                            // clearMarkPassings(competitor) above
-//                            // from both, the collection that holds the mark passings by waypoint and the one that holds the
-//                            // mark passings per competitor; so we can simply add here:
-//                            markPassingsInOrderForWaypoint.add(markPassing);
-//                        } finally {
-//                            LockUtil.unlockAfterWrite(markPassingsLock2);
-//                        }
-//                        if (markPassing.getTimePoint().compareTo(timePointOfLatestEvent) > 0) {
-//                            timePointOfLatestEvent = markPassing.getTimePoint();
-//                        }
-//                    } else {
-//                        logger.warning("Received mark passing "+markPassing+
-//                                " for non-existing waypoint "+markPassing.getWaypoint()+
-//                                " in race "+getRace().getName()+". Ignoring.");
-//                    }
-//                }
-//            } finally {
-//                LockUtil.unlockAfterWrite(maneuversLock);
-//                getRace().getCourse().unlockAfterRead();
-//            }
-//            updated(timePointOfLatestEvent);
-//            triggerManeuverCacheRecalculation(competitor);
-//            // update the race times like start, end and the leg times
-//            if (requiresStartTimeUpdate) {
-//                invalidateStartTime();
-//            }
-//            invalidateMarkPassingTimes();
-//            invalidateEndTime();
-//            // notify *after* all mark passings have been re-established; should avoid flicker
-//            notifyListeners(competitor, oldMarkPassings, markPassings);
-        } finally {
-            LockUtil.unlockAfterRead(getSerializationLock());
-        }
-        
-    }
-
     /**
      * The {@link CompetitorResults} from the race log as cached in {@link #competitorResultsFromRaceLog} may optionally
      * set a finishing time for competitors. Also, depending on how the race log has been modified (e.g., a new pass

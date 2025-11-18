@@ -132,8 +132,6 @@ public interface DynamicTrackedRace extends TrackedRace {
      */
     void updateMarkPassingsAfterRaceLogChanges();
     
-    void updateManeuvers(Competitor competitor, Iterable<Maneuver> maneuvers);
-
     /**
      * Sets the start time as received from the tracking infrastructure. This isn't necessarily
      * what {@link #getStart()} will deliver which assumes that the time announced here may be
