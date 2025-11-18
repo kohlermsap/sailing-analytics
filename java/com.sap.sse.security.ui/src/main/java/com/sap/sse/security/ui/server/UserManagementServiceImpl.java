@@ -3,6 +3,7 @@ package com.sap.sse.security.ui.server;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -420,16 +421,18 @@ public class UserManagementServiceImpl extends RemoteServiceServlet implements U
     public HashMap<String, TimedLock> getClientIPBasedTimedLocksForUserCreation() throws UnauthorizedException {
         final SecurityService securityService = getSecurityService();
         final HashMap<String, TimedLock> ipToLockMap = securityService.getClientIPBasedTimedLocksForUserCreation();
+        final Iterator<Entry<String, TimedLock>> iterator = ipToLockMap.entrySet().iterator();
         // remove from Map, those where permission == FALSE
-        ipToLockMap.entrySet().forEach(ipToLockPair -> {
+        while (iterator.hasNext()) {
+            final Entry<String, TimedLock> ipToLockPair = iterator.next();
             final String ip = ipToLockPair.getKey();
             final WildcardPermission userReadPermissionOnIp = SecuredSecurityTypes.LOCKED_IP
                     .getPermissionForObject(DefaultActions.READ, new IPAddress(ip));
             final boolean isPermitted = SecurityUtils.getSubject().isPermitted(userReadPermissionOnIp.toString());
             if (!isPermitted) {
-                ipToLockMap.remove(ip);
+                iterator.remove();
             }
-        });
+        }
         return ipToLockMap;
     }
 
@@ -438,15 +441,18 @@ public class UserManagementServiceImpl extends RemoteServiceServlet implements U
         final SecurityService securityService = getSecurityService();
         final HashMap<String, TimedLock> ipToLockMap = securityService.getClientIPBasedTimedLocksForBearerTokenAbuse();
         // remove from Map, those where permission == FALSE
-        ipToLockMap.entrySet().forEach(ipToLockPair -> {
+        final Iterator<Entry<String, TimedLock>> iterator = ipToLockMap.entrySet().iterator();
+        // remove from Map, those where permission == FALSE
+        while (iterator.hasNext()) {
+            final Entry<String, TimedLock> ipToLockPair = iterator.next();
             final String ip = ipToLockPair.getKey();
             final WildcardPermission userReadPermissionOnIp = SecuredSecurityTypes.LOCKED_IP
                     .getPermissionForObject(DefaultActions.READ, new IPAddress(ip));
             final boolean isPermitted = SecurityUtils.getSubject().isPermitted(userReadPermissionOnIp.toString());
             if (!isPermitted) {
-                ipToLockMap.remove(ip);
+                iterator.remove();
             }
-        });
+        }
         return ipToLockMap;
     }
 }
