@@ -60,7 +60,7 @@ public class ManeuverRaceFingerprintImpl extends MarkPassingRaceFingerprintImpl 
         final Set<WindSource> windSouresToExclude = trackedRace.getWindSourcesToExclude();
         for (WindSource w : windSoures) {
             if (w.getType().isObserved() && !windSouresToExclude.contains(w)) {
-                WindTrack windTrack = trackedRace.getOrCreateWindTrack(w);
+                final WindTrack windTrack = trackedRace.getOrCreateWindTrack(w);
                 windTrack.lockForRead();
                 try {
                     int k = w.getId() == null ? 0 : w.getId().hashCode();
