@@ -1,9 +1,11 @@
 package com.sap.sailing.domain.maneuverhash.impl;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import java.util.logging.Logger;
 
 import com.sap.sailing.domain.base.Competitor;
@@ -11,16 +13,17 @@ import com.sap.sailing.domain.maneuverhash.ManeuverCache;
 import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprint;
 import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprintFactory;
 import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprintRegistry;
+import com.sap.sailing.domain.maneuverhash.SerializableManeuverCache;
 import com.sap.sailing.domain.tracking.Maneuver;
 import com.sap.sailing.domain.tracking.impl.DynamicTrackedRaceImpl;
 import com.sap.sailing.domain.tracking.impl.TrackedRaceImpl;
-import com.sap.sse.util.SmartFutureCache.EmptyUpdateInterval;
 
-public class ManeuverCacheDelegate implements ManeuverCache<Competitor, List<Maneuver>, EmptyUpdateInterval> {
+public class ManeuverCacheDelegate implements SerializableManeuverCache {
+    private static final long serialVersionUID = 19872309587435L;
     private final TrackedRaceImpl race;
     private static final Logger logger = Logger.getLogger(ManeuverCacheDelegate.class.getName());
     private final ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry;
-    private volatile ManeuverCache<Competitor, List<Maneuver>, EmptyUpdateInterval> cacheToUse;
+    private volatile transient ManeuverCache cacheToUse;
     
     public ManeuverCacheDelegate(TrackedRaceImpl race,
             ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry) {
@@ -30,6 +33,27 @@ public class ManeuverCacheDelegate implements ManeuverCache<Competitor, List<Man
         this.cacheToUse = new ManeuversFromSmartFutureCache((DynamicTrackedRaceImpl) race);
     }    
     
+    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+        ois.defaultReadObject();
+        this.cacheToUse = (ManeuversFromDatabase) ois.readObject();
+    }
+    
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject();
+        oos.writeObject(new ManeuversFromDatabase(getAllKnownManeuvers()));
+    }
+    
+    private Map<Competitor, List<Maneuver>> getAllKnownManeuvers() {
+        final Map<Competitor, List<Maneuver>> result = new HashMap<>();
+        for (final Competitor competitor : race.getRace().getCompetitors()) {
+            final List<Maneuver> maneuversForCompetitor = get(competitor, /* waitForLatest */ false);
+            if (maneuversForCompetitor != null) {
+                result.put(competitor, maneuversForCompetitor);
+            }
+        }
+        return result;
+    }
+
     @Override
     public void resume() {
         final ManeuverRaceFingerprint fingerprint;
@@ -72,7 +96,7 @@ public class ManeuverCacheDelegate implements ManeuverCache<Competitor, List<Man
     }
 
     @Override
-    public void triggerUpdate(Competitor competitor, EmptyUpdateInterval updateInterval) {
-        cacheToUse.triggerUpdate(competitor, updateInterval);
+    public void triggerUpdate(Competitor competitor) {
+        cacheToUse.triggerUpdate(competitor);
     }
 }

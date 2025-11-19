@@ -1,14 +1,16 @@
 package com.sap.sailing.domain.maneuverhash;
 
-import com.sap.sse.util.SmartFutureCache.UpdateInterval;
+import java.util.List;
 
-public interface ManeuverCache<K, V, U extends UpdateInterval<U>>{
+import com.sap.sailing.domain.base.Competitor;
+import com.sap.sailing.domain.tracking.Maneuver;
 
+public interface ManeuverCache {
     void resume();
 
-    V get(K key, boolean waitForLatest);
+    List<Maneuver> get(Competitor key, boolean waitForLatest);
 
     void suspend();
 
-    void triggerUpdate(K key, U updateInterval);
+    void triggerUpdate(Competitor key);
 }

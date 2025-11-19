@@ -6,10 +6,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sap.sailing.domain.base.Competitor;
-import com.sap.sailing.domain.maneuverhash.ManeuverCache;
+import com.sap.sailing.domain.maneuverhash.SerializableManeuverCache;
 import com.sap.sailing.domain.tracking.Maneuver;
 import com.sap.sailing.domain.tracking.TrackedRace;
-import com.sap.sse.util.SmartFutureCache.EmptyUpdateInterval;
 
 /**
  * Stores a {@link TrackedRace}'s {@link Maneuver}s after they were loaded successfully from the persistent store.
@@ -19,26 +18,23 @@ import com.sap.sse.util.SmartFutureCache.EmptyUpdateInterval;
  * 
  * This class collaborates with {@link ManeuverCacheDelegate}.
  */
-public class ManeuversFromDatabase implements ManeuverCache<Competitor, List<Maneuver>, EmptyUpdateInterval> {
-    boolean suspended;
+public class ManeuversFromDatabase implements SerializableManeuverCache {
+    private static final long serialVersionUID = 1872340928634087L;
     private static final Logger logger = Logger.getLogger(ManeuversFromDatabase.class.getName());
     private final Map<Competitor, List<Maneuver>> maneuvers;
 
-    public ManeuversFromDatabase(
-             Map<Competitor, List<Maneuver>> maneuvers) {
+    public ManeuversFromDatabase(Map<Competitor, List<Maneuver>> maneuvers) {
         super();
         this.maneuvers = maneuvers;
     }
-
+    
     public void resume() {
         logger.log(Level.WARNING, "Method should never be called");
+        // TODO bug5959: another case where we should revert to a SmartFutureCache?
     }
 
     public void suspend() {
-        synchronized (this) {
-            logger.finest("Suspended ManeuverFromDatabase");
-            suspended = true;
-        }    
+        // nothing to suspend here
     }
 
     public List<Maneuver> get(Competitor competitor, boolean waitForLatest) {
@@ -46,7 +42,7 @@ public class ManeuversFromDatabase implements ManeuverCache<Competitor, List<Man
     }
 
     @Override
-    public void triggerUpdate(Competitor key, EmptyUpdateInterval updateInterval) {
+    public void triggerUpdate(Competitor key) {
       logger.log(Level.WARNING, "If Fingerprint matches, no Update should be triggered");
       // TODO change to smartFutureCache in Delegate
     }
