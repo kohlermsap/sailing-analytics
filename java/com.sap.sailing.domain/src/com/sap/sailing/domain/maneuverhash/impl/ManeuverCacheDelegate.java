@@ -20,87 +20,59 @@ public class ManeuverCacheDelegate implements ManeuverCache<Competitor, List<Man
     private final TrackedRaceImpl race;
     private static final Logger logger = Logger.getLogger(ManeuverCacheDelegate.class.getName());
     private final ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry;
-    private ManeuverCache<Competitor, List<Maneuver>, EmptyUpdateInterval> cacheToUse;
+    private volatile ManeuverCache<Competitor, List<Maneuver>, EmptyUpdateInterval> cacheToUse;
     
     public ManeuverCacheDelegate(TrackedRaceImpl race,
             ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry) {
         super();
         this.race = race;
         this.maneuverRaceFingerprintRegistry = maneuverRaceFingerprintRegistry;
-        this.cacheToUse = new ManeuverFromSmartFutureCache((DynamicTrackedRaceImpl) race); 
+        this.cacheToUse = new ManeuversFromSmartFutureCache((DynamicTrackedRaceImpl) race); 
     }    
     
     @Override
     public void resume() {
         final ManeuverRaceFingerprint fingerprint;
-        race.getRace().getCourse().lockForRead(); 
-        try {
-            synchronized (this) {
+        if (maneuverRaceFingerprintRegistry != null) {
+            logger.info("Compare maneuver fingerprints for race "+race.getRaceIdentifier());
+            race.waitForAllRaceLogsAttached();
+            fingerprint = maneuverRaceFingerprintRegistry.getManeuverRaceFingerprint(race.getRaceIdentifier());
+        } else {
+            fingerprint = null;
+        }
+        if (fingerprint != null && fingerprint.matches(race)) {
+            logger.info("Maneuver fingerprints match for race "+race.getRaceIdentifier()+"; loading from DB instead of computing");
+            cacheToUse = new ManeuversFromDatabase(maneuverRaceFingerprintRegistry.loadManeuvers(race, race.getRace().getCourse()));
+        } else {
+            new Thread(()->{
+                logger.info("Maneuver fingerprints do not match for race "+race.getRaceIdentifier()+"; NOT loading from DB");
+                cacheToUse.resume();
                 if (maneuverRaceFingerprintRegistry != null) {
-                    logger.info("Compare maneuver fingerprints for race "+race.getRaceIdentifier());
-                    race.waitForAllRaceLogsAttached();
-                    fingerprint = maneuverRaceFingerprintRegistry.getManeuverRaceFingerprint(race.getRaceIdentifier());
-                } else {
-                    fingerprint = null;
+                    // wait for maneuvers to be computed by the default cache implementation (SmartFutureCache),
+                    // then store persistently in registry
+                    final Map<Competitor, List<Maneuver>> maneuvers = new HashMap<>();
+                    for (final Competitor competitor : race.getRace().getCompetitors()) {
+                        maneuvers.put(competitor, (List<Maneuver>) cacheToUse.get(competitor, /* waitForLatest */ true));
+                    }
+                    maneuverRaceFingerprintRegistry.storeManeuvers(race.getRaceIdentifier(), ManeuverRaceFingerprintFactory.INSTANCE.createFingerprint(race), maneuvers, race.getRace().getCourse());
                 }
-                if (fingerprint != null && fingerprint.matches(race)) {
-                    logger.info("Maneuver fingerprints match for race "+race.getRaceIdentifier()+"; loading from DB instead of computing");
-                    cacheToUse = new ManeuversFromDatabase(maneuverRaceFingerprintRegistry.loadManeuvers(race, race.getRace().getCourse()));
-                } else {
-                    new Thread(()->{
-                        logger.info("Maneuver fingerprints do not match for race "+race.getRaceIdentifier()+"; NOT loading from DB");
-                        cacheToUse.resume();
-                        if (maneuverRaceFingerprintRegistry != null) {
-                            // wait for maneuvers to be computed by the default cache implementation (SmartFutureCache),
-                            // then store persistently in registry
-                            final Map<Competitor, List<Maneuver>> maneuvers = new HashMap<>();
-                            for (final Competitor competitor : race.getRace().getCompetitors()) {
-                                maneuvers.put(competitor, (List<Maneuver>) cacheToUse.get(competitor, /* waitForLatest */ true));
-                            }
-                            maneuverRaceFingerprintRegistry.storeManeuvers(race.getRaceIdentifier(), ManeuverRaceFingerprintFactory.INSTANCE.createFingerprint(race), maneuvers, race.getRace().getCourse());
-                        }
-                    }, "Waiting for mark passings for "+race.getName()+" after having resumed to store the results in registry")
-                    .start();
-                }
-            }
-        } finally {
-            race.getRace().getCourse().unlockAfterRead();
+            }, "Waiting for mark passings for "+race.getName()+" after having resumed to store the results in registry")
+            .start();
         }
     }
 
     @Override
     public List<Maneuver> get(Competitor competitor, boolean waitForLatest) {
-        race.getRace().getCourse().lockForRead(); 
-        try {
-            synchronized (this) {
-                return (List<Maneuver>) cacheToUse.get(competitor, waitForLatest);
-            }
-        } finally {
-            race.getRace().getCourse().unlockAfterRead();
-        }
+        return cacheToUse.get(competitor, waitForLatest);
     }
 
     @Override
     public void suspend() {
-        race.getRace().getCourse().lockForRead(); 
-        try {
-            synchronized (this) {
-                cacheToUse.suspend();
-            }
-        } finally {
-            race.getRace().getCourse().unlockAfterRead();
-        }
+        cacheToUse.suspend();
     }
 
     @Override
     public void triggerUpdate(Competitor competitor, EmptyUpdateInterval updateInterval) {
-        race.getRace().getCourse().lockForRead(); 
-        try {
-            synchronized (this) {
-                cacheToUse.triggerUpdate(competitor, updateInterval);
-            }
-        } finally {
-            race.getRace().getCourse().unlockAfterRead();
-        }
+        cacheToUse.triggerUpdate(competitor, updateInterval);
     }
 }
