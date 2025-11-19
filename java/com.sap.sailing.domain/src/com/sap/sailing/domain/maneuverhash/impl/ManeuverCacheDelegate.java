@@ -27,7 +27,7 @@ public class ManeuverCacheDelegate implements ManeuverCache<Competitor, List<Man
         super();
         this.race = race;
         this.maneuverRaceFingerprintRegistry = maneuverRaceFingerprintRegistry;
-        this.cacheToUse = new ManeuversFromSmartFutureCache((DynamicTrackedRaceImpl) race); 
+        this.cacheToUse = new ManeuversFromSmartFutureCache((DynamicTrackedRaceImpl) race);
     }    
     
     @Override
