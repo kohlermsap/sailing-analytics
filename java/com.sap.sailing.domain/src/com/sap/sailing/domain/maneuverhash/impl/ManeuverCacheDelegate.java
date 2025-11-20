@@ -22,7 +22,7 @@ public class ManeuverCacheDelegate implements SerializableManeuverCache {
     private static final long serialVersionUID = 19872309587435L;
     private final TrackedRaceImpl race;
     private static final Logger logger = Logger.getLogger(ManeuverCacheDelegate.class.getName());
-    private final ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry;
+    private transient ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry;
     private volatile transient ManeuverCache cacheToUse;
     
     public ManeuverCacheDelegate(TrackedRaceImpl race,
@@ -43,6 +43,11 @@ public class ManeuverCacheDelegate implements SerializableManeuverCache {
         oos.writeObject(new ManeuversFromDatabase(getAllKnownManeuvers()));
     }
     
+    @Override
+    public void setManeuverRaceFingerprintRegistry(ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry) {
+        this.maneuverRaceFingerprintRegistry = maneuverRaceFingerprintRegistry;
+    }
+
     private Map<Competitor, List<Maneuver>> getAllKnownManeuvers() {
         final Map<Competitor, List<Maneuver>> result = new HashMap<>();
         for (final Competitor competitor : race.getRace().getCompetitors()) {

@@ -3759,6 +3759,7 @@ Replicator {
             try {
                 for (TrackedRace trackedRace : trackedRegatta.getTrackedRaces()) {
                     ((TrackedRaceImpl) trackedRace).setRaceLogResolver(this);
+                    ((TrackedRaceImpl) trackedRace).setManeuverRaceFingerprintRegistry(this);
                     ((TrackedRaceImpl) trackedRace).registerRegattaListener();
                     trackedRace.initializeAfterDeserialization();
                 }

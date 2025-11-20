@@ -4450,4 +4450,8 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
     public ShortTimeAfterLastHitCache<Competitor, IncrementalManeuverDetector> getManeuverDetectorPerCompetitorCache() {
         return maneuverDetectorPerCompetitorCache;
     }
+
+    public void setManeuverRaceFingerprintRegistry(ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry) {
+        maneuverCache.setManeuverRaceFingerprintRegistry(maneuverRaceFingerprintRegistry);
+    }
 }
