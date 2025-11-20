@@ -39,6 +39,7 @@ SAP is at the center of today’s technology revolution, developing innovations 
 * [[Whitelabelling|wiki/howto/whitelabelling]]
 * [[Secured Settings|wiki/howto/development/secured-settings]]
 * [[Webdesign|wiki/info/landscape/webdesign]]
+* [[Branding Setup|wiki/info/landscape/branding-setup]]
 
 ### Architecture and Infrastructure
   * [[Workspace, Bundles, Projects|wiki/info/general/workspace-bundles-projects-structure]]
