@@ -105,4 +105,6 @@ public interface UserManagementServiceAsync {
     void addSecurityInformation(SecuredDTO securedDTO, AsyncCallback<SecuredDTO> callback);
     
     void getCORSFilterConfiguration(AsyncCallback<Pair<Boolean, ArrayList<String>>> callback);
+    
+    void getBrandingConfigurationId(AsyncCallback<String> callback);
 }

@@ -4,7 +4,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.user.client.ui.Widget;
 import com.sap.sailing.gwt.common.authentication.FixedSailingAuthentication;
-import com.sap.sailing.gwt.common.authentication.SAPSailingHeaderWithAuthentication;
+import com.sap.sailing.gwt.common.authentication.SailingHeaderWithAuthentication;
 import com.sap.sailing.gwt.common.client.FullscreenUtil;
 import com.sap.sailing.gwt.ui.client.StringMessages;
 import com.sap.sse.gwt.client.shared.components.AbstractCompositeComponent;
@@ -17,7 +17,7 @@ public class SAPHeaderComponent extends AbstractCompositeComponent<SAPHeaderComp
     private SAPHeaderComponentSettings settings;
     private final SAPHeaderComponentLifecycle componentLifecycle;
     
-    private final SAPSailingHeaderWithAuthentication sapHeader;
+    private final SailingHeaderWithAuthentication sapHeader;
     
     public SAPHeaderComponent(Component<?> parent, ComponentContext<?> context,
             SAPHeaderComponentLifecycle componentLifecycle,
@@ -26,7 +26,7 @@ public class SAPHeaderComponent extends AbstractCompositeComponent<SAPHeaderComp
         super(parent, context);
         this.componentLifecycle = componentLifecycle;
         this.settings = settings;
-        this.sapHeader = new SAPSailingHeaderWithAuthentication(settings.getTitle());
+        this.sapHeader = new SailingHeaderWithAuthentication(settings.getTitle());
         new FixedSailingAuthentication(userService, paywallResolver, sapHeader.getAuthenticationMenuView());
 
         initWidget(sapHeader);

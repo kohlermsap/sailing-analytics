@@ -120,11 +120,11 @@ else
   JAVA_VERSION_SPECIFIC_ARGS=$JAVA_8_ARGS
 fi
 
-# White labeling / SAP Branding: use -Dcom.sap.sse.debranding=false to show SAP branding images and text.
+# White labeling / SAP Branding: use -Dcom.sap.sse.branding=SAP to show SAP branding images and text.
 # Note: This is allowed only for versions of this software that have been reviewed by SAP, e.g., have come
 # from an SAP-controlled Git repository such as github.com/SAP/sailing-analytics. In all other cases, the
 # usual restrictions for the use of the SAP brand and logo apply. See also https://brand.sap.com/
-#ADDITIONAL_JAVA_ARGS="$ADDITIONAL_JAVA_ARGS -Dcom.sap.sse.debranding=false"
+#ADDITIONAL_JAVA_ARGS="$ADDITIONAL_JAVA_ARGS -Dcom.sap.sse.branding=SAP"
 # Anniversary calculation:
 #ADDITIONAL_JAVA_ARGS="$ADDITIONAL_JAVA_ARGS -DAnniversaryRaceDeterminator.enabled=true"
 ADDITIONAL_JAVA_ARGS="$JAVA_VERSION_SPECIFIC_ARGS $ADDITIONAL_JAVA_ARGS -Dpersistentcompetitors.clear=false -Drestore.tracked.races=true -XX:MaxGCPauseMillis=500 -Dorg.eclipse.jetty.LEVEL=OFF -Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StdErrLog"

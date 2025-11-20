@@ -70,6 +70,12 @@
     </dependency>
     <dependency>
       <groupId>com.sap.sailing</groupId>
+      <artifactId>com.sap.sse.branding</artifactId>
+      <version>${project.version}</version>
+      <classifier>sources</classifier>
+    </dependency>
+    <dependency>
+      <groupId>com.sap.sailing</groupId>
       <artifactId>com.sap.sse.gwt</artifactId>
       <version>${project.version}</version>
       <classifier>sources</classifier>

@@ -94,7 +94,6 @@
   background-repeat: no-repeat;
   background-position: right center;
   background-size: 40%;
-  background-image: resourceUrl("sapInSailing");
 }
 .solutions_contentsapinsailing_body .gridalternator {
   padding: 4em 0 4.333333333333333em;
@@ -118,7 +117,7 @@
   background-repeat: no-repeat;
   background-position: left center;
   background-size: 100%;
-  background-image: resourceUrl("sap");
+  background-image: resourceUrl("solutionsImage");
   padding: 4em 0 4.333333333333333em;
 }
 @media (min-width: 45em) {
@@ -139,8 +138,8 @@
   padding: 4em 50% 4.333333333333333em 0;
   max-width: 88em;
   background-repeat: no-repeat;
-  background-image: resourceUrl("sapSailingRaceManager");
   background-size: 40%;
+  background-image: resourceUrl("raceManagerImage");
   background-position: center right;
 }
 @media (min-width: 45em) {
@@ -162,7 +161,7 @@
   background-repeat: no-repeat;
   background-position: left center;
   background-size: 40%;
-  background-image: resourceUrl("sapSailingInsight");
+  background-image: resourceUrl("sailingInsightImage");
   padding: 4em 0 4.333333333333333em;
 }
 @media (min-width: 45em) {
@@ -183,7 +182,7 @@
   padding: 4em 50% 4.333333333333333em 0;
   max-width: 88em;
   background-repeat: no-repeat;
-  background-image: resourceUrl("sapSailingBuoyPinger");
+  background-image: resourceUrl("buoyPingerImage");
   background-size: 40%;
   background-position: center right;
 }
@@ -197,72 +196,12 @@
     padding: 6.666666666666667em 0 12em;
   }
 }
-.solutions_contentpost {
-  font-size: 1rem;
-}
-.solutions_contentpost .gridalternator {
-  background-repeat: no-repeat;
-  background-image: resourceUrl("post");
-  background-position: left center;
-  background-size: 100%;
-  padding: 1.666666666666667em 0;
-}
-@media (min-width: 45em) {
-  .solutions_contentpost .gridalternator {
-    padding: 3.333333333333333em 0;
-  }
-}
-@media (min-width: 61em) {
-  .solutions_contentpost .gridalternator {
-    padding: 5em 0;
-  }
-}
-.solutions_contenttraining {
-  font-size: 1rem;
-}
-.solutions_contenttraining_body {
-  margin: auto;
-  padding: 4em 50% 4.333333333333333em 0;
-  max-width: 88em;
-  background-repeat: no-repeat;
-  background-image: resourceUrl("training");
-  background-size: 45%;
-  background-position: center right;
-}
-.solutions_contenttraining_body .gridalternator {
-  padding-top: 5em;
-}
-@media (min-width: 45em) {
-  .solutions_contenttraining_body .gridalternator {
-    padding-top: 6.666666666666667em;
-  }
-}
-@media (min-width: 61em) {
-  .solutions_contenttraining_body .gridalternator {
-    padding-top: 8.333333333333334em;
-  }
-}
-.solutions_contenttraining .parallax {
-  font-size: 1rem;
-}
-.solutions_contenttraining .parallax .background {
-  margin: auto;
-  height: 100%;
-  max-width: 80em;
-  background-repeat: no-repeat;
-  background-image: resourceUrl("training");
-  background-size: 100% auto;
-  background-position: center 13.333333333333334em;
-}
-.solutions_contenttraining .parallax.noparallax .background {
-  background-position: center 6.666666666666667em;
-}
 .solutions_contentsimulator {
   font-size: 1rem;
 }
 .solutions_contentsimulator .gridalternator {
   background-repeat: no-repeat;
-  background-image: resourceUrl("simulator");
+  background-image: resourceUrl("simulatorImage");
   background-position: left center;
   background-size: 100%;
   padding: 3.333333333333333em 0 3.333333333333333em;

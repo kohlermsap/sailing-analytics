@@ -92,4 +92,6 @@ public interface UserManagementService extends RemoteService {
     SecuredDTO addSecurityInformation(SecuredDTO securedDTO);
     
     Pair<Boolean, ArrayList<String>> getCORSFilterConfiguration();
+
+    String getBrandingConfigurationId();
 }

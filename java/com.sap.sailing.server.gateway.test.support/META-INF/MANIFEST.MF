@@ -21,6 +21,11 @@ Require-Bundle: org.eclipse.jetty.osgi-servlet-api;bundle-version="3.1.0",
  com.sap.sse.security
 Bundle-ClassPath: .
 Web-ContextPath: /sailingserver/test-support
-Import-Package: org.osgi.framework,
+Import-Package: com.sap.sse.branding,
+ com.sap.sse.branding.shared,
+ com.sap.sse.branding.sap,
+ org.osgi.framework,
  org.osgi.util.tracker;version="1.5.1"
 Automatic-Module-Name: com.sap.sailing.server.gateway.test.support
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: com.sap.sailing.server.gateway.test.support.Activator

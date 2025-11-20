@@ -370,11 +370,11 @@ public class Header extends Composite implements HeaderConstants {
         });
         if (!ClientConfiguration.getInstance().isBrandingActive()) {
             logoImage.getStyle().setDisplay(Display.NONE);
-            logoImage.setTitle(StringMessages.INSTANCE.sapSailingAnalytics());
+            logoImage.setTitle(StringMessages.INSTANCE.sailingAnalytics());
             solutionsPageLink.getElement().getStyle().setDisplay(Display.NONE);
             logoAnchor.setHref("");
-            logoAnchor.setTitle(StringMessages.INSTANCE.sapSailingAnalytics());
-            menuItemVisibilityHandler.addIgnore(solutionsPageLink);
+            logoAnchor.setTitle(StringMessages.INSTANCE.sailingAnalytics());
+            //menuItemVisibilityHandler.addIgnore(solutionsPageLink);
         } else {
             logoAnchor.setHref(UriUtils.fromString(StringMessages.INSTANCE.sapAnalyticsURL()).asString());
         }
@@ -383,7 +383,6 @@ public class Header extends Composite implements HeaderConstants {
         subscriptionsPageLink.getElement().setAttribute(DEBUG_ID_ATTRIBUTE, "subscriptionsPageLink");
         logoAnchor.setAttribute(DEBUG_ID_ATTRIBUTE, "logoAnchor");
         eventsPageLink.getElement().setAttribute(DEBUG_ID_ATTRIBUTE, "eventsPage");
-        //remaining entries please see at registration for AuthenticationContextEvent 
         menuItemVisibilityHandler.refreshVisibilityDeferred();
     }
 

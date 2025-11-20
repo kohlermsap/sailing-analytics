@@ -87,6 +87,24 @@
          ]
       },
       {
+         "collectionName":"SAPBranding",
+         "folders":[  
+            {  
+               "startingFolderPath":"java/com.sap.sse.branding.sap/resources/stringmessages",
+               "sourceFilters":[  
+                  "**/SAPBrandingStringMessages*.properties"
+               ],
+               "excludedSourceFilters":[
+               	"**/*_zh.properties"
+               	],
+               "xlfFolderPath":"./XLF",
+	       "targetFolderPath":".",
+	       "pseudoLocFolderPath":"."
+            }
+         ]
+      },
+      {  
+      {
          "collectionName":"SecurityDataMining",
          "folders":[  
             {  

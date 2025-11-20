@@ -9,6 +9,8 @@ Bundle-Vendor: SAP
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: com.sap.sailing.server.gateway.deserialization,
  com.sap.sailing.server.gateway.interfaces,
+ com.sap.sse.branding,
+ com.sap.sse.branding.shared,
  javax.mail;version="1.4.0",
  javax.mail.internet;version="1.4.0",
  javax.mail.util;version="1.4.0",

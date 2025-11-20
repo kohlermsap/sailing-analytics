@@ -78,6 +78,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
+
 import com.sap.sailing.aiagent.interfaces.AIAgent;
 import com.sap.sailing.competitorimport.CompetitorProvider;
 import com.sap.sailing.domain.abstractlog.AbstractLog;
@@ -452,6 +453,8 @@ import com.sap.sailing.xrr.structureimport.SeriesParameters;
 import com.sap.sailing.xrr.structureimport.StructureImporter;
 import com.sap.sailing.xrr.structureimport.buildstructure.SetRacenumberFromSeries;
 import com.sap.sse.ServerInfo;
+import com.sap.sse.branding.BrandingConfigurationService;
+import com.sap.sse.branding.shared.BrandingConfiguration;
 import com.sap.sse.common.Base64Utils;
 import com.sap.sse.common.Bearing;
 import com.sap.sse.common.CountryCode;
@@ -487,7 +490,6 @@ import com.sap.sse.gwt.shared.replication.ReplicaDTO;
 import com.sap.sse.gwt.shared.replication.ReplicationMasterDTO;
 import com.sap.sse.gwt.shared.replication.ReplicationStateDTO;
 import com.sap.sse.i18n.ResourceBundleStringMessages;
-import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
 import com.sap.sse.pairinglist.PairingList;
 import com.sap.sse.pairinglist.PairingListTemplate;
 import com.sap.sse.pairinglist.impl.PairingListTemplateImpl;
@@ -538,13 +540,15 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
     private static final long serialVersionUID = 9031688830194537489L;
 
     private final FullyInitializedReplicableTracker<RacingEventService> racingEventServiceTracker;
-
+    
     private final ServiceTracker<ReplicationService, ReplicationService> replicationServiceTracker;
+    
+    private final ServiceTracker<BrandingConfigurationService, BrandingConfigurationService> brandingConfigurationServiceTracker;
 
     private final ServiceTracker<ScoreCorrectionProvider, ScoreCorrectionProvider> scoreCorrectionProviderServiceTracker;
 
     private final ServiceTracker<WindFinderTrackerFactory, WindFinderTrackerFactory> windFinderTrackerFactoryServiceTracker;
-
+    
     private final MongoObjectFactory mongoObjectFactory;
 
     protected final ServiceTracker<ExpeditionTrackerFactory, ExpeditionTrackerFactory> expeditionConnectorTracker;
@@ -611,6 +615,7 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
         Activator activator = Activator.getInstance();
         quickRanksLiveCache = new QuickRanksLiveCache(this);
         replicationServiceTracker = ServiceTrackerFactory.createAndOpen(context, ReplicationService.class);
+        brandingConfigurationServiceTracker = ServiceTrackerFactory.createAndOpen(context, BrandingConfigurationService.class);
         racingEventServiceTracker = FullyInitializedReplicableTracker.createAndOpen(context, RacingEventService.class);
         aiAgentTracker = ServiceTrackerFactory.createAndOpen(context,  AIAgent.class);
         sharedSailingDataTracker = FullyInitializedReplicableTracker.createAndOpen(context, SharedSailingData.class);
@@ -658,7 +663,7 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
         // providing the updates is not outperformed by all the re-calculations happening here. Leave at least one
         // core to other things, but by using at least three threads ensure that no simplistic deadlocks may occur.
         executor = ThreadPoolUtil.INSTANCE.getDefaultForegroundTaskThreadPoolExecutor();
-        serverStringMessages = new ResourceBundleStringMessagesImpl(STRING_MESSAGES_BASE_NAME,
+        serverStringMessages = ResourceBundleStringMessages.create(STRING_MESSAGES_BASE_NAME,
                 this.getClass().getClassLoader(), StandardCharsets.UTF_8.name());
         if (context != null) {
             activator.setSailingService(this); // register so this service is informed when the bundle shuts down
@@ -3541,9 +3546,8 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
                 isPublicServer(), isSelfServiceServer(), serverTenantDTO);
         return result;
     }
-
+    
     @Override
-    //??
     public List<RemoteSailingServerReferenceDTO> getRemoteSailingServerReferences() {
         List<RemoteSailingServerReferenceDTO> result = new ArrayList<RemoteSailingServerReferenceDTO>();
         for (Entry<RemoteSailingServerReference, com.sap.sse.common.Util.Pair<Iterable<EventBase>, Exception>> remoteSailingServerRefAndItsCachedEvent :
@@ -6112,5 +6116,24 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
                 .orElse(getIgtimiConnectionFactory().getOrCreateConnection(()->getSecurityService().getCurrentUser() != null
                     ? getSecurityService().getAccessToken(getSecurityService().getCurrentUser().getName())
                     : null));
+    }
+    
+    public String getBrandAffiliationWithSailing(String locale) {
+        String result = "";
+        Optional<String> optLocale = Optional.ofNullable(locale).filter(s -> !s.isEmpty() && !"default".equalsIgnoreCase(s));
+        if (brandingConfigurationServiceTracker != null) {
+            try {
+                BrandingConfigurationService brandingConfigurationService = brandingConfigurationServiceTracker.waitForService(0);
+                if (brandingConfigurationService != null) {
+                    BrandingConfiguration configuration = brandingConfigurationService.getActiveBrandingConfiguration();
+                    if (configuration != null) {
+                        result = configuration.getInSailingContent(optLocale);
+                    }
+                }
+            } catch (InterruptedException e) {
+                logger.warning("Waiting for branding configuration service got interrupted. Continuing without brand affiliation message.");
+            }
+        }
+        return result;
     }
 }

@@ -9,23 +9,19 @@
     <meta content='yes' name='apple-mobile-web-app-capable'>
     <meta content='black' name='apple-mobile-web-app-status-bar-style'>
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="${applicationScope['clientConfigurationContext.SAP']}Sailing" />
+    <meta property="og:title" content="${clientConfigurationContext['brandTitle']}Sailing" />
     <meta property="og:description" content="Help sailors analyze performance and optimize strategy &#8226; Bring fans closer to the action
         &#8226; Provide the media with information and insights to deliver a greater informed commentary" />
     <meta property="og:image" content="https://s3-eu-west-1.amazonaws.com/media.sapsailing.com/2014/505Worlds/Images_Homepage/505Worlds2014_eventteaser.jpg" />
     <meta property="description" content="Help sailors analyze performance and optimize strategy &#8226; Bring fans closer to the action
         &#8226; Provide the media with information and insights to deliver a greater informed commentary" />
-    <link href='images/sap-sailing-app-icon${applicationScope['clientConfigurationContext.whitelabeled']}.png' rel='apple-touch-icon'>
-    <link rel="shortcut icon" type="image/x-icon" href="images/sap${applicationScope['clientConfigurationContext.whitelabeled']}.ico" />
+    <link href='images/sap-sailing-app-icon${clientConfigurationContext['whitelabeled']}.png' rel='apple-touch-icon'>
+    <link rel="shortcut icon" type="image/x-icon" href="images/sap${clientConfigurationContext['whitelabeled']}.ico" />
     
-    <title>${applicationScope['clientConfigurationContext.SAP']}Sailing Analytics Regatta Overview</title>
+    <title>${clientConfigurationContext['brandTitle']}Sailing Analytics Regatta Overview</title>
     
     <link rel="stylesheet" type="text/css" href="/sailing-fontface-1.0.cache.css">
-    <script>
-       document.clientConfigurationContext = {
-            debrandingActive: ${applicationScope['clientConfigurationContext.debrandingActive']}
-       };
-    </script>
+    <script>${clientConfigurationContext['scriptForClientConfigurationContextToDocument']}</script>
     <script 
             type="text/javascript" 
             language="javascript" 

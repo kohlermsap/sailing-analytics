@@ -34,7 +34,8 @@ public class SecurityServiceInitialLoadExtensionsDTO implements Serializable {
     
     private final ConcurrentMap<String, LockingAndBanning> clientIPBasedLockingAndBanningForUserCreation;
     
-    public SecurityServiceInitialLoadExtensionsDTO(ConcurrentMap<String, Pair<Boolean, Set<String>>> corsFilterConfigurationsByReplicaSetName,
+    public SecurityServiceInitialLoadExtensionsDTO(
+            ConcurrentMap<String, Pair<Boolean, Set<String>>> corsFilterConfigurationsByReplicaSetName,
             ConcurrentMap<String, LockingAndBanning> clientIPBasedLockingAndBanningForBearerTokenAuthentication,
             ConcurrentMap<String, LockingAndBanning> clientIPBasedLockingAndBanningForUserCreation) {
         super();

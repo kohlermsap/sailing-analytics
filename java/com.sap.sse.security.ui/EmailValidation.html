@@ -12,21 +12,17 @@
     <!--                                                               -->
     <!-- Consider inlining CSS to reduce the number of requested files -->
     <!--                                                               -->
-	<link rel="shortcut icon" type="image/x-icon" href="images/sap${applicationScope['clientConfigurationContext.whitelabeled']}.ico" />
+	<link rel="shortcut icon" type="image/x-icon" href="images/sap${clientConfigurationContext['whitelabeled']}.ico" />
 
 
     <!--                                           -->
     <!-- Any title is fine                         -->
     <!--                                           -->
-    <title>${applicationScope['clientConfigurationContext.SAP']}Sailing Analytics Login</title>
+    <title>${clientConfigurationContext['brandTitle']}Sailing Analytics Login</title>
     
     <link rel="stylesheet" type="text/css" href="/clean/sailing-clean-1.0.cache.css">
     <link rel="stylesheet" type="text/css" href="Register.css">
-    <script>
-       document.clientConfigurationContext = {
-            debrandingActive: ${applicationScope['clientConfigurationContext.debrandingActive']}
-       };
-    </script>
+    <script>${clientConfigurationContext['scriptForClientConfigurationContextToDocument']}</script>
     <!--                                           -->
     <!-- This script loads your compiled module.   -->
     <!-- If you add any GWT meta tags, they must   -->

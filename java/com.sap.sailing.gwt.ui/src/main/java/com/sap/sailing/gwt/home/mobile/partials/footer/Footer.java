@@ -2,6 +2,8 @@ package com.sap.sailing.gwt.home.mobile.partials.footer;
 
 import static com.google.gwt.dom.client.Style.Display.NONE;
 
+import java.util.Optional;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.DivElement;
@@ -21,6 +23,7 @@ import com.sap.sailing.gwt.home.desktop.places.whatsnew.WhatsNewPlace;
 import com.sap.sailing.gwt.home.mobile.app.MobilePlacesNavigator;
 import com.sap.sailing.gwt.home.shared.SwitchingEntryPoint;
 import com.sap.sailing.gwt.ui.client.StringMessages;
+import com.sap.sse.common.Util;
 import com.sap.sse.gwt.client.controls.languageselect.LanguageSelector;
 import com.sap.sse.gwt.shared.ClientConfiguration;
 
@@ -29,6 +32,8 @@ import com.sap.sse.gwt.shared.ClientConfiguration;
  */
 public class Footer extends Composite {
     private static FooterPanelUiBinder uiBinder = GWT.create(FooterPanelUiBinder.class);
+    
+    private ClientConfiguration cfg = ClientConfiguration.getInstance();
 
     interface FooterPanelUiBinder extends UiBinder<Widget, Footer> {
     }
@@ -39,10 +44,10 @@ public class Footer extends Composite {
     @UiField DivElement copyrightDiv;
     @UiField AnchorElement imprintAnchorLink;
     @UiField AnchorElement desktopUi;
-    @UiField AnchorElement sapJobsAnchor;
+    @UiField AnchorElement jobsAnchor;
     @UiField AnchorElement privacyAnchor;
     @UiField SpanElement pipe;
-
+    
     private final MobilePlacesNavigator placeNavigator;
 
     public Footer(MobilePlacesNavigator placeNavigator) {
@@ -64,17 +69,41 @@ public class Footer extends Composite {
             copyrightDiv.getStyle().setDisplay(NONE);
             languageSelector.setLabelText(StringMessages.INSTANCE.whitelabelFooterLanguage());
             supportAnchor.getStyle().setDisplay(Display.NONE);
-            whatsNewLinkUi.getElement().getStyle().setDisplay(Display.NONE);
-            imprintAnchorLink.getStyle().setDisplay(Display.NONE);
-            sapJobsAnchor.getStyle().setDisplay(Display.NONE);
+            jobsAnchor.getStyle().setDisplay(Display.NONE);
             privacyAnchor.getStyle().setDisplay(Display.NONE);
         } else {
             pipe.setInnerText("|");
+            if (!hideIfBlank(copyrightDiv, cfg.getFooterCopyright())) {
+                copyrightDiv.setInnerText(cfg.getFooterCopyright());
+            }
+            languageSelector.setLabelText(cfg.getBrandTitle(Optional.empty()) + " " + StringMessages.INSTANCE.whitelabelFooterLanguage());
+            setHrefOrHide(privacyAnchor, cfg.getFooterPrivacyLink());
+            setHrefOrHide(jobsAnchor, cfg.getFooterJobsLink());
+            setHrefOrHide(supportAnchor, cfg.getFooterSupportLink());
+            if (!hideIfBlank(copyrightDiv, cfg.getFooterCopyright())) {
+                copyrightDiv.setInnerText(cfg.getFooterCopyright());
+            }
         }
     }
-
+    
     @UiHandler("whatsNewLinkUi")
     void onWhatsNew(ClickEvent e) {
         placeNavigator.getWhatsNewNavigation(WhatsNewPlace.WhatsNewNavigationTabs.SailingAnalytics).goToPlace();
+    }
+    
+    private static boolean hideIfBlank(DivElement el, String text) {
+        final boolean hidden = !Util.hasLength(text);
+        if (hidden) {
+            el.getStyle().setDisplay(Display.NONE);
+        }
+        return hidden;
+    }
+    
+    private static void setHrefOrHide(AnchorElement el, String url) {
+        if (!Util.hasLength(url)) {
+          el.getStyle().setDisplay(Display.NONE);
+        } else {
+          el.setHref(url);
+        }
     }
 }

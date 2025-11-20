@@ -57,7 +57,6 @@ import com.sap.sse.datamining.impl.AbstractDataMiningActivatorWithPredefinedQuer
 import com.sap.sse.datamining.shared.dto.StatisticQueryDefinitionDTO;
 import com.sap.sse.datamining.shared.impl.PredefinedQueryIdentifier;
 import com.sap.sse.i18n.ResourceBundleStringMessages;
-import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
 
 public class Activator extends AbstractDataMiningActivatorWithPredefinedQueries {
 
@@ -75,7 +74,7 @@ public class Activator extends AbstractDataMiningActivatorWithPredefinedQueries 
     private boolean dataSourceProvidersHaveBeenInitialized;
 
     public Activator() {
-        sailingServerStringMessages = new ResourceBundleStringMessagesImpl(STRING_MESSAGES_BASE_NAME, getClassLoader(),
+        sailingServerStringMessages = ResourceBundleStringMessages.create(STRING_MESSAGES_BASE_NAME, getClassLoader(),
                 StandardCharsets.UTF_8.name());
         dataRetrieverChainDefinitions = new SailingDataRetrievalChainDefinitions();
         predefinedQueries = new SailingPredefinedQueries();

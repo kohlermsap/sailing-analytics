@@ -9,6 +9,7 @@ import java.util.ResourceBundle;
 import java.util.ResourceBundle.Control;
 
 import com.sap.sse.i18n.impl.NullResourceBundleStringMessages;
+import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
 
 /**
  * Allow server-side internationalization similar to GWT client-side by using property files.
@@ -27,6 +28,14 @@ import com.sap.sse.i18n.impl.NullResourceBundleStringMessages;
  */
 public interface ResourceBundleStringMessages {
     static final ResourceBundleStringMessages NULL = new NullResourceBundleStringMessages();
+    
+    static ResourceBundleStringMessages create(String resourceBaseName, ClassLoader resourceClassLoader, String encoding) {
+        return new ResourceBundleStringMessagesImpl(resourceBaseName, resourceClassLoader, encoding);
+    }
+    
+    static ResourceBundleStringMessages create(String resourceBaseName, ClassLoader resourceClassLoader) {
+        return new ResourceBundleStringMessagesImpl(resourceBaseName, resourceClassLoader);
+    }
 
     String getResourceBaseName();
 

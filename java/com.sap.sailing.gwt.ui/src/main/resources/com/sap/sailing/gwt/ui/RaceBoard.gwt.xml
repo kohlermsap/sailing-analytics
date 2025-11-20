@@ -6,9 +6,10 @@
 	<!-- Other module inherits                                      -->
 	<inherits name="com.sap.sse.gwt.SSESharedGWT" />
 	<inherits name="com.sap.sse.SSECommon" />
+	<inherits name="com.sap.sse.branding.SSEBranding" />
 	<inherits name="com.sap.sailing.domain.SailingDomain" />
 	<inherits name="com.sap.sse.gwt.AdminConsole" />
-        <inherits name="com.sap.sailing.landscape.Landscape" />
+    <inherits name="com.sap.sailing.landscape.Landscape" />
 	<inherits name="com.sap.sse.security.ui.LoginPanel" />
 	<!-- Google Maps API -->
 	<inherits name='com.google.gwt.ajaxloader.AjaxLoader' />

@@ -12,11 +12,11 @@ import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.EventBus;
 import com.sap.sailing.gwt.autoplay.client.events.AutoPlayHeaderEvent;
-import com.sap.sailing.gwt.common.authentication.SAPSailingHeaderWithAuthentication;
+import com.sap.sailing.gwt.common.authentication.SailingHeaderWithAuthentication;
 import com.sap.sailing.gwt.ui.client.StringMessages;
 import com.sap.sse.gwt.client.DefaultErrorReporter;
 import com.sap.sse.gwt.client.ErrorReporter;
-import com.sap.sse.gwt.client.sapheader.SAPHeader;
+import com.sap.sse.gwt.client.sapheader.BrandedSailingHeader;
 
 public class AutoPlayMainViewImpl extends ResizeComposite
         implements ApplicationTopLevelView, AcceptsOneWidget {
@@ -29,8 +29,8 @@ public class AutoPlayMainViewImpl extends ResizeComposite
 
     protected AnimationPanel animationPanel = new AnimationPanel();
 
-    protected SAPHeader sapHeader = new SAPHeader(SAPSailingHeaderWithAuthentication.SAP_SAILING_APP_NAME,
-            SAPSailingHeaderWithAuthentication.SAP_SAILING_URL);
+    protected BrandedSailingHeader sapHeader = new BrandedSailingHeader(SailingHeaderWithAuthentication.SAP_SAILING_APP_NAME,
+            SailingHeaderWithAuthentication.SAP_SAILING_URL);
 
     private static ErrorReporter errorReporter = new DefaultErrorReporter<StringMessages>(StringMessages.INSTANCE);
 

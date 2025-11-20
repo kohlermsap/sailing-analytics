@@ -24,6 +24,8 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.sap.sse.ServerInfo;
+import com.sap.sse.branding.BrandingConfigurationService;
+import com.sap.sse.branding.shared.BrandingConfiguration;
 import com.sap.sse.common.Util;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.Util.Triple;
@@ -59,6 +61,7 @@ import com.sap.sse.security.ui.client.UserManagementService;
 import com.sap.sse.security.ui.oauth.client.CredentialDTO;
 import com.sap.sse.security.ui.shared.SecurityServiceSharingDTO;
 import com.sap.sse.security.ui.shared.SuccessInfo;
+import com.sap.sse.util.ServiceTrackerFactory;
 
 public class UserManagementServiceImpl extends RemoteServiceServlet implements UserManagementService {
     private static final long serialVersionUID = 4458564336368629101L;
@@ -67,6 +70,7 @@ public class UserManagementServiceImpl extends RemoteServiceServlet implements U
 
     private final BundleContext context;
     private final FutureTask<SecurityService> securityService;
+    private final ServiceTracker<BrandingConfigurationService, BrandingConfigurationService> brandingConfigurationServiceTracker;
     protected final SecurityDTOFactory securityDTOFactory;
 
     public UserManagementServiceImpl() {
@@ -96,6 +100,7 @@ public class UserManagementServiceImpl extends RemoteServiceServlet implements U
                 SecurityUtils.setSecurityManager(getSecurityService().getSecurityManager());
             }
         }.start();
+        brandingConfigurationServiceTracker = ServiceTrackerFactory.createAndOpen(context, BrandingConfigurationService.class); 
     }
 
     protected UserDTO getAllUser() {
@@ -412,5 +417,22 @@ public class UserManagementServiceImpl extends RemoteServiceServlet implements U
         getSecurityService().checkCurrentUserServerPermission(ServerActions.CONFIGURE_CORS_FILTER);
         final Pair<Boolean, Set<String>> preResult = getSecurityService().getCORSFilterConfiguration(ServerInfo.getName());
         return preResult == null ? null : new Pair<>(preResult.getA(), new ArrayList<>(preResult.getB()));
+    }
+
+    @Override
+    public String getBrandingConfigurationId() {
+        final BrandingConfigurationService brandingConfigurationService = getBrandingConfigurationService();
+        final String result;
+        if (brandingConfigurationService == null) {
+            result = null;
+        } else {
+            final BrandingConfiguration activeBrandingConfiguration = brandingConfigurationService.getActiveBrandingConfiguration();
+            result = activeBrandingConfiguration == null ? null : activeBrandingConfiguration.getId();
+        }
+        return result;
+    }
+
+    private BrandingConfigurationService getBrandingConfigurationService() {
+        return brandingConfigurationServiceTracker.getService();
     }
 }

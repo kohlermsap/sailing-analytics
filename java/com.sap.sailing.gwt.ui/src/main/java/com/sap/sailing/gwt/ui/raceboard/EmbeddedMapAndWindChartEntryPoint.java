@@ -28,7 +28,7 @@ import com.sap.sailing.domain.common.RegattaAndRaceIdentifier;
 import com.sap.sailing.domain.common.dto.BoatDTO;
 import com.sap.sailing.domain.common.dto.CompetitorDTO;
 import com.sap.sailing.gwt.common.authentication.FixedSailingAuthentication;
-import com.sap.sailing.gwt.common.authentication.SAPSailingHeaderWithAuthentication;
+import com.sap.sailing.gwt.common.authentication.SailingHeaderWithAuthentication;
 import com.sap.sailing.gwt.common.communication.routing.ProvidesLeaderboardRouting;
 import com.sap.sailing.gwt.settings.client.embeddedmapandwindchart.EmbeddedMapAndWindChartContextDefinition;
 import com.sap.sailing.gwt.settings.client.embeddedmapandwindchart.EmbeddedMapAndWindChartSettings;
@@ -69,7 +69,7 @@ import com.sap.sse.gwt.client.player.Timer;
 import com.sap.sse.gwt.client.player.Timer.PlayModes;
 import com.sap.sse.gwt.settings.SettingsToUrlSerializer;
 import com.sap.sse.security.shared.dto.SecuredDTO;
-import com.sap.sse.security.ui.authentication.generic.sapheader.SAPHeaderWithAuthentication;
+import com.sap.sse.security.ui.authentication.generic.sapheader.BrandedHeaderWithAuthentication;
 import com.sap.sse.security.ui.client.premium.PaywallResolver;
 import com.sap.sse.security.ui.client.premium.PaywallResolverImpl;
 
@@ -159,14 +159,14 @@ public class EmbeddedMapAndWindChartEntryPoint extends AbstractSailingReadEntryP
     
     private void createErrorPage(String message, PaywallResolver paywallResolver) {
         final DockLayoutPanel vp = new DockLayoutPanel(Unit.PX);
-        final SAPHeaderWithAuthentication header = new SAPSailingHeaderWithAuthentication();
+        final BrandedHeaderWithAuthentication header = new SailingHeaderWithAuthentication();
         new FixedSailingAuthentication(getUserService(), paywallResolver, header.getAuthenticationMenuView());
         RootLayoutPanel.get().add(vp);
         vp.addNorth(header, 100);
         final Label infoText = new Label(message);
         infoText.getElement().getStyle().setMargin(1, Unit.EM);
         vp.add(infoText);
-        // TODO: Styling of error page slightly differs from the other usages of SAPSailingHeaderWithAuthentication
+        // TODO: Styling of error page slightly differs from the other usages of SailingHeaderWithAuthentication
         // because of the root font-size. Adjustments are postponed because they might affect the whole page content.
     }
 

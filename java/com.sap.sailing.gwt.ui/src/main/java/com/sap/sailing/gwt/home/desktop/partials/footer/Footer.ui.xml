@@ -11,18 +11,17 @@
       <div class="{res.mediaCss.grid} {local_res.css.dfooter_row}">
       <div class="{local_res.css.dfooter_left}">
           <div ui:field="copyrightDiv" class="{local_res.css.dfooter_item} {local_res.css.dfooter_copyright}">
-            <ui:text from='{i18n.footerCopyright}' />
             </div>
             <a ui:field="imprintAnchorLink" target="_blank" class="{local_res.css.dfooter_item} {local_res.css.dfooter_link}">
               <ui:text from='{i18n.footerLegal}' />
             </a>
-            <a ui:field="privacyAnchorLink" href="https://www.sap.com/about/legal/privacy.html?campaigncode=CRM-XH21-OSP-Sailing" target="_blank" class="{local_res.css.dfooter_item} {local_res.css.dfooter_link}">
+            <a ui:field="privacyAnchorLink" target="_blank" class="{local_res.css.dfooter_item} {local_res.css.dfooter_link}">
               <ui:text from='{i18n.footerPrivacy}' />
             </a>
-            <a ui:field="sapJobsAnchor" href="https://jobs.sapsailing.com" target="_blank" class="{local_res.css.dfooter_item} {local_res.css.dfooter_link}">
+            <a ui:field="jobsAnchor" target="_blank" class="{local_res.css.dfooter_item} {local_res.css.dfooter_link}">
               <ui:text from='{i18n.footerJobs}'/>
             </a>
-            <a ui:field="supportAnchor" href="https://support.sapsailing.com" target="_blank" class="{local_res.css.dfooter_item} {local_res.css.dfooter_link}">
+            <a ui:field="supportAnchor"  class="{local_res.css.dfooter_item} {local_res.css.dfooter_link}">
               <ui:text from='{i18n.footerSupport}' />
             </a>
             <a ui:field="whatsNewAnchor" href="{releaseNotesNavigation.getSafeTargetUrl}" class="{local_res.css.dfooter_item} {local_res.css.dfooter_link}">
@@ -34,7 +33,7 @@
             </a>
           </div>
         <div class="{local_res.css.dfooter_right}">
-            <l:LanguageSelector ui:field="languageSelector" labelText="{i18n.footerLanguage}" addStyleNames="{local_res.css.dfooter_language}" />
+            <l:LanguageSelector ui:field="languageSelector" addStyleNames="{local_res.css.dfooter_language}" />
         </div>
      </div>
   </g:HTMLPanel>

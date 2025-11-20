@@ -17,7 +17,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.sap.sailing.domain.common.dto.PairingListDTO;
 import com.sap.sailing.gwt.common.authentication.FixedSailingAuthentication;
-import com.sap.sailing.gwt.common.authentication.SAPSailingHeaderWithAuthentication;
+import com.sap.sailing.gwt.common.authentication.SailingHeaderWithAuthentication;
 import com.sap.sailing.gwt.common.communication.routing.ProvidesLeaderboardRouting;
 import com.sap.sailing.gwt.ui.adminconsole.PairingListPreviewDialog;
 import com.sap.sailing.gwt.ui.client.AbstractSailingReadEntryPoint;
@@ -63,7 +63,7 @@ public class PairingListEntryPoint extends AbstractSailingReadEntryPoint impleme
         RootLayoutPanel.get().add(mainPanel);
         mainPanel.setWidth("100%");
         mainPanel.setHeight("100%");
-        SAPSailingHeaderWithAuthentication header = new SAPSailingHeaderWithAuthentication(
+        SailingHeaderWithAuthentication header = new SailingHeaderWithAuthentication(
                 pairingListContextDefinition.getLeaderboardName());
         PaywallResolver paywallResolver = new PaywallResolverImpl(getUserService(), getSubscriptionServiceFactory());
         new FixedSailingAuthentication(getUserService(), paywallResolver, header.getAuthenticationMenuView());

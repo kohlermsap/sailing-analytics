@@ -57,7 +57,6 @@ public class LoginHintContent extends Composite {
         });
         DOM.sinkEvents(main, Event.ONCLICK);
         DOM.setEventListener(main, new EventListener() {
-
             @Override
             public void onBrowserEvent(Event event) {
                 com.google.gwt.dom.client.EventTarget eventTarget = event.getEventTarget();
@@ -65,15 +64,10 @@ public class LoginHintContent extends Composite {
                     return;
                 }
                 final Element target = eventTarget.cast();
-                if(target != moreInfo.getElement() && target != dismiss.getElement()){
+                if (target != moreInfo.getElement() && target != dismiss.getElement()){
                     toLogin.run();
                 }
             }
         });
-
-        if (!ClientConfiguration.getInstance().isBrandingActive()) {
-            moreInfo.getElement().getStyle().setDisplay(Display.NONE);
-        }
-
     }
 }

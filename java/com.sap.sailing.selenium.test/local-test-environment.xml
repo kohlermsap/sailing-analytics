@@ -91,8 +91,12 @@
   <driver-definition class="org.openqa.selenium.firefox.FirefoxDriver">
   </driver-definition>
   -->
-  <!-- -->
+  <!--
   <driver-definition class="org.openqa.selenium.chrome.ChromeDriver">
+  </driver-definition>
+  -->
+  <!-- -->
+  <driver-definition class="com.sap.sailing.selenium.core.CustomChromeDriver">
   </driver-definition>
   <!-- -->
   <!--

@@ -13,6 +13,6 @@ public class GenericLoginHintPopup extends LoginHintPopup {
 
     public GenericLoginHintPopup(AuthenticationManager authenticationManager, GenericAuthenticationLinkFactory linkFactory) {
         super(authenticationManager, () -> Window.open(linkFactory.createMoreInfoAboutLoginLink(), "_blank", ""), null);
-        this.addStyleName(SAPHeaderWithAuthenticationResources.INSTANCE.css().usermanagement_view());
+        this.addStyleName(HeaderWithAuthenticationResources.INSTANCE.css().usermanagement_view());
     }
 }

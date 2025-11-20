@@ -24,7 +24,7 @@ Require-Bundle: org.eclipse.jetty.osgi-servlet-api;bundle-version="3.1.0",
  org.apache.shiro.core;bundle-version="1.2.2",
  org.apache.shiro.web;bundle-version="1.2.2",
  com.chargebee.chargebee-java;bundle-version="2.9.0",
- com.sap.sse.debranding,
+ com.sap.sse.branding,
  com.sap.sse.replication,
  com.sap.sse.security.common,
  com.sap.sse.mail

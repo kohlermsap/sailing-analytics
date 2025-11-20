@@ -3,6 +3,7 @@ package com.sap.sailing.gwt.ui.adminconsole;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -28,6 +29,7 @@ import com.sap.sse.gwt.client.Notification.NotificationType;
 import com.sap.sse.gwt.client.controls.GenericListBox;
 import com.sap.sse.gwt.client.controls.GenericListBox.ValueBuilder;
 import com.sap.sse.gwt.client.dialog.DataEntryDialog;
+import com.sap.sse.gwt.shared.ClientConfiguration;
 
 public class RegistrationLinkWithQRCodeDialog extends DataEntryDialog<RegistrationLinkWithQRCode> {
 
@@ -173,7 +175,13 @@ public class RegistrationLinkWithQRCodeDialog extends DataEntryDialog<Registrati
                 }
             });
         } else {
-            getStatusLabel().setText(stringMessages.warningSailInsightVersion());
+            if (ClientConfiguration.getInstance().isBrandingActive()){
+                getStatusLabel().setText(stringMessages.warningSailInsightVersion(ClientConfiguration.getInstance().getBrandTitle(Optional.empty())));
+
+            } else {
+                getStatusLabel().setText(stringMessages.warningSailInsightVersion(""));
+
+            }
             getStatusLabel().setStyleName("errorLabel");
         }
     }

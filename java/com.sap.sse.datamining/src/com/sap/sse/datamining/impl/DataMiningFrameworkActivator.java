@@ -46,7 +46,7 @@ import com.sap.sse.datamining.impl.components.management.FunctionManager;
 import com.sap.sse.datamining.impl.components.management.QueryDefinitionDTOManager;
 import com.sap.sse.datamining.shared.dto.StatisticQueryDefinitionDTO;
 import com.sap.sse.datamining.shared.impl.PredefinedQueryIdentifier;
-import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
+import com.sap.sse.i18n.ResourceBundleStringMessages;
 import com.sap.sse.util.ThreadPoolUtil;
 
 public class DataMiningFrameworkActivator implements BundleActivator {
@@ -81,7 +81,7 @@ public class DataMiningFrameworkActivator implements BundleActivator {
                                                                                dataRetrieverChainDefinitionRegistry,
                                                                                aggregationProcessorDefinitionRegistry,
                                                                                queryDefinitionRegistry);
-        dataMiningServer.addStringMessages(new ResourceBundleStringMessagesImpl(STRING_MESSAGES_BASE_NAME,
+        dataMiningServer.addStringMessages(ResourceBundleStringMessages.create(STRING_MESSAGES_BASE_NAME,
                 this.getClass().getClassLoader(), StandardCharsets.UTF_8.name()));
         for (AggregationProcessorDefinition<?, ?> aggregationProcessorDefinition : getDefaultAggregationProcessors()) {
             dataMiningServer.registerAggregationProcessor(aggregationProcessorDefinition);

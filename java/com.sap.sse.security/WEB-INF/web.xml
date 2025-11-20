@@ -13,11 +13,11 @@
 			<param-name>dirAllowed</param-name>
 			<param-value>false</param-value>
 		</init-param>
-                <init-param>
-                    <param-name>useFileMappedBuffer</param-name>
-                    <param-value>false</param-value>
-                </init-param>
-        </servlet>
+        <init-param>
+            <param-name>useFileMappedBuffer</param-name>
+            <param-value>false</param-value>
+        </init-param>
+    </servlet>
     
 	<context-param>
 		<param-name>shiroEnvironmentClass</param-name>

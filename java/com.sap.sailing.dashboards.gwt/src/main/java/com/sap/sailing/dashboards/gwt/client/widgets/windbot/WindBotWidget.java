@@ -2,6 +2,7 @@ package com.sap.sailing.dashboards.gwt.client.widgets.windbot;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,6 +31,7 @@ import com.sap.sailing.gwt.ui.shared.WindDTO;
 import com.sap.sailing.gwt.ui.shared.WindInfoForRaceDTO;
 import com.sap.sailing.gwt.ui.shared.WindTrackInfoDTO;
 import com.sap.sse.gwt.dispatch.client.system.batching.SplitScheduler;
+import com.sap.sse.gwt.shared.ClientConfiguration;
 
 /**
  * The class is an actual widget on the dashboard and shows the measured data of wind bot in a race. It contains a
@@ -117,7 +119,11 @@ public class WindBotWidget extends Composite implements HasWidgets, WindBotDataR
         initWidget(uiBinder.createAndBindUi(this));
         hideContentContainer();
         dashboardWidgetHeaderAndNoDataMessage.setHeaderText(stringConstants.dashboardWindBot());
-        dashboardWidgetHeaderAndNoDataMessage.showNoDataMessageWithHeaderAndMessage(stringConstants.dashboardNoWindBotAvailableHeader(), stringConstants.dashboardNoWindBotAvailableMessage());
+        if (ClientConfiguration.getInstance().isBrandingActive()) {
+            dashboardWidgetHeaderAndNoDataMessage.showNoDataMessageWithHeaderAndMessage(stringConstants.dashboardNoWindBotAvailableHeader(), stringConstants.dashboardNoWindBotAvailableMessage(ClientConfiguration.getInstance().getBrandTitle(Optional.empty())) + " ");
+        } else {
+            dashboardWidgetHeaderAndNoDataMessage.showNoDataMessageWithHeaderAndMessage(stringConstants.dashboardNoWindBotAvailableHeader(), stringConstants.dashboardNoWindBotAvailableMessage(""));
+        }
         totalWindSpeedHeader.setInnerHTML(stringConstants.dashboardTrueWindSpeed());
         totalWindDirectionHeader.setInnerHTML(stringConstants.dashboardTrueWindDirection());
         trueWindSpeedVerticalWindChart.addVerticalWindChartClickListener(trueWindSpeedLiveAverageComponent);

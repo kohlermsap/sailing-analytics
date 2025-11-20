@@ -8,118 +8,69 @@
     <ui:with field="res_local" type="com.sap.sailing.gwt.home.mobile.partials.solutions.SolutionsResources" />
     <a:Accordion>
         <a:item>
-            <s:SolutionsItem title="{i18n.sapInSailing}"
-                    image="{res_local.sapInSailing}" showInitial="true">
+            <s:SolutionsItem ui:field="brandInSailingItem" image="{res_local.solutionsImage}" title="" showInitial="true">
                 <s:content>
                     <g:HTMLPanel>
-                        <p>
-                            <ui:text from='{i18n.contentSapInSailing1}' />
-                        </p>
-                        <ul>
-                            <li>
-                                <ui:text from='{i18n.contentSapInSailing2}' />
-                            </li>
-                            <li>
-                                <ui:text from='{i18n.contentSapInSailing3}' />
-                            </li>
-                            <li>
-                                <ui:text from='{i18n.contentSapInSailing4}' />
-                            </li>
-                        </ul>
-                        <p>
-                            <ui:text from='{i18n.contentSapInSailing5}' />
-                        </p>
-                        <ul>
-                            <li>
-                                <ui:text from='{i18n.contentSapInSailing7}' />
-                            </li>
-                            <li>
-                                <ui:text from='{i18n.contentSapInSailing10}' />
-                            </li>
-                            <li>
-                                <ui:text from='{i18n.contentSapInSailing11}' />
-                            </li>
-                            <li>
-                                <ui:text from='{i18n.contentSapInSailing12}' />
-                            </li>
-                            <li>
-                                <ui:text from='{i18n.contentSapInSailing13}' />
-                            </li>
-                        </ul>
+                    <div ui:field="inSailingContentDiv"></div>
                     </g:HTMLPanel>
                 </s:content>
             </s:SolutionsItem>
         </a:item>
         <a:item>
-            <s:SolutionsItem title="{i18n.sapSailingAnalyticsTitle}"
-                    image="{res_local.sapTrimmed}" showInitial="false">
+            <s:SolutionsItem ui:field="sailingAnalyticsItem" title="" image="{res_local.solutionsImage}" showInitial="false">
                 <s:content>
                     <g:HTMLPanel>
-                        <p>
-                            <ui:text from='{i18n.contentSapSailingAnalytics1}' />
-                        </p>
-                        <p>
-                            <ui:text from='{i18n.contentSapSailingAnalytics2}' />
-                        </p>
+                        <p ui:field="contentSailingAnalytics1" />
+                        <p ui:field="contentSailingAnalytics2" />
                         <a class="{res.mainCss.button}" ui:field="sailingAnalyticsDetailsAnchor">
-                           <ui:text from="{i18n.sapSailingAnalyticsReadMore}"/>
+                            <ui:text from="{i18n.sailingRaceManagerReadMore}"/>
                         </a>
                     </g:HTMLPanel>
                 </s:content>
             </s:SolutionsItem>
         </a:item>
         <a:item>
-            <s:SolutionsItem title="{i18n.sapSailingRaceManager}"
-                    image="{res_local.race}" showInitial="false">
+            <s:SolutionsItem ui:field="sailingRaceManager" title="" image="{res_local.raceManagerImage}" showInitial="false">
                 <s:content>
                     <g:HTMLPanel>
-                        <p>
-                            <ui:text from='{i18n.contentSapSailingRaceManager}' />
-                        </p>
+                        <p ui:field="contentSailingRaceManager" />
                         <sb:PlayStoreBadge targetUrl="{i18n.playstoreRacecommitteeApp}"/>
                         <a class="{res.mainCss.button}" ui:field="raceManagerAppDetailsAnchor">
-                           <ui:text from="{i18n.sapSailingRaceManagerReadMore}"/>
+                           <ui:text from="{i18n.sailingRaceManagerReadMore}"/>
                         </a>
                     </g:HTMLPanel>
                 </s:content>
             </s:SolutionsItem>
         </a:item>
         <a:item>
-            <s:SolutionsItem title="{i18n.sapSailInSight}"
-                    image="{res_local.sapSailingInsight}" showInitial="false">
+            <s:SolutionsItem ui:field="sailInSight" title="" image="{res_local.sailingInsightImage}" showInitial="false">
                 <s:content>
                     <g:HTMLPanel>
-                        <p>
-                            <ui:text from='{i18n.contentSapSailInSight}' />
-                        </p>
+                        <p ui:field="contentSailInSight" />
                         <sb:AppStoreBadge targetUrl="{i18n.appstoreSapSailInsight}"/>
                         <sb:PlayStoreBadge targetUrl="{i18n.playstoreInsightApp}"/>
                         <a class="{res.mainCss.button}" ui:field="sailInSightAppDetailsAnchor">
-                           <ui:text from="{i18n.sapSailInSightReadMore}"/>
+                           <ui:text from="{i18n.sailInSightReadMore}"/>
                         </a>
                     </g:HTMLPanel>
                 </s:content>
             </s:SolutionsItem>
         </a:item>
         <a:item>
-            <s:SolutionsItem title="{i18n.sapSailingBuoyPinger}"
-                    image="{res_local.sapSailingBuoyPinger}" showInitial="false">
+            <s:SolutionsItem ui:field="sailingBuoyPinger" title="" image="{res_local.buoyPingerImage}" showInitial="false">
                 <s:content>
                     <g:HTMLPanel>
-                        <p>
-                            <ui:text from='{i18n.contentSapSailingBuoyPinger}' />
-                        </p>
+                        <p ui:field="contentSailingBuoyPinger" />
                         <sb:PlayStoreBadge targetUrl="{i18n.playStoreBuoyPingerApp}"/>
                         <a class="{res.mainCss.button}" ui:field="buoyPingerAppDetailsAnchor">
-                           <ui:text from="{i18n.sapSailingBuoyPingerReadMore}"/>
+                           <ui:text from="{i18n.sailInSightReadMore}"/>
                         </a>
                     </g:HTMLPanel>
                 </s:content>
             </s:SolutionsItem>
         </a:item>
         <a:item>
-            <s:SolutionsItem title="{i18n.strategySimulator}"
-                    image="{res_local.simulatorTrimmed}" showInitial="false">
+            <s:SolutionsItem ui:field="strategySimulator" title="{i18n.strategySimulator}" image="{res_local.simulatorImage}" showInitial="false">
                 <s:content>
                     <g:HTMLPanel>
                         <p>
