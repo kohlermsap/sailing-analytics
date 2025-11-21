@@ -32,6 +32,7 @@ public class SailingApplicationReplicaSetDTO<ShardingKey> implements Named, IsSe
         this.replicaSetName = replicaSetName;
         this.version = version;
         this.replicas = new ArrayList<>();
+        this.releaseNotesLink = releaseNotesLink;
         this.hostname = hostname;
         this.defaultRedirectPath = defaultRedirectPath;
         this.autoScalingGroupAmiId = autoScalingGroupAmiId;
