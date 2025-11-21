@@ -92,6 +92,7 @@ import com.nulabinc.zxcvbn.ZxcvbnBuilder;
 import com.nulabinc.zxcvbn.io.ClasspathResource;
 import com.nulabinc.zxcvbn.matchers.SlantedKeyboardLoader;
 import com.sap.sse.ServerInfo;
+import com.sap.sse.branding.BrandingConfigurationService;
 import com.sap.sse.common.Duration;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.TimedLock;
@@ -103,7 +104,7 @@ import com.sap.sse.common.mail.MailException;
 import com.sap.sse.common.media.TakedownNoticeRequestContext;
 import com.sap.sse.concurrent.LockUtil;
 import com.sap.sse.concurrent.NamedReentrantReadWriteLock;
-import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
+import com.sap.sse.i18n.ResourceBundleStringMessages;
 import com.sap.sse.mail.MailService;
 import com.sap.sse.replication.ReplicationService;
 import com.sap.sse.replication.interfaces.impl.AbstractReplicableWithObjectInputStream;
@@ -220,7 +221,7 @@ implements ReplicableSecurityService, ClearStateTestSupport {
     private SecurityManager securityManager;
     
     private static final String STRING_MESSAGES_BASE_NAME = "stringmessages/StringMessages";
-    private static final ResourceBundleStringMessagesImpl messages = new ResourceBundleStringMessagesImpl(
+    private static final ResourceBundleStringMessages messages = ResourceBundleStringMessages.create(
             SecurityServiceImpl.STRING_MESSAGES_BASE_NAME, SecurityServiceImpl.class.getClassLoader(),
             StandardCharsets.UTF_8.name());
 
@@ -326,8 +327,8 @@ implements ReplicableSecurityService, ClearStateTestSupport {
      */
     public SecurityServiceImpl(ServiceTracker<MailService, MailService> mailServiceTracker,
             ServiceTracker<CORSFilterConfiguration, CORSFilterConfiguration> corsFilterConfigurationTracker,
-            UserStore userStore, AccessControlStore accessControlStore, HasPermissionsProvider hasPermissionsProvider,
-            SubscriptionPlanProvider subscriptionPlanProvider) {
+            ServiceTracker<BrandingConfigurationService, BrandingConfigurationService> brandingConfigurationServiceTracker, UserStore userStore, AccessControlStore accessControlStore,
+            HasPermissionsProvider hasPermissionsProvider, SubscriptionPlanProvider subscriptionPlanProvider) {
         this(mailServiceTracker, corsFilterConfigurationTracker, /* replicationServiceTracker */ null, userStore, accessControlStore,
                 hasPermissionsProvider, subscriptionPlanProvider, /* sharedAcrossSubdomainsOf */ null, /* baseUrlForCrossDomainStorage */ null);
     }
@@ -338,9 +339,12 @@ implements ReplicableSecurityService, ClearStateTestSupport {
      * the browser local and session store shall be shared and for which sessions identified by the {@code JSESSIONID} cookie shall
      * be shared as well.
      */
-    public SecurityServiceImpl(ServiceTracker<MailService, MailService> mailServiceTracker, ServiceTracker<CORSFilterConfiguration, CORSFilterConfiguration> corsFilterConfigurationTracker,
-            ServiceTracker<ReplicationService, ReplicationService> replicationServiceTracker, UserStore userStore, AccessControlStore accessControlStore,
-            HasPermissionsProvider hasPermissionsProvider, SubscriptionPlanProvider subscriptionPlanProvider, String sharedAcrossSubdomainsOf, String baseUrlForCrossDomainStorage) {
+    public SecurityServiceImpl(ServiceTracker<MailService, MailService> mailServiceTracker,
+            ServiceTracker<CORSFilterConfiguration, CORSFilterConfiguration> corsFilterConfigurationTracker,
+            ServiceTracker<ReplicationService, ReplicationService> replicationServiceTracker, UserStore userStore,
+            AccessControlStore accessControlStore, HasPermissionsProvider hasPermissionsProvider,
+            SubscriptionPlanProvider subscriptionPlanProvider, String sharedAcrossSubdomainsOf,
+            String baseUrlForCrossDomainStorage) {
         initialLoadClassLoaderRegistry.addClassLoader(getClass().getClassLoader());
         if (hasPermissionsProvider == null) {
             throw new IllegalArgumentException("No HasPermissionsProvider defined");

@@ -17,12 +17,12 @@
     }
     </ui:style>
     <g:HTMLPanel addStyleNames="{res.mediaCss.grid}">
-        <h1 class="{res.mediaCss.small12} {res.mediaCss.columns}"><ui:text from="{i18n.moreLoginInformationHeadline}" /></h1>
-        <p class="{res.mediaCss.small12} {res.mediaCss.columns}"><ui:text from="{i18n.moreLoginInformationIntroduction}" /></p>
-        <login:MoreLoginInformationContent addStyleNames="{style.clear}" title="{i18n.moreLoginInformationSectionSailorProfilesHeading}" image="{local_res.sailorprofiles}" imageOnLeft="false" content="{i18n.moreLoginInformationSectionSailorProfilesDescription}" />
-        <login:MoreLoginInformationContent addStyleNames="{style.clear}" title="{i18n.moreLoginInformationSectionUserSettingsHeading}" image="{local_res.settings}" imageOnLeft="true" content="{i18n.moreLoginInformationSectionUserSettingsDescription}" />
-        <login:MoreLoginInformationContent title="{i18n.strategySimulator}" image="{local_res.simulator}" imageOnLeft="false" content="{i18n.moreLoginInformationSectionStrategySimulatorDescription}" />
-        <login:MoreLoginInformationContent title="{i18n.moreLoginInformationSectionUserNotificationsHeading}" image="{local_res.notifications}" imageOnLeft="true" content="{i18n.moreLoginInformationSectionUserNotificationsDescription}" />
+        <h1 ui:field="headline" class="{res.mediaCss.small12} {res.mediaCss.columns}"></h1>
+        <p ui:field="intro" class="{res.mediaCss.small12} {res.mediaCss.columns}"></p>
+        <login:MoreLoginInformationContent ui:field="sailorProfiles" addStyleNames="{style.clear}" title="{i18n.moreLoginInformationSectionSailorProfilesHeading}" image="{local_res.sailorprofiles}" imageOnLeft="false" content="{i18n.moreLoginInformationSectionSailorProfilesDescription}" />
+        <login:MoreLoginInformationContent ui:field="userSettings" addStyleNames="{style.clear}" title="{i18n.moreLoginInformationSectionUserSettingsHeading}" image="{local_res.settings}" imageOnLeft="true" content="{i18n.moreLoginInformationSectionUserSettingsDescription}" />
+        <login:MoreLoginInformationContent ui:field="strategySimulator" title="{i18n.strategySimulatorTitle}" image="{local_res.simulator}" imageOnLeft="false" content=""/>
+        <login:MoreLoginInformationContent ui:field="userNotifications" title="{i18n.moreLoginInformationSectionUserNotificationsHeading}" image="{local_res.notifications}" imageOnLeft="true" content="{i18n.moreLoginInformationSectionUserNotificationsDescription}" />
         <div class="{res.mainCss.spacermargintopmediumsmall} {res.mainCss.spacermarginbottommedium} {style.registerContainer}">
             <a ui:field="registerControl" class="{res.mainCss.button} {style.register}">
                <ui:text from="{i18n.moreLoginInformationRegisterControlText}"/>

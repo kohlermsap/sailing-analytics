@@ -12,7 +12,6 @@ import com.sap.sse.datamining.components.AggregationProcessorDefinition;
 import com.sap.sse.datamining.components.DataRetrieverChainDefinition;
 import com.sap.sse.datamining.impl.AbstractDataMiningActivator;
 import com.sap.sse.i18n.ResourceBundleStringMessages;
-import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
 import com.sap.sse.security.datamining.data.HasPermissionOfUserContext;
 import com.sap.sse.security.datamining.data.HasPermissionOfUserInUserGroupContext;
 import com.sap.sse.security.datamining.data.HasPreferenceOfUserContext;
@@ -51,7 +50,7 @@ public class Activator extends AbstractDataMiningActivator {
     
     public Activator() {
         dataRetrieverChainDefinitions = new SecurityDataRetrievalChainDefinitions();
-        sailingServerStringMessages = new ResourceBundleStringMessagesImpl(STRING_MESSAGES_BASE_NAME, getClassLoader(),
+        sailingServerStringMessages = ResourceBundleStringMessages.create(STRING_MESSAGES_BASE_NAME, getClassLoader(),
                 StandardCharsets.UTF_8.name());
     }
 

@@ -1,5 +1,7 @@
 package com.sap.sailing.gwt.ui.spectator;
 
+import java.util.Optional;
+
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -9,7 +11,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.sap.sailing.gwt.common.authentication.FixedSailingAuthentication;
-import com.sap.sailing.gwt.common.authentication.SAPSailingHeaderWithAuthentication;
+import com.sap.sailing.gwt.common.authentication.SailingHeaderWithAuthentication;
 import com.sap.sailing.gwt.settings.client.spectator.SpectatorContextDefinition;
 import com.sap.sailing.gwt.settings.client.spectator.SpectatorSettings;
 import com.sap.sailing.gwt.ui.client.AbstractSailingReadEntryPoint;
@@ -49,20 +51,18 @@ public class SpectatorEntryPoint extends AbstractSailingReadEntryPoint {
                     groupIdParam, groupNameParam, leaderboardGroupName->setHeader(leaderboardGroupName, embedded), settings.getViewMode(), embedded,
                     settings.isShowRaceDetails(), settings.isCanReplayDuringLiveRaces(), settings.isShowMapControls());
             groupAndFeedbackPanel.add(groupPanel);
-            if (!embedded) {
-                groupPanel.setWelcomeWidget(new SimpleWelcomeWidget(getStringMessages().welcomeToSailingAnalytics(),
-                        getStringMessages().welcomeToSailingAnalyticsBody()));
-                if (ClientConfiguration.getInstance().isBrandingActive()) {
-                    SimplePanel feedbackPanel = new SimplePanel();
-                    feedbackPanel.getElement().getStyle().setProperty("clear", "right");
-                    feedbackPanel.addStyleName("feedbackPanel");
-                    Anchor feedbackLink = new Anchor(new SafeHtmlBuilder()
-                            .appendHtmlConstant("<img src=\"/gwt/images/feedbackPanel-bg.png\"/>").toSafeHtml());
-                    // TODO set image
-                    feedbackLink.setHref("mailto:support%40sapsailing.com?subject=[SAP Sailing] Feedback");
-                    feedbackPanel.add(feedbackLink);
-                    groupAndFeedbackPanel.add(feedbackPanel);
-                }
+            if (!embedded && ClientConfiguration.getInstance().isBrandingActive()) {
+                groupPanel.setWelcomeWidget(new SimpleWelcomeWidget(ClientConfiguration.getInstance().getWelcomeToSailingAnalytics(Optional.empty()),
+                        ClientConfiguration.getInstance().getWelcomeToSailingAnalyticsBody(Optional.empty())));
+                SimplePanel feedbackPanel = new SimplePanel();
+                feedbackPanel.getElement().getStyle().setProperty("clear", "right");
+                feedbackPanel.addStyleName("feedbackPanel");
+                Anchor feedbackLink = new Anchor(new SafeHtmlBuilder()
+                        .appendHtmlConstant("<img src=\"/gwt/images/feedbackPanel-bg.png\"/>").toSafeHtml());
+                // TODO set image
+                feedbackLink.setHref("mailto:support%40sapsailing.com?subject=[SAP Sailing] Feedback");
+                feedbackPanel.add(feedbackLink);
+                groupAndFeedbackPanel.add(feedbackPanel);
             }
             rootPanel.add(groupAndFeedbackPanel);
         }
@@ -72,7 +72,7 @@ public class SpectatorEntryPoint extends AbstractSailingReadEntryPoint {
         if (!embedded) {
             String title = groupNameParam != null ? groupNameParam : getStringMessages().overview();
             Window.setTitle(title);
-            SAPSailingHeaderWithAuthentication header = getHeader(title);
+            SailingHeaderWithAuthentication header = getHeader(title);
             RootPanel.get().add(header);
         } else {
             RootPanel.getBodyElement().getStyle().setPadding(0, Unit.PX);
@@ -80,8 +80,8 @@ public class SpectatorEntryPoint extends AbstractSailingReadEntryPoint {
         }
     }
 
-    private SAPSailingHeaderWithAuthentication getHeader(String title) {
-        SAPSailingHeaderWithAuthentication header = new SAPSailingHeaderWithAuthentication(title);
+    private SailingHeaderWithAuthentication getHeader(String title) {
+        SailingHeaderWithAuthentication header = new SailingHeaderWithAuthentication(title);
         PaywallResolver paywallResolver = new PaywallResolverImpl(getUserService(), getSubscriptionServiceFactory());
         new FixedSailingAuthentication(getUserService(), paywallResolver, header.getAuthenticationMenuView());
         header.getElement().getStyle().setPosition(Position.FIXED);

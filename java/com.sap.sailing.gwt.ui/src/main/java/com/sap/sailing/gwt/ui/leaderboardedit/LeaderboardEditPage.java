@@ -14,7 +14,7 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.sap.sailing.domain.common.DetailType;
 import com.sap.sailing.gwt.common.authentication.FixedSailingAuthentication;
-import com.sap.sailing.gwt.common.authentication.SAPSailingHeaderWithAuthentication;
+import com.sap.sailing.gwt.common.authentication.SailingHeaderWithAuthentication;
 import com.sap.sailing.gwt.common.communication.routing.ProvidesLeaderboardRouting;
 import com.sap.sailing.gwt.settings.client.leaderboard.EditableLeaderboardLifecycle;
 import com.sap.sailing.gwt.settings.client.leaderboard.EditableLeaderboardSettings;
@@ -33,7 +33,7 @@ import com.sap.sse.security.ui.authentication.decorator.AuthorizedContentDecorat
 import com.sap.sse.security.ui.authentication.decorator.WidgetFactory;
 import com.sap.sse.security.ui.authentication.generic.GenericAuthentication;
 import com.sap.sse.security.ui.authentication.generic.GenericAuthorizedContentDecorator;
-import com.sap.sse.security.ui.authentication.generic.sapheader.SAPHeaderWithAuthentication;
+import com.sap.sse.security.ui.authentication.generic.sapheader.BrandedHeaderWithAuthentication;
 import com.sap.sse.security.ui.client.premium.PaywallResolver;
 import com.sap.sse.security.ui.client.premium.PaywallResolverImpl;
 import com.sap.sse.security.ui.settings.ComponentContextWithSettingsStorage;
@@ -46,7 +46,7 @@ public class LeaderboardEditPage extends AbstractSailingWriteEntryPoint implemen
     
     private String leaderboardName;
     private EditableLeaderboardContextDefinition editableLeaderboardContextDefinition;
-    private SAPSailingHeaderWithAuthentication header;
+    private SailingHeaderWithAuthentication header;
     
     @Override
     protected void doOnModuleLoad() {
@@ -85,7 +85,7 @@ public class LeaderboardEditPage extends AbstractSailingWriteEntryPoint implemen
 
         @Override
         public void onSuccess(Iterable<DetailType> result) {
-            SAPHeaderWithAuthentication header = initHeader();
+            BrandedHeaderWithAuthentication header = initHeader();
             PaywallResolver paywallResolver = new PaywallResolverImpl(getUserService(), getSubscriptionServiceFactory());
             GenericAuthentication genericSailingAuthentication = new FixedSailingAuthentication(getUserService(),
                     paywallResolver, header.getAuthenticationMenuView());
@@ -100,11 +100,11 @@ public class LeaderboardEditPage extends AbstractSailingWriteEntryPoint implemen
     private class GetLeaderboardWithSecurityCallback implements AsyncCallback<StrippedLeaderboardDTO> {
         private final AuthorizedContentDecorator authorizedContentDecorator;
         private final Iterable<DetailType> getAvailableDetailTypesForLeaderboardResult;
-        private final SAPHeaderWithAuthentication header;
+        private final BrandedHeaderWithAuthentication header;
 
         GetLeaderboardWithSecurityCallback(AuthorizedContentDecorator authorizedContentDecorator,
                 Iterable<DetailType> getAvailableDetailTypesForLeaderboardResult,
-                SAPHeaderWithAuthentication header) {
+                BrandedHeaderWithAuthentication header) {
             this.authorizedContentDecorator = authorizedContentDecorator;
             this.getAvailableDetailTypesForLeaderboardResult = getAvailableDetailTypesForLeaderboardResult;
             this.header = header;
@@ -166,8 +166,8 @@ public class LeaderboardEditPage extends AbstractSailingWriteEntryPoint implemen
         
     }
 
-    private SAPHeaderWithAuthentication initHeader() {
-        header = new SAPSailingHeaderWithAuthentication(getHeaderTitle(leaderboardName));
+    private BrandedHeaderWithAuthentication initHeader() {
+        header = new SailingHeaderWithAuthentication(getHeaderTitle(leaderboardName));
         header.getElement().getStyle().setWidth(100, Unit.PCT);
         return header;
     }

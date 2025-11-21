@@ -72,8 +72,8 @@ public class PrivilegeEscalationTest {
         userGroup.add(user2);
         userStore.updateUserGroup(userGroup);
         accessControlStore = new AccessControlStoreImpl(userStore);
-        securityService = new SecurityServiceImpl(null, /* corsFilterConfigurationTracker */ null, userStore,
-                accessControlStore, SecuredSecurityTypes::getAllInstances, SSESubscriptionPlan::getAllInstances);
+        securityService = new SecurityServiceImpl(null, /* corsFilterConfigurationTracker */ null, /* brandingConfigurationServiceTracker */ null,
+                userStore, accessControlStore, SecuredSecurityTypes::getAllInstances, SSESubscriptionPlan::getAllInstances);
         securityService.initialize();
         rd = new RoleDefinitionImpl(UUID.randomUUID(), "some_role",
                 Collections.singleton(type1.getPermission(DefaultActions.READ, DefaultActions.UPDATE)));

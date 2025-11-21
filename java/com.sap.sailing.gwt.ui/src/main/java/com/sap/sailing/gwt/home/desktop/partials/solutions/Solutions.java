@@ -1,9 +1,12 @@
 package com.sap.sailing.gwt.home.desktop.partials.solutions;
 
+import java.util.Optional;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -21,7 +24,11 @@ import com.sap.sailing.gwt.home.desktop.places.whatsnew.WhatsNewPlace.WhatsNewNa
 import com.sap.sailing.gwt.home.shared.app.PlaceNavigation;
 import com.sap.sailing.gwt.home.shared.places.solutions.SolutionsPlace;
 import com.sap.sailing.gwt.home.shared.places.solutions.SolutionsPlace.SolutionsNavigationTabs;
-import com.sap.sailing.gwt.ui.client.StringMessages;
+import com.sap.sailing.gwt.ui.client.StringMessages;    
+import com.sap.sse.gwt.shared.ClientConfiguration;
+import com.google.gwt.dom.client.HeadingElement;
+import com.google.gwt.dom.client.ParagraphElement;
+import com.google.gwt.dom.client.Style.Display;
 
 public class Solutions extends Composite {
     interface SolutionsUiBinder extends UiBinder<Widget, Solutions> {
@@ -33,19 +40,27 @@ public class Solutions extends Composite {
 
     @UiField StringMessages i18n;
     @UiField
-    Anchor sapInSailingAnchor;
+    Anchor inSailingAnchor;
     @UiField Anchor sailingAnalyticsAnchor;
     @UiField Anchor raceAnchor;
     @UiField Anchor inSightAnchor;
     @UiField Anchor buoyPingerAnchor;
     @UiField Anchor simulatorAnchor;
 
-    @UiField DivElement sapInSailingDiv;
+    @UiField DivElement inSailingDiv;
+    @UiField DivElement inSailingContentDiv;
     @UiField DivElement sailingAnalyticsDiv;
     @UiField DivElement raceDiv;
     @UiField DivElement inSightDiv;
     @UiField DivElement buoyPingerDiv;
     @UiField DivElement simulatorDiv;
+    @UiField DivElement inSailingDivAlternator;
+    @UiField DivElement sailingAnalyticsDivGridAlternator;
+    @UiField DivElement raceDivGridAlternator;
+    @UiField DivElement inSightDivAlternator;
+    @UiField DivElement buoyPingerDivAlternator;
+    @UiField DivElement simulatorDivAlternator;
+
 
     @UiField Anchor sailingAnalyticsDetailsAnchor;
     @UiField Anchor raceCommitteeAppDetailsAnchor;
@@ -53,7 +68,21 @@ public class Solutions extends Composite {
     @UiField Anchor buoyPingerAppDetailsAnchor;
     @UiField Anchor simulatorAppDetailsAnchor;
     
-    private final PlaceNavigation<SolutionsPlace> sapInSailingNavigation;
+    @UiField HeadingElement inSailingDivHeader;
+    @UiField HeadingElement sailingAnalyticsTitleHeader;
+    @UiField ParagraphElement contentSailingAnalytics1;
+    @UiField ParagraphElement contentSailingAnalytics2;
+    @UiField HeadingElement sailingRaceManagerHeader;
+    @UiField ParagraphElement contentSailingRaceManager;
+    @UiField HeadingElement sailInSightHeader;
+    @UiField ParagraphElement contentSailInSight;
+    @UiField HeadingElement sailingBuoyPingerHeader;
+    @UiField ParagraphElement contentSailingBuoyPinger;
+    
+    
+    
+    
+    private final PlaceNavigation<SolutionsPlace> inSailingNavigation;
     private final PlaceNavigation<SolutionsPlace> sailingAnalyticsNavigation; 
     private final PlaceNavigation<SolutionsPlace> raceCommitteeAppNavigation; 
     private final PlaceNavigation<SolutionsPlace> inSightAppNavigation;
@@ -67,13 +96,57 @@ public class Solutions extends Composite {
     private final PlaceNavigation<WhatsNewPlace> buoyPingerAppDetailsNavigation;
     private final PlaceNavigation<WhatsNewPlace> simulatorAppDetailsNavigation;
     private final DesktopPlacesNavigator placesNavigator;
-    
+
     public Solutions(SolutionsNavigationTabs navigationTab, DesktopPlacesNavigator placesNavigator) {
         this.navigationTab = navigationTab;
         this.placesNavigator = placesNavigator;
         SolutionsResources.INSTANCE.css().ensureInjected();
         initWidget(uiBinder.createAndBindUi(this));
-
+        if (ClientConfiguration.getInstance().isBrandingActive()) {
+            String brandName = ClientConfiguration.getInstance().getBrandTitle(Optional.empty());
+            inSailingAnchor.setText(i18n.solutionsISHeadline(brandName));
+            sailingAnalyticsAnchor.setText(i18n.solutionsAnalyticsHeadline(brandName));
+            raceAnchor.setText(i18n.solutionsRaceHeadline(brandName));
+            inSightAnchor.setText(i18n.solutionsInSightHeadline(brandName));
+            buoyPingerAnchor.setText(i18n.solutionsBuoyPingerHeadline(brandName));
+            
+            inSailingDivHeader.setInnerText(i18n.inSailing(brandName));
+            sailingAnalyticsTitleHeader.setInnerText(i18n.sailingAnalyticsTitle(brandName));
+            contentSailingAnalytics1.setInnerText(i18n.contentSailingAnalytics1(brandName));
+            contentSailingAnalytics2.setInnerText(i18n.contentSailingAnalytics2(brandName));
+            sailingRaceManagerHeader.setInnerText(i18n.sailingRaceManager(brandName));
+            contentSailingRaceManager.setInnerText(i18n.contentSailingRaceManager(brandName));
+            sailInSightHeader.setInnerText(i18n.sailInSight(brandName));
+            contentSailInSight.setInnerText(i18n.contentSailInSight(i18n.solutionsInSightHeadline(brandName)));
+            sailingBuoyPingerHeader.setInnerText(i18n.sailingBuoyPinger(brandName));
+            contentSailingBuoyPinger.setInnerText(i18n.contentSailingBuoyPinger(brandName));
+            
+            sailingAnalyticsDivGridAlternator.getStyle().setBackgroundImage("url(\'"+ClientConfiguration.getInstance().getSailingAnalyticsImageURL()+"\')");
+            inSailingDivAlternator.getStyle().setBackgroundImage("url(\'"+ClientConfiguration.getInstance().getSolutionsInSailingImageURL()+"\')");
+            inSightDivAlternator.getStyle().setBackgroundImage("url(\'"+ClientConfiguration.getInstance().getSailInSightAppImageURL()+"\')");
+            simulatorDivAlternator.getStyle().setBackgroundImage("url(\'"+ClientConfiguration.getInstance().getSailingSimulatorImageURL()+"\')");
+            raceDivGridAlternator.getStyle().setBackgroundImage("url(\'"+ClientConfiguration.getInstance().getSailingRaceManagerAppImageURL()+"\')");
+            buoyPingerDivAlternator.getStyle().setBackgroundImage("url(\'"+ClientConfiguration.getInstance().getBuoyPingerAppImageURL()+"\')");
+        } else {
+            inSailingAnchor.setVisible(false);
+            sailingAnalyticsAnchor.setText(i18n.solutionsAnalyticsHeadline(""));
+            raceAnchor.setText(i18n.solutionsRaceHeadline(""));
+            inSightAnchor.setText(i18n.sailInSightName());
+            buoyPingerAnchor.setText(i18n.solutionsBuoyPingerHeadline(""));
+            
+            
+            inSailingDiv.getStyle().setDisplay(Display.NONE);
+            sailingAnalyticsTitleHeader.setInnerText(i18n.sailingAnalyticsTitle(""));
+            contentSailingAnalytics1.setInnerText(i18n.contentSailingAnalytics1(""));
+            contentSailingAnalytics2.setInnerText(i18n.contentSailingAnalytics2(""));
+            sailingRaceManagerHeader.setInnerText(i18n.sailingRaceManager(""));
+            contentSailingRaceManager.setInnerText(i18n.contentSailingRaceManager(""));
+            sailInSightHeader.setInnerText(i18n.sailInSightName());
+            contentSailInSight.setInnerText(i18n.contentSailInSight(i18n.sailInSightName()));
+            sailingBuoyPingerHeader.setInnerText(i18n.sailingBuoyPinger(""));
+            contentSailingBuoyPinger.setInnerText(i18n.contentSailingBuoyPinger(""));
+            
+        }
         sailingAnalyticsDetailsNavigation = placesNavigator.getWhatsNewNavigation(WhatsNewNavigationTabs.SailingAnalytics);
         raceCommitteeAppDetailsNavigation =  placesNavigator.getWhatsNewNavigation(WhatsNewNavigationTabs.RaceManagerApp);
         buoyPingerAppDetailsNavigation =  placesNavigator.getWhatsNewNavigation(WhatsNewNavigationTabs.BuoyPingerApp);
@@ -85,14 +158,14 @@ public class Solutions extends Composite {
         buoyPingerAppDetailsAnchor.setHref(buoyPingerAppDetailsNavigation.getTargetUrl());
         simulatorAppDetailsAnchor.setHref(simulatorAppDetailsNavigation.getTargetUrl());
 
-        sapInSailingNavigation = placesNavigator.getSolutionsNavigation(SolutionsNavigationTabs.SapInSailing);
+        inSailingNavigation = placesNavigator.getSolutionsNavigation(SolutionsNavigationTabs.SapInSailing);
         sailingAnalyticsNavigation = placesNavigator.getSolutionsNavigation(SolutionsNavigationTabs.SailingAnalytics);
         raceCommitteeAppNavigation = placesNavigator.getSolutionsNavigation(SolutionsNavigationTabs.RaceManagerApp);
         inSightAppNavigation = placesNavigator.getSolutionsNavigation(SolutionsNavigationTabs.InSightApp);
         buoyPingerAppNavigation = placesNavigator.getSolutionsNavigation(SolutionsNavigationTabs.BuoyPingerApp);
         sailingSimulatorNavigation = placesNavigator.getSolutionsNavigation(SolutionsNavigationTabs.SailingSimulator);
 
-        sapInSailingAnchor.setHref(sapInSailingNavigation.getTargetUrl());
+        inSailingAnchor.setHref(inSailingNavigation.getTargetUrl());
         sailingAnalyticsAnchor.setHref(sailingAnalyticsNavigation.getTargetUrl());
         raceAnchor.setHref(raceCommitteeAppNavigation.getTargetUrl());
         inSightAnchor.setHref(inSightAppNavigation.getTargetUrl());
@@ -109,10 +182,10 @@ public class Solutions extends Composite {
         });
     }
 
-    @UiHandler("sapInSailingAnchor")
+    @UiHandler("inSailingAnchor")
     public void scrollTosapInSailingAnchor(ClickEvent e) {
         scrollToView(SolutionsNavigationTabs.SapInSailing);
-        handleClickEventWithLocalNavigation(e, sapInSailingNavigation);
+        handleClickEventWithLocalNavigation(e, inSailingNavigation);
     }
     @UiHandler("sailingAnalyticsAnchor")
     public void scrollToSailingAnalytics(ClickEvent e) {
@@ -157,7 +230,7 @@ public class Solutions extends Composite {
     private void scrollToView(SolutionsNavigationTabs navigationTab) {
         final int actualScrollLeft = Window.getScrollLeft();
         if (navigationTab == null) {
-            sapInSailingDiv.scrollIntoView();
+            inSailingDiv.scrollIntoView();
             Window.scrollTo(actualScrollLeft, 0);
         } else {
             switch (navigationTab) {
@@ -196,5 +269,12 @@ public class Solutions extends Composite {
             placesNavigator.goToPlace(placeNavigation);
             e.preventDefault();
          }
+    }
+    public void setInSailingContentHtml(SafeHtml html) {
+        inSailingContentDiv.setInnerHTML(html.asString());
+    }
+    
+    public void clearInSailingContent() {
+        inSailingContentDiv.setInnerHTML("");
     }
 }

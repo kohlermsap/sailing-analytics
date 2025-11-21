@@ -24,7 +24,6 @@ import com.sap.sailing.domain.racelogtracking.RaceLogTrackingAdapterFactory;
 import com.sap.sailing.server.gateway.impl.AbstractFileUploadServlet;
 import com.sap.sailing.server.gateway.trackfiles.impl.ExpeditionAllInOneImporter.ImporterResult;
 import com.sap.sse.i18n.ResourceBundleStringMessages;
-import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
 import com.sap.sse.util.ServiceTrackerFactory;
 
 /**
@@ -47,7 +46,7 @@ public class ExpeditionAllInOneImportServlet extends AbstractFileUploadServlet {
         super.init(config);
         raceLogTrackingAdapterTracker = ServiceTrackerFactory.createAndOpen(getContext(),
                 RaceLogTrackingAdapterFactory.class);
-        serverStringMessages = new ResourceBundleStringMessagesImpl(STRING_MESSAGES_BASE_NAME,
+        serverStringMessages = ResourceBundleStringMessages.create(STRING_MESSAGES_BASE_NAME,
                 this.getClass().getClassLoader(), StandardCharsets.UTF_8.name());
     }
 

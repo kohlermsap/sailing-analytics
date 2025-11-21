@@ -1,5 +1,7 @@
 package com.sap.sailing.gwt.home.desktop.places.fakeseries;
 
+import java.util.Optional;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -50,9 +52,9 @@ public class TabletAndDesktopSeriesView extends Composite implements SeriesView<
     @Override
     public void navigateTabsTo(AbstractSeriesTabPlace place) {
         tabPanelUi.activatePlace(place);
-        StringBuilder titleBuilder = new StringBuilder(
-                (ClientConfiguration.getInstance().isBrandingActive() ? StringMessages.INSTANCE.sapSailing()
-                        : StringMessages.INSTANCE.whitelabelSailing())).append(" - ");
+        StringBuilder titleBuilder = new StringBuilder(ClientConfiguration.getInstance().isBrandingActive() 
+                ? ClientConfiguration.getInstance().getSailingAnalyticsSailing(Optional.empty())
+                : StringMessages.INSTANCE.whitelabelSailing()).append(" - ");
 
         titleBuilder.append(currentPresenter.getSeriesDTO().getDisplayName());
 

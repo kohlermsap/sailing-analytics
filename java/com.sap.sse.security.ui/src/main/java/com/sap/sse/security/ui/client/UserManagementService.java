@@ -94,7 +94,9 @@ public interface UserManagementService extends RemoteService {
     SecuredDTO addSecurityInformation(SecuredDTO securedDTO);
     
     Pair<Boolean, ArrayList<String>> getCORSFilterConfiguration();
-    
+
+    String getBrandingConfigurationId();
+
     HashMap<String,TimedLock> getClientIPBasedTimedLocksForUserCreation() throws UnauthorizedException;
     
     HashMap<String,TimedLock> getClientIPBasedTimedLocksForBearerTokenAbuse() throws UnauthorizedException;

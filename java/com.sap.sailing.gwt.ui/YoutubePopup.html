@@ -2,13 +2,9 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>${applicationScope['clientConfigurationContext.SAP']}Sailing Video</title>
-    <link rel="shortcut icon" type="image/x-icon" href="images/sap${applicationScope['clientConfigurationContext.whitelabeled']}.ico" />
-    <script>
-       document.clientConfigurationContext = {
-            debrandingActive: ${applicationScope['clientConfigurationContext.debrandingActive']}
-       };
-    </script>
+    <title>${clientConfigurationContext['brandTitle']}Sailing Video</title>
+    <link rel="shortcut icon" type="image/x-icon" href="images/sap${clientConfigurationContext['whitelabeled']}.ico" />
+    <script>${clientConfigurationContext['scriptForClientConfigurationContextToDocument']}</script>
     <script type="text/javascript" language="javascript" src="com.sap.sailing.gwt.ui.YoutubePopup/com.sap.sailing.gwt.ui.YoutubePopup.nocache.js"></script>
     <style type="text/css"> 
       html {overflow: auto;} 

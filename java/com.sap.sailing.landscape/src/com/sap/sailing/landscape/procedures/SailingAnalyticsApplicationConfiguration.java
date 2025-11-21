@@ -11,8 +11,9 @@ import com.sap.sailing.landscape.SailingAnalyticsMetrics;
 import com.sap.sailing.landscape.SailingAnalyticsProcess;
 import com.sap.sailing.landscape.SailingReleaseRepository;
 import com.sap.sailing.landscape.common.SharedLandscapeConstants;
+import com.sap.sse.branding.BrandingConfigurationService;
+import com.sap.sse.branding.sap.SAPBrandingConfiguration;
 import com.sap.sse.common.Util;
-import com.sap.sse.debranding.ClientConfigurationListener;
 import com.sap.sse.landscape.DefaultProcessConfigurationVariables;
 import com.sap.sse.landscape.ProcessConfigurationVariable;
 import com.sap.sse.landscape.Release;
@@ -202,7 +203,7 @@ extends AwsApplicationConfiguration<ShardingKey, SailingAnalyticsMetrics, Sailin
             final List<String> result = new ArrayList<>();
             Util.addAll(getAdditionalJavaArgsForSharedSecurity(SharedLandscapeConstants.DEFAULT_DOMAIN_NAME, SharedLandscapeConstants.DEFAULT_SECURITY_SERVICE_REPLICA_SET_NAME), result);
             // TODO check whether we're really running under the default sapsailing.com domain, before activating SAP branding...
-            result.add("-D"+ClientConfigurationListener.DEBRANDING_PROPERTY_NAME+"=false"); // activate branding when running under default SAP domain
+            result.add("-D"+BrandingConfigurationService.BRANDING_ID_PROPERTY_NAME+"="+SAPBrandingConfiguration.ID); // activate branding when running under default SAP domain
             return result;
         }
 

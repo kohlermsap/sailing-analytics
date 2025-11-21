@@ -12,6 +12,7 @@ import com.sap.sailing.domain.common.ManeuverType;
 import com.sap.sailing.domain.common.Position;
 import com.sap.sailing.domain.common.SpeedWithBearing;
 import com.sap.sailing.domain.common.Wind;
+import com.sap.sailing.domain.common.WindSourceType;
 import com.sap.sailing.domain.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sailing.domain.common.tracking.GPSFixMoving;
 import com.sap.sailing.domain.maneuverdetection.CompleteManeuverCurveWithEstimationData;
@@ -74,7 +75,8 @@ public class ManeuverDetectorWithEstimationDataSupportDecoratorImpl
             TimePoint maneuverTimePoint = maneuverCurve.getMainCurveBoundaries().getTimePoint();
             Position maneuverPosition = maneuverDetector.track.getEstimatedPosition(maneuverTimePoint,
                     /* extrapolate */false);
-            Wind wind = maneuverDetector.trackedRace.getWind(maneuverPosition, maneuverTimePoint);
+            Wind wind = maneuverDetector.trackedRace.getWind(maneuverPosition, maneuverTimePoint,
+                    /* exclude */ maneuverDetector.trackedRace.getWindSources(WindSourceType.MANEUVER_BASED_ESTIMATION));
             maneuvers
                     .addAll(maneuverDetector.determineManeuversFromManeuverCurve(maneuverCurve.getMainCurveBoundaries(),
                             maneuverCurve.getManeuverCurveWithStableSpeedAndCourseBoundaries(), wind,

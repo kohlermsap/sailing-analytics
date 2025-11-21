@@ -11,6 +11,6 @@ public class FixedLoginHintPopup extends GenericLoginHintPopup {
 
     public FixedLoginHintPopup(AuthenticationManager authenticationManager, GenericAuthenticationLinkFactory linkFactory) {
         super(authenticationManager, linkFactory);
-        this.addStyleName(SAPHeaderWithAuthenticationResources.INSTANCE.css().fixed());
+        this.addStyleName(HeaderWithAuthenticationResources.INSTANCE.css().fixed());
     }
 }

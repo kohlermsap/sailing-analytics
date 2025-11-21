@@ -903,7 +903,7 @@ To set up a multi instance for a server with name "SSV", subdomain "ssv.sapsaili
 
 8. White label switch, uncomment this line in env.sh
    <pre>
-   #ADDITIONAL_JAVA_ARGS="$ADDITIONAL_JAVA_ARGS -Dcom.sap.sse.debranding=true"
+   #ADDITIONAL_JAVA_ARGS="$ADDITIONAL_JAVA_ARGS -Dcom.sap.sse.branding=SAP"
    </pre>
    to enable white labeling.
 

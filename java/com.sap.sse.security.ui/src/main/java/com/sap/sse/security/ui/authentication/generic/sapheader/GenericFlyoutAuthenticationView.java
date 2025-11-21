@@ -5,11 +5,11 @@ import com.sap.sse.security.ui.authentication.view.AbstractFlyoutAuthenticationV
 import com.sap.sse.security.ui.authentication.view.FlyoutAuthenticationView;
 
 /**
- * {@link FlyoutAuthenticationView} styled to work with {@link SAPHeaderWithAuthentication}.
+ * {@link FlyoutAuthenticationView} styled to work with {@link BrandedHeaderWithAuthentication}.
  *
  */
 public class GenericFlyoutAuthenticationView extends AbstractFlyoutAuthenticationView {
-    protected static final SAPHeaderWithAuthenticationResources res = SAPHeaderWithAuthenticationResources.INSTANCE;
+    protected static final HeaderWithAuthenticationResources res = HeaderWithAuthenticationResources.INSTANCE;
 
     public GenericFlyoutAuthenticationView(CommonSharedResources resources) {
         super(resources);

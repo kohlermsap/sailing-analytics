@@ -10,7 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.sap.sailing.domain.common.security.SecuredDomainType;
 import com.sap.sailing.domain.common.security.SecuredDomainType.TrackedRaceActions;
 import com.sap.sailing.gwt.common.authentication.FixedSailingAuthentication;
-import com.sap.sailing.gwt.common.authentication.SAPSailingHeaderWithAuthentication;
+import com.sap.sailing.gwt.common.authentication.SailingHeaderWithAuthentication;
 import com.sap.sailing.gwt.ui.adminconsole.AIAgentConfigurationPanel;
 import com.sap.sailing.gwt.ui.adminconsole.AIAgentConfigurationPanelSupplier;
 import com.sap.sailing.gwt.ui.adminconsole.BoatPanel;
@@ -181,7 +181,7 @@ public class AdminConsoleViewImpl extends Composite implements AdminConsoleView 
 
     @Override
     public HeaderPanel createUI(final ServerInfoDTO serverInfo) {
-        SAPSailingHeaderWithAuthentication header = new SAPSailingHeaderWithAuthentication(stringMessages.administration());
+        SailingHeaderWithAuthentication header = new SailingHeaderWithAuthentication(stringMessages.administration());
         GenericAuthentication genericSailingAuthentication = new FixedSailingAuthentication(userService, paywallResolver, header.getAuthenticationMenuView());
         AuthorizedContentDecorator authorizedContentDecorator = new GenericAuthorizedContentDecorator(genericSailingAuthentication);
         authorizedContentDecorator.setContentWidgetFactory(() -> createAdminConsolePanel(serverInfo));
@@ -445,6 +445,8 @@ public class AdminConsoleViewImpl extends Composite implements AdminConsoleView 
                             public void refreshAfterBecomingVisible() {
                                 if (getWidget() != null) {
                                     getWidget().refreshServerConfiguration();
+                                    getWidget().refreshBrandingConfiguration();
+                                    getWidget().refreshCORSConfiguration();
                                 }
                             }
         }, stringMessages.localServer(), new LocalServerPlace((String) null /* no place token */),

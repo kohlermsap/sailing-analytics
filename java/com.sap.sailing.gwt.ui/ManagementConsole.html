@@ -9,7 +9,7 @@
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="${applicationScope['clientConfigurationContext.SAP']}Sailing" />
+    <meta property="og:title" content="${clientConfigurationContext['brandTitle']}Sailing" />
     <meta property="og:description" content="Help sailors analyze performance and optimize strategy &#8226; Bring fans closer to the action
         &#8226; Provide the media with information and insights to deliver a greater informed commentary" />
     <meta property="og:image" content="https://s3-eu-west-1.amazonaws.com/media.sapsailing.com/2014/505Worlds/Images_Homepage/505Worlds2014_eventteaser.jpg" />
@@ -18,13 +18,13 @@
     <!--                                                               -->
     <!-- Consider inlining CSS to reduce the number of requested files -->
     <!--                                                               -->
-    <link rel="shortcut icon" type="image/x-icon" href="images/sap${applicationScope['clientConfigurationContext.whitelabeled']}.ico" />
+    <link rel="shortcut icon" type="image/x-icon" href="images/sap${clientConfigurationContext['whitelabeled']}.ico" />
 
 
     <!--                                           -->
     <!-- Any title is fine                         -->
     <!--                                           -->
-    <title>${applicationScope['clientConfigurationContext.SAP']}Sailing Analytics Administration Console</title>
+    <title>${clientConfigurationContext['brandTitle']}Sailing Analytics Administration Console</title>
     
     <!-- AdminConsole is not prepared to work with nomalize. -->
     <!-- <link rel="stylesheet" type="text/css" href="/sailing-normalize-3.0.2.cache.css"> -->
@@ -38,11 +38,7 @@
   
     <!-- Client-side QR code generation -->
     <script type="text/javascript" src="qrcode/qrcode.min.js"></script>
-    <script>
-       document.clientConfigurationContext = {
-            debrandingActive: ${applicationScope['clientConfigurationContext.debrandingActive']}
-       };
-    </script>
+    <script>${clientConfigurationContext['scriptForClientConfigurationContextToDocument']}</script>
     <!--                                           -->
     <!-- This script loads your compiled module.   -->
     <!-- If you add any GWT meta tags, they must   -->
@@ -131,7 +127,7 @@
 
     <!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
     <div id="loading" class="loading">
-        <p class="sapsailing">${applicationScope['clientConfigurationContext.SAP']}Sailing Analytics</p>
+        <p class="sapsailing">${clientConfigurationContext['brandTitle']}Sailing Analytics</p>
         <noscript>
             <p style="margin: 10px 40px;">
                 By delivering real time analytics around race rankings, speeds, maneuvers, bearings etc., SAP is helping

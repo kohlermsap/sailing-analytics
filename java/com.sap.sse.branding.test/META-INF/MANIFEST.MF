@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Test
+Bundle-SymbolicName: com.sap.sse.branding.test
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: SAP
+Fragment-Host: com.sap.sse.branding
+Require-Bundle: junit-jupiter-api,
+ org.mockito.mockito-core;bundle-version="4.8.1",
+ net.bytebuddy.byte-buddy;bundle-version="1.14.12",
+ net.bytebuddy.byte-buddy-agent;bundle-version="1.14.12",
+ org.objenesis;bundle-version="3.3.0"
+Automatic-Module-Name: com.sap.sse.branding.test
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: com.sap.sse.branding.sap,
+ com.sap.sse.testutils

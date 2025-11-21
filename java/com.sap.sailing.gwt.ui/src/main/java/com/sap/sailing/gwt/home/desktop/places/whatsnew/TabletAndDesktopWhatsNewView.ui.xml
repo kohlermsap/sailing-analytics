@@ -7,11 +7,11 @@
         <div class="{local_res.css.whatsnew_nav}">
             <div class="{res.mediaCss.grid}">
                 <div class="{res.mediaCss.small12} {res.mediaCss.columns}">
-                    <g:Anchor href="javascript:;" styleName="{local_res.css.whatsnew_nav_link}" ui:field="sailingAnalyticsNotesAnchor"><ui:text from='{i18n.solutionsSAPHeadline}' /></g:Anchor>
-                    <g:Anchor href="javascript:;" styleName="{local_res.css.whatsnew_nav_link}" ui:field="sailingSimulatorNotesAnchor"><ui:text from='{i18n.solutionsSimulatorHeadline}' /></g:Anchor>
-                    <g:Anchor href="javascript:;" styleName="{local_res.css.whatsnew_nav_link}" ui:field="raceCommitteeAppNotesAnchor"><ui:text from='{i18n.solutionsRaceHeadline}' /></g:Anchor>
-                    <g:Anchor href="javascript:;" styleName="{local_res.css.whatsnew_nav_link}" ui:field="inSightAppNotesAnchor"><ui:text from='{i18n.solutionsInSightHeadline}' /></g:Anchor>
-                    <g:Anchor href="javascript:;" styleName="{local_res.css.whatsnew_nav_link}" ui:field="buoyPingerAppNotesAnchor"><ui:text from='{i18n.solutionsBuoyPingerHeadline}' /></g:Anchor>
+                    <g:Anchor href="javascript:;" styleName="{local_res.css.whatsnew_nav_link}" ui:field="sailingAnalyticsNotesAnchor"></g:Anchor>
+                    <g:Anchor href="javascript:;" styleName="{local_res.css.whatsnew_nav_link}" ui:field="sailingSimulatorNotesAnchor"></g:Anchor>
+                    <g:Anchor href="javascript:;" styleName="{local_res.css.whatsnew_nav_link}" ui:field="raceCommitteeAppNotesAnchor"></g:Anchor>
+                    <g:Anchor href="javascript:;" styleName="{local_res.css.whatsnew_nav_link}" ui:field="inSightAppNotesAnchor"></g:Anchor>
+                    <g:Anchor href="javascript:;" styleName="{local_res.css.whatsnew_nav_link}" ui:field="buoyPingerAppNotesAnchor"></g:Anchor>
                 </div>
             </div>
         </div>

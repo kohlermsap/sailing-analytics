@@ -66,7 +66,6 @@ import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.Util.Triple;
 import com.sap.sse.common.mail.MailException;
 import com.sap.sse.i18n.ResourceBundleStringMessages;
-import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
 import com.sap.sse.landscape.DefaultProcessConfigurationVariables;
 import com.sap.sse.landscape.InboundReplicationConfiguration;
 import com.sap.sse.landscape.Landscape;
@@ -1674,7 +1673,7 @@ public class LandscapeServiceImpl implements LandscapeService {
             AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> replicaSet,
             final String subjectMessageKey, final String bodyMessageKey, Optional<Action> alsoSendToAllUsersWithThisPermissionOnReplicaSet) throws MailException {
         final Iterable<User> usersToSendMailTo = getSecurityService().getUsersToInformAboutReplicaSet(replicaSet.getServerName(), alsoSendToAllUsersWithThisPermissionOnReplicaSet);
-        final ResourceBundleStringMessages stringMessages = new ResourceBundleStringMessagesImpl(STRING_MESSAGES_BASE_NAME, getClass().getClassLoader(), StandardCharsets.UTF_8.name());
+        final ResourceBundleStringMessages stringMessages = ResourceBundleStringMessages.create(STRING_MESSAGES_BASE_NAME, getClass().getClassLoader(), StandardCharsets.UTF_8.name());
         for (final User user : usersToSendMailTo) {
             final String subject = stringMessages.get(user.getLocaleOrDefault(), subjectMessageKey, replicaSet.getServerName());
             final String body = stringMessages.get(user.getLocaleOrDefault(), bodyMessageKey, replicaSet.getServerName());

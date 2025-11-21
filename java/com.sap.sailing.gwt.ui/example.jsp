@@ -13,6 +13,6 @@
     <c:out value="Jetty JSP Example, remove it when everything is set up."></c:out>
     <br /> 
     Current date is: <%=new java.util.Date()%>
-    ${applicationScope['org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern']}
+    ${requestScope['org.eclipse.jetty.server.webapp.ContainerIncludeJarPattern']}
 </body>
 </html>

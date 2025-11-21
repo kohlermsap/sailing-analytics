@@ -54,7 +54,6 @@ REPLICATE_MASTER_SERVLET_PORT=8888
 REPLICATE_MASTER_EXCHANGE_NAME=paris2024
 REPLICATE_MASTER_QUEUE_HOST=rabbit-eu-west-3.sapsailing.com
 REPLICATE_MASTER_BEARER_TOKEN="***"
-ADDITIONAL_JAVA_ARGS="${ADDITIONAL_JAVA_ARGS} -Dcom.sap.sse.debranding=true"
 ```
 
 Make sure to align the ``INSTALL_FROM_RELEASE`` parameter to match up with the release used on site.

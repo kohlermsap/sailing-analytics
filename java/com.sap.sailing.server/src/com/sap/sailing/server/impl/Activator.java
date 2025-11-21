@@ -62,6 +62,7 @@ import com.sap.sailing.server.security.SailingViewerRole;
 import com.sap.sailing.server.statistics.TrackedRaceStatisticsCache;
 import com.sap.sailing.server.statistics.TrackedRaceStatisticsCacheImpl;
 import com.sap.sailing.shared.server.SharedSailingData;
+import com.sap.sse.branding.BrandingConfigurationService;
 import com.sap.sse.classloading.ServiceTrackerCustomizerForClassLoaderSupplierRegistrations;
 import com.sap.sse.common.TypeBasedServiceFinder;
 import com.sap.sse.common.Util;
@@ -289,10 +290,13 @@ public class Activator implements BundleActivator {
                 ServiceTrackerFactory.createAndOpen(context, CompetitorProvider.class);
         ServiceTracker<ResultUrlRegistry, ResultUrlRegistry> resultUrlRegistryServiceTracker = ServiceTrackerFactory
                 .createAndOpen(context, ResultUrlRegistry.class);
+        ServiceTracker<BrandingConfigurationService, BrandingConfigurationService> brandingConfigurationServiceTracker = ServiceTrackerFactory
+                .createAndOpen(context, BrandingConfigurationService.class);
         racingEventService = new RacingEventServiceImpl(clearPersistentCompetitors,
                 /* sensorFixStore */ null, serviceFinderFactory, trackedRegattaListener,
                 notificationService, trackedRaceStatisticsCache, restoreTrackedRaces, securityServiceTracker,
-                sharedSailingDataTracker, replicationServiceTracker, scoreCorrectionProviderServiceTracker, competitorProviderServiceTracker, resultUrlRegistryServiceTracker);
+                sharedSailingDataTracker, replicationServiceTracker, scoreCorrectionProviderServiceTracker, competitorProviderServiceTracker,
+                resultUrlRegistryServiceTracker, brandingConfigurationServiceTracker);
         notificationService.setRacingEventService(racingEventService);
         // start watching out for MasterDataImportClassLoaderService instances in the OSGi service registry and manage
         // the combined class loader accordingly:

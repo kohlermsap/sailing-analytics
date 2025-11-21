@@ -11,7 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sap.sse.common.Util.Pair;
-import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
+import com.sap.sse.i18n.ResourceBundleStringMessages;
 import com.sap.sse.mail.MailService;
 import com.sap.sse.mail.SerializableDefaultMimeBodyPartSupplier;
 import com.sap.sse.mail.SerializableFileMimeBodyPartSupplier;
@@ -60,7 +60,7 @@ public abstract class NotificationSetNotification<T> implements MailNotification
 
     private final T objectToNotifyAbout;
     private final PreferenceObjectBasedNotificationSet<?, T> associatedNotificationSet;
-    private static final ResourceBundleStringMessagesImpl messages = new ResourceBundleStringMessagesImpl(
+    private static final ResourceBundleStringMessages messages = ResourceBundleStringMessages.create(
             SailingNotificationServiceImpl.STRING_MESSAGES_BASE_NAME,
             NotificationSetNotification.class.getClassLoader(), StandardCharsets.UTF_8.name());
 

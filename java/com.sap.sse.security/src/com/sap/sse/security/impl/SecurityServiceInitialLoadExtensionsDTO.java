@@ -34,14 +34,16 @@ public class SecurityServiceInitialLoadExtensionsDTO implements Serializable {
     
     private final ConcurrentMap<String, TimedLock> clientIPBasedTimedLocksForUserCreation;
     
-    public SecurityServiceInitialLoadExtensionsDTO(ConcurrentMap<String, Pair<Boolean, Set<String>>> corsFilterConfigurationsByReplicaSetName,
-            ConcurrentMap<String, TimedLock> clientIPBasedTimedLocksForBearerTokenAuthentication,
-            ConcurrentMap<String, TimedLock> clientIPBasedTimedLocksForUserCreation) {
+    public SecurityServiceInitialLoadExtensionsDTO(
+            ConcurrentMap<String, Pair<Boolean, Set<String>>> corsFilterConfigurationsByReplicaSetName,
+            ConcurrentMap<String, LockingAndBanning> clientIPBasedLockingAndBanningForBearerTokenAuthentication,
+            ConcurrentMap<String, LockingAndBanning> clientIPBasedLockingAndBanningForUserCreation) {
         super();
         this.corsFilterConfigurationsByReplicaSetName = corsFilterConfigurationsByReplicaSetName;
-        this.clientIPBasedTimedLocksForBearerTokenAuthentication = clientIPBasedTimedLocksForBearerTokenAuthentication;
-        this.clientIPBasedTimedLocksForUserCreation = clientIPBasedTimedLocksForUserCreation;
+        this.clientIPBasedLockingAndBanningForBearerTokenAuthentication = clientIPBasedLockingAndBanningForBearerTokenAuthentication;
+        this.clientIPBasedLockingAndBanningForUserCreation = clientIPBasedLockingAndBanningForUserCreation;
     }
+
     
     ConcurrentMap<String, Pair<Boolean, Set<String>>> getCorsFilterConfigurationsByReplicaSetName() {
         return corsFilterConfigurationsByReplicaSetName;

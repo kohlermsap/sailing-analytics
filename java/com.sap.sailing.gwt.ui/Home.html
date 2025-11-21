@@ -4,16 +4,16 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="${applicationScope['clientConfigurationContext.SAP']}Sailing" />
+    <meta property="og:title" content="${clientConfigurationContext['brandTitle']}Sailing" />
     <meta property="og:description" content="Help sailors analyze performance and optimize strategy &#8226; Bring fans closer to the action
         &#8226; Provide the media with information and insights to deliver a greater informed commentary" />
     <meta property="description" content="Help sailors analyze performance and optimize strategy &#8226; Bring fans closer to the action
         &#8226; Provide the media with information and insights to deliver a greater informed commentary" />
     <meta property="og:image" content="https://s3-eu-west-1.amazonaws.com/media.sapsailing.com/2014/505Worlds/Images_Homepage/505Worlds2014_eventteaser.jpg" />
-    <link rel="shortcut icon" type="image/x-icon" href="images/sap${applicationScope['clientConfigurationContext.whitelabeled']}.ico" selenium-id="shortcutIcon"/>
-    <link href='images/sap-sailing-app-icon${applicationScope['clientConfigurationContext.whitelabeled']}.png' rel='apple-touch-icon' selenium-id="appIcon">
+    <link rel="shortcut icon" type="image/x-icon" href="images/sap${clientConfigurationContext['whitelabeled']}.ico" selenium-id="shortcutIcon"/>
+    <link href='images/sap-sailing-app-icon${clientConfigurationContext['whitelabeled']}.png' rel='apple-touch-icon' selenium-id="appIcon">
 
-    <title>${applicationScope['clientConfigurationContext.SAP']}Sailing - Homepage</title>
+    <title>${clientConfigurationContext['brandTitle']}Sailing - Homepage</title>
 
     <link rel="stylesheet" type="text/css" href="/sailing-normalize-3.0.2.cache.css">
     <link rel="stylesheet" type="text/css" href="/sailing-fontface-1.0.cache.css">
@@ -28,12 +28,7 @@
     <script src="js/Youtube.js"></script>
     <script src="js/videojs-vimeo.js"></script>
     <script src="https://js.chargebee.com/v2/chargebee.js"></script>
-    <script>
-       document.clientConfigurationContext = {
-            debrandingActive: ${applicationScope['clientConfigurationContext.debrandingActive']}
-       };
-       //Current date is: <%=new java.util.Date()%>
-    </script>
+    <script>${clientConfigurationContext['scriptForClientConfigurationContextToDocument']}</script>
     <script src="com.sap.sailing.gwt.home.Home/com.sap.sailing.gwt.home.Home.nocache.js"></script>
     <style type="text/css">
     .loading {
@@ -107,7 +102,7 @@
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
     
     <div id="loading" class="loading">
-        <p class="sapsailing">${applicationScope['clientConfigurationContext.SAP']}Sailing Analytics</p>
+        <p class="sapsailing">${clientConfigurationContext['brandTitle']}Sailing Analytics</p>
         <noscript>
             <p class="description">
                By delivering real time analytics around race rankings, speeds, maneuvers, bearings etc., SAP is helping to simplify and demystify the complex sport of sailing.

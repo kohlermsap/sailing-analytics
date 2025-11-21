@@ -4,13 +4,13 @@
     <link href="sailing-fontface-1.0.cache.css" media="screen" rel="stylesheet" title="Default stylesheet" type="text/css" />
     <link href="start.css" rel="stylesheet" type="text/css" />
     <link href="release_notes.css" rel="stylesheet" type="text/css" />
-    <link rel="shortcut icon" type="image/x-icon" href="images/sap${applicationScope['clientConfigurationContext.whitelabeled']}.ico"  selenium-id="shortcutIcon"/>
-    <title>${applicationScope['clientConfigurationContext.SAP']}Sailing Analytics - Admin Console Release Notes</title>
+    <link rel="shortcut icon" type="image/x-icon" href="images/sap${clientConfigurationContext['whitelabeled']}.ico"  selenium-id="shortcutIcon"/>
+    <title>${clientConfigurationContext['brandTitle']}Sailing Analytics - Admin Console Release Notes</title>
 </head>
 <body>
     <div class="logoAndTitlePanel">
         <script>
-            if (!${applicationScope['clientConfigurationContext.debrandingActive']}){
+            if (!${clientConfigurationContext['debrandingActive']}){
                 document.write("<a class=\"sapLogo\" href=\"https://www.sap.com?campaigncode=CRM-XH21-OSP-Sailing\"><img class=\"sapLogoImage\" src=\"/images/logo-small@2x.png\" alt=\"SAP Website\"/></a>\r\n");
             }
         </script>
@@ -76,6 +76,13 @@
                     season, create a pairing list for that and the copy sub-sequences from it to
                     the regattas of the individual events. This can help improve the fairness of
                     pairing lists across an entire season.</li>
+                <li>Branding is now more configurable. Instead of using system property <pre>-Dcom.sap.sse.debranding=false</pre>
+                    to request SAP branding you now have to set system property <pre>-Dcom.sap.sse.branding=SAP</pre> for
+                    SAP's branding. With this, branding generally becomes pluggable. Alternative branding may be provided
+                    by registering a service for type <tt>com.sap.sse.branding.BrandingConfiguration</tt> with the OSGi
+                    service registry, adding the <tt>com.sap.sse.branding</tt> attribute in the registration's dictionary,
+                    setting the value to the ID that can then be selected by the <tt>com.sap.sse.branding</tt> system
+                    property.</li>
                 <li>Upon popular demand, the series editing dialog now supports not only 50 but 100
                     race columns / flights to be created in the drop-down list.</li>
                 <li>AI Agent credentials can now be reset from the Admin Console.</li>

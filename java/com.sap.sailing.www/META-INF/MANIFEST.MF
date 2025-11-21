@@ -13,7 +13,7 @@ Import-Package: com.sap.sse.rest,
 Bundle-ClassPath: .
 Export-Package: com.sap.sailing.www
 Bundle-ActivationPolicy: lazy
-Require-Bundle: com.sap.sse.debranding,
+Require-Bundle: com.sap.sse.branding,
  com.sap.sse.security,
  org.apache.shiro.core;bundle-version="1.2.2",
  org.apache.shiro.web;bundle-version="1.2.2",

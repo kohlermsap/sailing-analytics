@@ -32,7 +32,9 @@ Export-Package: com.sap.sailing.landscape,
  com.sap.sailing.landscape.procedures
 Bundle-ActivationPolicy: lazy
 Import-Package: com.sap.sailing.server.security,
- com.sap.sse.debranding,
+ com.sap.sse.branding,
+ com.sap.sse.branding.sap,
+ com.sap.sse.branding.shared,
  org.osgi.framework,
  org.osgi.util.tracker;version="1.5.2"
 Bundle-Activator: com.sap.sailing.landscape.impl.Activator

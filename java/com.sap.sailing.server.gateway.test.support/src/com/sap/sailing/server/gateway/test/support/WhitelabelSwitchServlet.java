@@ -1,5 +1,6 @@
 package com.sap.sailing.server.gateway.test.support;
 
+import com.sap.sse.branding.sap.SAPBrandingConfiguration;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -10,21 +11,19 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Use this servlet to turn whitelabelling on and off during testing.
- * @see com.sap.sse.debranding.ClientConfigurationFilter
+ * 
+ * @see com.sap.sse.branding.ClientConfigurationFilter
  * @author Georg Herdt
  *
  */
 public class WhitelabelSwitchServlet extends HttpServlet {
-
-    private static final String COM_SAP_SAILING_DEBRANDING = "com.sap.sse.debranding";
-
     private static final long serialVersionUID = 7132508855846001729L;
 
     private static final Logger logger = Logger.getLogger(WhitelabelSwitchServlet.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String property = System.getProperty(COM_SAP_SAILING_DEBRANDING);
+        String property = Boolean.toString(!Activator.getBrandingConfigurationService().isBrandingActive());
         resp.setContentLength(property != null ? property.getBytes().length : 0);
         resp.getWriter().write(property);
         resp.setStatus(HttpServletResponse.SC_OK);
@@ -34,10 +33,10 @@ public class WhitelabelSwitchServlet extends HttpServlet {
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String path = req.getPathInfo();
         if (path.endsWith("on") || path.endsWith("true")) {
-            System.setProperty(COM_SAP_SAILING_DEBRANDING, Boolean.toString(true));
+            Activator.getBrandingConfigurationService().setActiveBrandingConfigurationById(null);
             resp.setStatus(HttpServletResponse.SC_OK);
         } else if (path.endsWith("off") || path.endsWith("false")) {
-            System.setProperty(COM_SAP_SAILING_DEBRANDING, Boolean.toString(false));
+            Activator.getBrandingConfigurationService().setActiveBrandingConfigurationById(SAPBrandingConfiguration.ID);
             resp.setStatus(HttpServletResponse.SC_OK);
         } else {
             logger.config("unrecoginzed path " + path);

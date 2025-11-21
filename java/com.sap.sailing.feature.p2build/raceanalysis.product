@@ -33,6 +33,7 @@
    </features>
 
    <configurations>
+      <plugin id="com.sap.sse.branding.sap" autoStart="true" startLevel="5" />
       <plugin id="com.sap.sailing.barbados.resultimport" autoStart="true" startLevel="4" />
       <plugin id="com.sap.sailing.dashboards.gwt" autoStart="true" startLevel="6" />
       <plugin id="com.sap.sailing.datamining" autoStart="true" startLevel="5" />

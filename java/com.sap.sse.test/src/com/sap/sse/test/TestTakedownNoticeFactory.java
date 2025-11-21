@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import com.sap.sse.common.media.NatureOfClaim;
 import com.sap.sse.common.media.TakedownNoticeRequestContext;
 import com.sap.sse.i18n.ResourceBundleStringMessages;
-import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
 import com.sap.sse.util.TakedownNoticeFactory;
 
 public class TestTakedownNoticeFactory {
@@ -20,7 +19,7 @@ public class TestTakedownNoticeFactory {
 
     private ResourceBundleStringMessages getTestStringMessages() {
         if (TEST_STRING_MESSAGES == null) {
-            TEST_STRING_MESSAGES = new ResourceBundleStringMessagesImpl(TEST_STRING_MESSAGES_BASE_NAME,
+            TEST_STRING_MESSAGES = ResourceBundleStringMessages.create(TEST_STRING_MESSAGES_BASE_NAME,
                     TestTakedownNoticeFactory.class.getClassLoader(), StandardCharsets.UTF_8.name());
         }
         return TEST_STRING_MESSAGES;

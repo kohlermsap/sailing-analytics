@@ -7,7 +7,7 @@ public class SailingServerConfigurationImpl implements SailingServerConfiguratio
 
     /** indicates if the server is running in standalone mode or not  */
     private boolean isStandaloneServer;
-    
+
     public SailingServerConfigurationImpl(boolean isStandaloneServer) {
         this.isStandaloneServer = isStandaloneServer;
     }

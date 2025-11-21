@@ -65,6 +65,7 @@ public class LocalServerManagementPanel extends SimplePanel {
     private Anchor groupOwnerInfo, userOwnerInfo;
     private CheckBox isStandaloneServerCheckbox, isPublicServerCheckbox, isSelfServiceServerCheckbox;
     private CheckBox isCORSWildcardCheckbox;
+    private Label activeBrandingIdLabel;
     private StringListEditorComposite corsAllowedOriginsTextArea;
 
     private ServerInfoDTO currentServerInfo;
@@ -95,6 +96,8 @@ public class LocalServerManagementPanel extends SimplePanel {
             mainPanel.add(createCORSFilterConfigurationUI());
             refreshCORSConfiguration();
         }
+        refreshBrandingConfiguration();
+        mainPanel.add(createDebrandingConfigurationUI());
     }
 
     @Override
@@ -125,6 +128,17 @@ public class LocalServerManagementPanel extends SimplePanel {
                 () -> configACL.openDialog(currentServerInfo));
         return buttonPanel;
     }
+    
+    private Widget createDebrandingConfigurationUI() {
+        final ServerDataCaptionPanel captionPanel = new ServerDataCaptionPanel(stringMessages.debrandingConfiguration(), 1);
+        VerticalPanel brandingPanel = new VerticalPanel();
+        brandingPanel.setSpacing(4);
+        activeBrandingIdLabel = new Label();
+        brandingPanel.add(activeBrandingIdLabel);
+        captionPanel.addWidget(stringMessages.activeBranding(), brandingPanel);
+        return captionPanel;
+    }
+
 
     private Widget createServerInfoUI() {
         final ServerDataCaptionPanel captionPanel = new ServerDataCaptionPanel(stringMessages.serverInformation(), 4);
@@ -279,7 +293,11 @@ public class LocalServerManagementPanel extends SimplePanel {
         sailingService.getServerConfiguration(new RefreshAsyncCallback<>(this::updateServerConfiguration));
     }
     
-    private void refreshCORSConfiguration() {
+    public void refreshBrandingConfiguration() {
+        userService.getUserManagementService().getBrandingConfigurationId(new RefreshAsyncCallback<>(this::updateBrandingConfiguration));
+    }
+    
+    public void refreshCORSConfiguration() {
         if (userService.hasServerPermission(ServerActions.CONFIGURE_CORS_FILTER)) {
             userService.getUserManagementService().getCORSFilterConfiguration(new RefreshAsyncCallback<>(this::updateCORSFilterConfiguration));
         }
@@ -320,6 +338,10 @@ public class LocalServerManagementPanel extends SimplePanel {
         isStandaloneServerCheckbox.setEnabled(true);
         isPublicServerCheckbox.setValue(result.isPublic(), false);
         isSelfServiceServerCheckbox.setValue(result.isSelfService(), false);
+    }
+    
+    private void updateBrandingConfiguration(String brandingConfigurationId) {
+        activeBrandingIdLabel.setText(brandingConfigurationId == null ? stringMessages.none() : brandingConfigurationId);
     }
     
     private void updateCORSFilterConfiguration(Pair<Boolean, ArrayList<String>> corsFilterConfiguration) {

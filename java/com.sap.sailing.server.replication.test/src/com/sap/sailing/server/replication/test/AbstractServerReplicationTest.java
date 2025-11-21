@@ -1,5 +1,10 @@
 package com.sap.sailing.server.replication.test;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.osgi.util.tracker.ServiceTracker;
+
 import com.sap.sailing.domain.base.CompetitorAndBoatStore;
 import com.sap.sailing.domain.base.DomainFactory;
 import com.sap.sailing.domain.base.impl.DomainFactoryImpl;
@@ -13,6 +18,7 @@ import com.sap.sailing.domain.tracking.impl.EmptyWindStore;
 import com.sap.sailing.server.impl.RacingEventServiceImpl;
 import com.sap.sailing.server.impl.RacingEventServiceImpl.ConstructorParameters;
 import com.sap.sailing.server.interfaces.RacingEventService;
+import com.sap.sse.branding.BrandingConfigurationService;
 import com.sap.sse.mongodb.MongoDBService;
 import com.sap.sse.replication.FullyInitializedReplicableTracker;
 import com.sap.sse.security.SecurityService;
@@ -57,6 +63,11 @@ public abstract class AbstractServerReplicationTest extends com.sap.sse.replicat
 
         @Override
         public RacingEventServiceImpl createNewMaster(FullyInitializedReplicableTracker<SecurityService> securityServiceTrackerMock) {
+            final BrandingConfigurationService bcs = mock(BrandingConfigurationService.class);
+            when(bcs.isBrandingActive()).thenReturn(false); // no branding for replication tests
+            @SuppressWarnings("unchecked")
+            final ServiceTracker<BrandingConfigurationService, BrandingConfigurationService> brandingConfigurationServiceTrackerMock = mock(ServiceTracker.class);
+            when(brandingConfigurationServiceTrackerMock.getService()).thenReturn(bcs);
             return new RacingEventServiceImpl((final RaceLogAndTrackedRaceResolver raceLogResolver)-> {
                 return new ConstructorParameters() {
                     private final DomainFactory baseDomainFactory = new DomainFactoryImpl(raceLogResolver);

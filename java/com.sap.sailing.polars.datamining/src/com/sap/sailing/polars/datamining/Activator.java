@@ -23,7 +23,6 @@ import com.sap.sse.datamining.components.AggregationProcessorDefinition;
 import com.sap.sse.datamining.components.DataRetrieverChainDefinition;
 import com.sap.sse.datamining.impl.AbstractDataMiningActivator;
 import com.sap.sse.i18n.ResourceBundleStringMessages;
-import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
 
 /**
  * Handles all necessary registration for a datamining bundle. See
@@ -47,7 +46,7 @@ public class Activator extends AbstractDataMiningActivator {
     
     public Activator() {
         dataRetrieverChainDefinitions = new PolarsDataRetrievalChainDefinitions();
-        sailingServerStringMessages = new ResourceBundleStringMessagesImpl(STRING_MESSAGES_BASE_NAME, getClassLoader(),
+        sailingServerStringMessages = ResourceBundleStringMessages.create(STRING_MESSAGES_BASE_NAME, getClassLoader(),
                 StandardCharsets.UTF_8.name());
     }
 

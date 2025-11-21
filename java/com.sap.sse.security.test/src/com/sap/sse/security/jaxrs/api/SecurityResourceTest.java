@@ -66,9 +66,9 @@ public class SecurityResourceTest {
             store.ensureServerGroupExists();
             accessControlStore = new AccessControlStoreImpl(store);
             Activator.setTestStores(store, accessControlStore);
-            service = new SecurityServiceImpl(/* mailServiceTracker */ null, /* corsFilterConfigurationTracker */ null, store,
-                    accessControlStore,
-                    /* hasPermissionsProvider */SecuredSecurityTypes::getAllInstances, SSESubscriptionPlan::getAllInstances);
+            service = new SecurityServiceImpl(/* mailServiceTracker */ null, /* corsFilterConfigurationTracker */ null, /* brandingConfigurationServiceTracker */ null,
+                    store,
+                    accessControlStore, /* hasPermissionsProvider */SecuredSecurityTypes::getAllInstances, SSESubscriptionPlan::getAllInstances);
             service.initialize();
             Activator.setSecurityService(service);
             SecurityUtils.setSecurityManager(service.getSecurityManager());

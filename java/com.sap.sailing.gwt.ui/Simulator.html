@@ -3,20 +3,20 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>${applicationScope['clientConfigurationContext.SAP']}Sailing Analytics Race Simulator</title>
+    <title>${clientConfigurationContext['brandTitle']}Sailing Analytics Race Simulator</title>
     <meta content='width = device-width, initial-scale = 1.0, user-scalable = yes' name='viewport'>
     <meta content='yes' name='apple-mobile-web-app-capable'>
     <meta content='black' name='apple-mobile-web-app-status-bar-style'>
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="${applicationScope['clientConfigurationContext.SAP']}Sailing" />
+    <meta property="og:title" content="${clientConfigurationContext['brandTitle']}Sailing" />
     <meta property="og:description" content="Help sailors analyze performance and optimize strategy &#8226; Bring fans closer to the action
         &#8226; Provide the media with information and insights to deliver a greater informed commentary" />
     <meta property="og:image" content="https://s3-eu-west-1.amazonaws.com/media.sapsailing.com/2014/505Worlds/Images_Homepage/505Worlds2014_eventteaser.jpg" />
     <meta property="description" content="Help sailors analyze performance and optimize strategy &#8226; Bring fans closer to the action
         &#8226; Provide the media with information and insights to deliver a greater informed commentary" />
     <!-- <link href='iphone-splash-screen.png' rel='apple-touch-startup-image'> -->
-    <link href='images/sap-sailing-app-icon${applicationScope['clientConfigurationContext.whitelabeled']}.png' rel='apple-touch-icon'>
-    <link rel="shortcut icon" type="image/x-icon" href="images/sap${applicationScope['clientConfigurationContext.whitelabeled']}.ico" />
+    <link href='images/sap-sailing-app-icon${clientConfigurationContext['whitelabeled']}.png' rel='apple-touch-icon'>
+    <link rel="shortcut icon" type="image/x-icon" href="images/sap${clientConfigurationContext['whitelabeled']}.ico" />
     <!--<link href='http://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700,300italic,400italic,500italic,700italic' rel='stylesheet' type='text/css'>-->
     <!--  <link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700,300,300italic' rel='stylesheet' type='text/css'>-->
     
@@ -25,11 +25,7 @@
     <link rel="stylesheet" type="text/css" href="Simulator.css">
 
     <script type="text/javascript" src="js/jquery-3.6.0.min.js"></script>
-    <script>
-       document.clientConfigurationContext = {
-            debrandingActive: ${applicationScope['clientConfigurationContext.debrandingActive']}
-       };
-    </script>
+    <script>${clientConfigurationContext['scriptForClientConfigurationContextToDocument']}</script>
     <script type="text/javascript" src="com.sap.sailing.gwt.ui.Simulator/com.sap.sailing.gwt.ui.Simulator.nocache.js"></script>
 
   </head>

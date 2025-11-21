@@ -90,6 +90,7 @@
         <module>org.hamcrest.core</module>
         <module>com.sap.sse</module>
         <module>com.sap.sse.test</module>
+        <module>com.sap.sse.testutils</module>
         <module>com.sap.sse.aicore</module>
         <module>com.sap.sse.aicore.test</module>
         <module>com.sap.sse.landscape.common</module>
@@ -214,7 +215,9 @@
         <module>com.sap.sailing.server.trackfiles</module>
         <module>com.sap.sailing.feature.runtime</module>
         <module>com.sap.sailing.gwt.ui</module>
-        <module>com.sap.sse.debranding</module>
+        <module>com.sap.sse.branding</module>
+        <module>com.sap.sse.branding.test</module>
+        <module>com.sap.sse.branding.sap</module>
         <module>com.sap.sailing.domain.test</module>
         <module>com.sap.sse.replication.testsupport</module>
         <module>com.sap.sailing.server.testsupport</module>

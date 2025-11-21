@@ -108,6 +108,8 @@ public interface UserManagementServiceAsync {
     
     void getCORSFilterConfiguration(AsyncCallback<Pair<Boolean, ArrayList<String>>> callback);
     
+    void getBrandingConfigurationId(AsyncCallback<String> callback);
+
     void getClientIPBasedTimedLocksForUserCreation(AsyncCallback<HashMap<String,TimedLock>> callback);
     
     void getClientIPBasedTimedLocksForBearerTokenAbuse(AsyncCallback<HashMap<String,TimedLock>> callback);

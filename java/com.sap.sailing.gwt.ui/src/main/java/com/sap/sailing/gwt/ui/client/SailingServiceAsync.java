@@ -277,7 +277,7 @@ public interface SailingServiceAsync extends RemoteReplicationServiceAsync {
     void getWindSourcesInfo(RegattaAndRaceIdentifier raceIdentifier, AsyncCallback<WindInfoForRaceDTO> callback);
 
     void getServerConfiguration(AsyncCallback<ServerConfigurationDTO> callback);
-
+    
     void getRemoteSailingServerReferences(AsyncCallback<List<RemoteSailingServerReferenceDTO>> callback);
 
     void getResultImportUrls(String resultProviderName, AsyncCallback<List<UrlDTO>> callback);
@@ -687,4 +687,6 @@ public interface SailingServiceAsync extends RemoteReplicationServiceAsync {
     void getCourseAreaForEventOfLeaderboard(String leaderboardName, AsyncCallback<List<CourseAreaDTO>> callback);
 
     void getGoogleMapsLoaderAuthenticationParams(AsyncCallback<String> callback);
+    
+    void getBrandAffiliationWithSailing(String locale, AsyncCallback<String> callback);
 }

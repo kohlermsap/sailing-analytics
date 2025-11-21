@@ -13,7 +13,7 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.sap.sailing.gwt.common.authentication.FixedSailingAuthentication;
-import com.sap.sailing.gwt.common.authentication.SAPSailingHeaderWithAuthentication;
+import com.sap.sailing.gwt.common.authentication.SailingHeaderWithAuthentication;
 import com.sap.sailing.gwt.common.client.SharedResources;
 import com.sap.sailing.gwt.regattaoverview.client.RegattaRaceStatesComponent.EntryHandler;
 import com.sap.sailing.gwt.settings.client.regattaoverview.RegattaOverviewContextDefinition;
@@ -36,7 +36,7 @@ public class RegattaOverviewEntryPoint extends AbstractSailingReadEntryPoint  {
     private final Label clockLabel = new Label();
 
     private final RegattaOverviewResources.LocalCss style = RegattaOverviewResources.INSTANCE.css();
-    private SAPSailingHeaderWithAuthentication siteHeader;
+    private SailingHeaderWithAuthentication siteHeader;
 
     @Override
     public void doOnModuleLoad() {
@@ -53,7 +53,7 @@ public class RegattaOverviewEntryPoint extends AbstractSailingReadEntryPoint  {
         
         clockLabel.addStyleName(style.clockLabel());
 
-        siteHeader = new SAPSailingHeaderWithAuthentication();
+        siteHeader = new SailingHeaderWithAuthentication();
         PaywallResolver paywallResolver = new PaywallResolverImpl(getUserService(), getSubscriptionServiceFactory());
         new FixedSailingAuthentication(getUserService(), paywallResolver, siteHeader.getAuthenticationMenuView());
 

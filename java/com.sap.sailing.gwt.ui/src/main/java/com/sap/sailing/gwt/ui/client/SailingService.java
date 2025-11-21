@@ -598,4 +598,7 @@ public interface SailingService extends RemoteService, RemoteReplicationService 
     List<CourseAreaDTO> getCourseAreaForEventOfLeaderboard(String leaderboardName);
 
     String getGoogleMapsLoaderAuthenticationParams();
+    
+    String getBrandAffiliationWithSailing(String locale);
+    
 }

@@ -45,7 +45,8 @@ Require-Bundle: com.sap.sailing.domain,
  com.sap.sse.operationaltransformation
 Export-Package: com.sap.sailing.domain.test,
  com.sap.sailing.domain.test.mock
-Import-Package: org.apache.commons.math;version="2.1.0",
+Import-Package: com.sap.sse.testutils,
+ org.apache.commons.math;version="2.1.0",
  org.apache.commons.math.analysis.polynomials;version="2.1.0",
  org.osgi.util.tracker
 Automatic-Module-Name: com.sap.sailing.domain.test
