@@ -28,7 +28,6 @@ import com.sap.sse.ServerInfo;
 import com.sap.sse.branding.BrandingConfigurationService;
 import com.sap.sse.branding.shared.BrandingConfiguration;
 import com.sap.sse.common.TimedLock;
-import com.sap.sse.branding.shared.BrandingConfiguration;
 import com.sap.sse.common.Util;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.Util.Triple;
