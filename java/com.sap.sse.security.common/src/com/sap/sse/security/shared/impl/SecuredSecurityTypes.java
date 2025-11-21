@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.sap.sse.security.shared.HasPermissions;
+import com.sap.sse.security.shared.IPAddress;
 import com.sap.sse.security.shared.RoleDefinition;
 
 /**
@@ -52,7 +53,7 @@ public class SecuredSecurityTypes extends HasPermissionsImpl {
 
 
     /**
-     * type-relative identifier is the {@link User#getName() ip}.
+     * type-relative identifier is the {@link IPAddress#getName() ip address as String}.
      */
     public static final HasPermissions LOCKED_IP = new SecuredSecurityTypes("LOCKED_IP", DefaultActions.values());
 

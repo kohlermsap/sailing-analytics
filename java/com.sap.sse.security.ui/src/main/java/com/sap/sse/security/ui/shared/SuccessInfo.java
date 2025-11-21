@@ -51,10 +51,8 @@ public class SuccessInfo implements IsSerializable {
     public String getRedirectURL() {
         return redirectURL;
     }
-    
 
     public String getExtra() {
         return extra;
     }
-    
 }

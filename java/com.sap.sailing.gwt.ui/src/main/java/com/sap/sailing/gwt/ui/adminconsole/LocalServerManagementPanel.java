@@ -161,8 +161,7 @@ public class LocalServerManagementPanel extends SimplePanel {
     }
 
     private Widget createBearerTokenAbusePanel() {
-        final ServerDataCaptionPanel panel = new ServerDataCaptionPanel(stringMessages.ipsLockedForBearerTokenAbuse(),
-                3);
+        final ServerDataCaptionPanel panel = new ServerDataCaptionPanel(stringMessages.ipsLockedForBearerTokenAbuse(), 3);
         panel.ensureDebugId("bearerTokenAbusePanel");
         final IPBlocklistTableWrapper table = new IPBlocklistTableWrapper(sailingService, userService,
                 stringMessages.unableToLoadIpsBlockedForBearerTokenAbuse(), stringMessages, errorReporter) {
@@ -181,8 +180,7 @@ public class LocalServerManagementPanel extends SimplePanel {
     }
 
     private Widget createUserCreationAbusePanel() {
-        final ServerDataCaptionPanel panel = new ServerDataCaptionPanel(stringMessages.ipsLockedForUserCreationAbuse(),
-                3);
+        final ServerDataCaptionPanel panel = new ServerDataCaptionPanel(stringMessages.ipsLockedForUserCreationAbuse(), 3);
         panel.ensureDebugId("userCreationAbusePanel");
         final IPBlocklistTableWrapper table = new IPBlocklistTableWrapper(sailingService, userService,
                 stringMessages.unableToLoadIpsBlockedForUserCreationAbuse(), stringMessages, errorReporter) {
