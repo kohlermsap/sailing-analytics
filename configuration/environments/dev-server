@@ -2,3 +2,4 @@ SERVER_NAME=DEV
 REPLICATION_HOST=rabbit.internal.sapsailing.com
 REPLICATION_CHANNEL=sapsailinganalytics-dev
 MONGODB_URI="mongodb://dbserver.internal.sapsailing.com:10202/dev?replicaSet=slow&retryWrites=true&readPreference=nearest"
+IGTIMI_RIOT_PORT=6000
