@@ -32,6 +32,27 @@
                     and install <em>all</em> releases available. For the time being, and for simplicity,
                     we decided to not require a GitHub access token, which however will cause a rate limit
                     of 60 release requests per hour per IP address.</li>
+                <li>Branding is now configurable beyond just switching it on and off. The corresponding
+                    VM argument / system property name has changed from <tt>com.sap.sse.debranding</tt>
+                    with its possible values <tt>true</tt> and <tt>false</tt> to <tt>com.sap.sse.branding</tt>
+                    which can either be left empty to deactivate branding altogether, matching the old
+                    <tt>true</tt> configuration for de-branding the solution, which was also the default,
+                    or you can specify the ID of an existing branding configuration, such as <tt>SAP</tt>.
+                    The command line option for an active SAP branding hence would look like this:
+                    <pre>
+                        -Dcom.sap.sse.branding=SAP
+                    </pre>
+                    and this is to be used only in an SAP context according to SAP's branding rules.
+                    See also <a href="https://brand.sap.com/">https://brand.sap.com/</a> and
+                    <a href="https://wiki.sapsailing.com/wiki/info/landscape/branding-setup.md">our wiki entry on branding configurations</a>.
+                    </li>
+                <li>The project Wiki can now be viewed publicly, in line with the publication of the underlying
+                    Git repository, at <a href="https://wiki.sapsailing.com">https://wiki.sapsailing.com</a>.
+                    Currently, write access has to be requested at <a href="mailto:support@sapsailing.com">support@sapsailing.com</a>,
+                    but you may also create a <a href="https://github.com/SAP/sailing-analytics/pulls"></a>pull request</a>
+                    for changes you'd like to see appear in the Wiki. We are working on granting committers
+                    write-access through a GitHub OAuth app soon. See also
+                    <a href="https://bugzilla.sapsailing.com/bugzilla/show_bug.cgi?id=6181">bug 6181</a>.
           </ul>
           <h2 class="articleSubheadline">October 2025</h2>
           <ul class="bulletList">
