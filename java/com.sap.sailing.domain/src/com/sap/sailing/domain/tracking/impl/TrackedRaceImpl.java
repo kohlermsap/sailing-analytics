@@ -4109,8 +4109,7 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
         // complete maneuver curves can be fed directly into the windEstimation.
         maneuverDetectorPerCompetitorCache.clearCache();
         shortTimeWindCache.clearCache();
-        // TODO bug5959: trigger a recalculation only if the wind track being replaced is changing content
-        triggerManeuverCacheRecalculationForAllCompetitors();
+        // no need to trigger maneuver recalculation because it is not using the MANEUVER_BASED_ESTIMATION; see also bug6184
     }
 
     /**
