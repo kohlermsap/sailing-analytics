@@ -40,7 +40,8 @@ class App < Precious::App
       end
       if @auth.provided? && @auth.basic? && @auth.credentials && (@user = get_user(@auth.credentials))
         Precious::App.set(:loggedInUser, @user.name)
-        return @user
+        Precious::App.set(:loggedInUserEmail, @user.email)
+        return
       else
         response['WWW-Authenticate'] = %(Basic realm="Gollum Wiki")
         throw(:halt, [401, "Not authorized\n"])
