@@ -66,8 +66,8 @@ class App < Precious::App
       throw(:halt, [403, "Forbidden\n"]) unless @user.can_write
     end
 
-    def users
-      @_users ||= settings.authorized_users.map {|u| User.new(*u) }
+    def users # User caching helper.
+      @_users ||= settings.authorized_users.map {|u| User.new(*u) } # The ||= evalutes RHS only if left hand side is falsy.
     end
 
     def detected_user(credentials)
