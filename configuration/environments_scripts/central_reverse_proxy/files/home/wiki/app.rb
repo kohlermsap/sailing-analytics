@@ -56,10 +56,11 @@ class App < Precious::App
     end
 
     def get_user(credentials)
-    def detected_user(credentials)
-      users.detect do |u|
+      email = credentials[0]
+      pass_hash = Digest::SHA1.hexdigest(credentials[1])
+      users.find do |u| 
         [u.email, u.password_hash] ==
-        [credentials[0], Digest::SHA1.hexdigest(credentials[1])]
+        [email, pass_hash]
       end
     end
   end
