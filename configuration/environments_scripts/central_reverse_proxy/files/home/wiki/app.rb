@@ -1,11 +1,10 @@
 require 'gollum/app'
 require 'digest/sha1'
+require 'logger'
 
-
-#__DIR__ = File.expand_path(File.dirname(__FILE__))
-#$: << __DIR__
 class App < Precious::App
   User = Struct.new(:name, :email, :password_hash, :can_write)
+  LOGGER = Logger.new("/home/wiki/wiki_log.txt") 
   before { authenticate! }
   before /edit/ do   authorize_write ; end
   before do
