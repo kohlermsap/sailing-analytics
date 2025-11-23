@@ -79,20 +79,4 @@ class App < Precious::App
     end
   end
 
-  def commit_
-    {
-      :message => params[:message],
-  #    :name => @user.name,
-      :email => @user.email
-    }
-  end
 end
-##set author
-#class Precious::App
-#    before do
-#        session['gollum.author'] = {
-#            :name => "%s" % settings.loggedInUser,
-#            :email => "%s@example.com" % settings.loggedInUser,
-#        }
-#    end
-#End
