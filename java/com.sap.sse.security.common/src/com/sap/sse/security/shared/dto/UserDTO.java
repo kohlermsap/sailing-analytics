@@ -31,7 +31,7 @@ public class UserDTO extends
     private SecurityInformationDTO securityInformation = new SecurityInformationDTO();
     private StrippedUserGroupDTO defaultTenantForCurrentServer;
 
-    private Set<RoleWithSecurityDTO> roles;
+    private Set<RoleWithSecurityDTO> roles; // TODO turn to HashSet to reduce number of serializers to generate
 
     @Deprecated // gwt only
     UserDTO() {
