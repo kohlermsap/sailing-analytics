@@ -3,16 +3,13 @@ SAILING_GIT_ROOT="${1}"
 if [ -n "${2}" ]; then
   OUTPUT_FOLDER_FOR_GWT_ZIP="${2}"
 fi
-GWT_VERSION=2.12.2
+GWT_VERSION=2.12.3
 GWT="`mktemp -t -d gwt.XXXXX`"
 GWT_ROOT="${GWT}/trunk"
 cd "${GWT}"
 echo "GWT directory: ${GWT}"
-git clone https://github.com/SAP/gwt-forward-serialization-rpc.git -b issue-7987-gwt-2.12.2 trunk
-git clone https://github.com/Vertispan/tools.git -b main
-# Or alternatively:
-#git clone https://github.com/axeluhl/gwt.git -b issue-7987-compatibility trunk
-#git clone https://github.com/gwtproject/tools.git
+git clone https://github.com/SAP/gwt-forward-serialization-rpc.git -b issue-7987-gwt-${GWT_VERSION} trunk
+git clone https://github.com/gwtproject/tools.git -b main
 git clone https://github.com/SAP/gwt-maven-plugin-forward-serialization-rpc.git -b ${GWT_VERSION} gwt-maven-plugin
 cd ${GWT_ROOT}
 ant clean dist-dev -Dgwt.version=${GWT_VERSION}
