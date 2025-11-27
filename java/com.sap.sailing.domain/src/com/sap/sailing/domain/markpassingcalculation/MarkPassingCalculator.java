@@ -602,7 +602,7 @@ public class MarkPassingCalculator {
                                     List<Pair<Competitor, Integer>> suppressedMarkPassings,
                                     List<Competitor> unSuppressedMarkPassings, CandidateFinder candidateFinder,
                                     CandidateChooser candidateChooser) {
-                                executor.submit(()->{
+                                initializationExecutor.submit(()->{
                                     final Map<Competitor, Map<Waypoint, MarkPassing>> markPassings = race.getMarkPassings(/* waitForLatestUpdates */ true);
                                     markPassingRaceFingerprintRegistry.storeMarkPassings(race.getRaceIdentifier(),
                                             MarkPassingRaceFingerprintFactory.INSTANCE.createFingerprint(race),
