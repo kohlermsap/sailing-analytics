@@ -98,6 +98,8 @@ public interface User extends SecurityUser<RoleDefinition, Role, UserGroup> {
     Locale getLocale();
     
     boolean getDidOptOutOfMarketingEmails();
+    
+    void setDidOptOutOfMarketingEmails(boolean didOptOutOfMarketingEmails);
 
     void setLocale(Locale locale);
 

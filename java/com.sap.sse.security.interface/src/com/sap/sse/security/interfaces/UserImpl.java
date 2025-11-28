@@ -256,6 +256,11 @@ public class UserImpl extends SecurityUserImpl<RoleDefinition, Role, UserGroup, 
         this.email = email;
     }
 
+    @Override
+    public void setDidOptOutOfMarketingEmails(boolean didOptOutOfMarketingEmails) {
+        this.didOptOutOfMarketingEmails = didOptOutOfMarketingEmails;
+    }
+
     /**
      * The email address is set to not yet validated by resetting the
      * {@link #emailValidated} flag. A new {@link #validationSecret} is generated and returned which

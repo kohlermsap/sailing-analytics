@@ -287,8 +287,8 @@ extends TableWrapper<UserDTO, S, StringMessages, TR> {
         final UserEditDialog dialog = new UserEditDialog(originalUser, new DialogCallback<UserDTO>() {
             @Override
             public void ok(final UserDTO user) {
-                getUserManagementWriteService().updateUserProperties(user.getName(), user.getFullName(), user.getCompany(),
-                        user.getLocale(),
+                getUserManagementWriteService().updateUserProperties(user.getName(), user.getFullName(),
+                        user.getCompany(), user.getLocale(), user.getDidOptOutOfMarketingEmails(),
                         user.getDefaultTenant() != null ? user.getDefaultTenant().getId().toString() : null,
                         new AsyncCallback<UserDTO>() {
                             @Override

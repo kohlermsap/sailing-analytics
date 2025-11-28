@@ -26,6 +26,7 @@ public class UserDTO extends
     private String locale;
     private List<AccountDTO> accounts;
     private boolean emailValidated;
+    private boolean didOptOutOfMarketingEmails;
     private List<StrippedUserGroupDTO> groups;
     private TimePoint lockedUntil;
     private SecurityInformationDTO securityInformation = new SecurityInformationDTO();
@@ -39,11 +40,12 @@ public class UserDTO extends
     }
 
     /**
-     * @param groups may be {@code null} which is equivalent to passing an empty groups collection
+     * @param groups
+     *            may be {@code null} which is equivalent to passing an empty groups collection
      */
     public UserDTO(String name, String email, String fullName, String company, String locale, boolean emailValidated,
-            List<AccountDTO> accounts, Iterable<RoleWithSecurityDTO> roles, StrippedUserGroupDTO defaultTenant,
-            Iterable<WildcardPermissionWithSecurityDTO> permissions,
+            boolean didOptOutOfMarketingEmails, List<AccountDTO> accounts, Iterable<RoleWithSecurityDTO> roles,
+            StrippedUserGroupDTO defaultTenant, Iterable<WildcardPermissionWithSecurityDTO> permissions,
             Iterable<StrippedUserGroupDTO> groups, TimePoint lockedUntil) {
         super(name, permissions);
         this.defaultTenantForCurrentServer = defaultTenant;
@@ -52,6 +54,7 @@ public class UserDTO extends
         this.company = company;
         this.locale = locale;
         this.emailValidated = emailValidated;
+        this.didOptOutOfMarketingEmails = didOptOutOfMarketingEmails;
         this.accounts = accounts;
         this.groups = new ArrayList<>();
         Util.addAll(groups, this.groups);
@@ -123,6 +126,10 @@ public class UserDTO extends
 
     public boolean isEmailValidated() {
         return emailValidated;
+    }
+
+    public boolean getDidOptOutOfMarketingEmails() {
+        return didOptOutOfMarketingEmails;
     }
 
     @Override

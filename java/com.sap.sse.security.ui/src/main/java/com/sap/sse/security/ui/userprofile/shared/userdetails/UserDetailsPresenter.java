@@ -47,21 +47,24 @@ public class UserDetailsPresenter implements AbstractUserDetails.Presenter {
     }
 
     @Override
-    public void handleSaveChangesRequest(String fullName, String company, String locale, String defaultTenantIdAsString) {
-        authenticationManager.updateUserProperties(fullName, company, locale, defaultTenantIdAsString,
-                new AsyncCallback<UserDTO>() {
-            @Override
-            public void onSuccess(UserDTO result) {
-                Notification.notify(i18n_sec.successfullyUpdatedUserProperties(
-                        authenticationManager.getAuthenticationContext().getCurrentUser().getName()),
-                        NotificationType.INFO);
-            }
-            
-            @Override
-            public void onFailure(Throwable caught) {
-                Notification.notify(i18n_sec.errorUpdatingUserProperties(caught.getMessage()), NotificationType.ERROR);
-            }
-        });
+    public void handleSaveChangesRequest(String fullName, String company, String locale,
+            boolean didOptOutMarketingEmails, String defaultTenantIdAsString) {
+        authenticationManager.updateUserProperties(fullName, company, locale, didOptOutMarketingEmails,
+                defaultTenantIdAsString, new AsyncCallback<UserDTO>() {
+                    @Override
+                    public void onSuccess(UserDTO result) {
+                        Notification.notify(
+                                i18n_sec.successfullyUpdatedUserProperties(
+                                        authenticationManager.getAuthenticationContext().getCurrentUser().getName()),
+                                NotificationType.INFO);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        Notification.notify(i18n_sec.errorUpdatingUserProperties(caught.getMessage()),
+                                NotificationType.ERROR);
+                    }
+                });
     }
 
     @Override

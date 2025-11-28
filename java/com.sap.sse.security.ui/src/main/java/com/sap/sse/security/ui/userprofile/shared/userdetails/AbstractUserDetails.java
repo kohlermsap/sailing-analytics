@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.text.shared.Renderer;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PasswordTextBox;
@@ -31,6 +32,7 @@ public class AbstractUserDetails extends Composite implements UserDetailsView {
     @UiField public InputElement usernameUi;
     @UiField public TextBox nameUi;
     @UiField public TextBox companyUi;
+    @UiField public CheckBox optOutOfMarketingEmailsUI;
     
     @UiField(provided = true)
     public ValueListBox<String> localeUi = new ValueListBox<String>(new Renderer<String>() {
@@ -113,7 +115,8 @@ public class AbstractUserDetails extends Composite implements UserDetailsView {
     
     @UiHandler("saveChangesUi")
     public void onSaveChangesClicked(ClickEvent event) {
-        presenter.handleSaveChangesRequest(nameUi.getValue(), companyUi.getValue(), localeUi.getValue(), defaultTenantUi.getSelectedValue());
+        presenter.handleSaveChangesRequest(nameUi.getValue(), companyUi.getValue(), localeUi.getValue(),
+                optOutOfMarketingEmailsUI.getValue(), defaultTenantUi.getSelectedValue());
     }
     
     @UiHandler("changeEmailUi")

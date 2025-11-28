@@ -15,7 +15,8 @@ public interface UserDetailsView {
     void clearPasswordFields();
     
     public interface Presenter {
-        void handleSaveChangesRequest(String fullName, String company, String locale, String defaultTenantIdAsString);
+        void handleSaveChangesRequest(String fullName, String company, String locale, boolean didOptOutMarketingEmails,
+                String defaultTenantIdAsString);
         void handleEmailChangeRequest(String email);
         void handlePasswordChangeRequest(String oldPassword, String newPassword, String newPasswordConfirmation);
     }

@@ -1132,7 +1132,7 @@ implements ReplicableSecurityService, ClearStateTestSupport {
         // the new user becomes its owner to ensure the user role is working correctly
         // the default tenant is the owning tenant to allow users having admin role for a specific server tenant to also be able to delete users
         apply(new SetOwnershipOperation(result.getIdentifier(), username, groupOwningUser==null?null:groupOwningUser.getId(), username));
-        updateUserProperties(username, fullName, company, locale);
+        updateUserProperties(username, fullName, company, locale, false);
         // email has been set during creation already; the following call will trigger the e-mail validation process
         updateSimpleUserEmail(username, email, validationBaseURL);
         return result;
@@ -1256,20 +1256,23 @@ implements ReplicableSecurityService, ClearStateTestSupport {
     }
 
     @Override
-    public void updateUserProperties(String username, String fullName, String company, Locale locale) throws UserManagementException {
+    public void updateUserProperties(String username, String fullName, String company, Locale locale,
+            boolean didOptOutOfMarketingEmails) throws UserManagementException {
         final User user = store.getUserByName(username);
         if (user == null) {
             throw new UserManagementException(UserManagementException.USER_DOES_NOT_EXIST);
         }
-        apply(new UpdateUserPropertiesOperation(username, fullName, company, locale));
+        apply(new UpdateUserPropertiesOperation(username, fullName, company, locale, didOptOutOfMarketingEmails));
     }
 
     @Override
-    public Void internalUpdateUserProperties(String username, String fullName, String company, Locale locale) {
+    public Void internalUpdateUserProperties(String username, String fullName, String company, Locale locale,
+            boolean didOptOutOfMarketingEmails) {
         final User user = store.getUserByName(username);
         user.setFullName(fullName);
         user.setCompany(company);
         user.setLocale(locale);
+        user.setDidOptOutOfMarketingEmails(didOptOutOfMarketingEmails);
         store.updateUser(user);
         return null;
     }

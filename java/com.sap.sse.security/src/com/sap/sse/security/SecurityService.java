@@ -213,14 +213,16 @@ public interface SecurityService extends ReplicableWithObjectInputStream<Replica
      *            used for throttling user creation requests coming from the same IP address
      */
     User createSimpleUser(String username, String email, String password, String fullName, String company,
-            Locale locale, String validationBaseURL, UserGroup userOwner, String requestClientIP, boolean enforceStrongPassword)
+            Locale locale, String validationBaseURL, UserGroup userOwner,
+            String requestClientIP, boolean enforceStrongPassword)
             throws UserManagementException, MailException, UserGroupManagementException;
 
     void updateSimpleUserPassword(String name, String newPassword) throws UserManagementException;
 
     void updateSimpleUserEmail(String username, String newEmail, String validationBaseURL) throws UserManagementException;
     
-    void updateUserProperties(String username, String fullName, String company, Locale locale) throws UserManagementException;
+    void updateUserProperties(String username, String fullName, String company, Locale locale,
+            boolean didOptOutOfMarketingEmails) throws UserManagementException;
 
     void deleteUser(String username) throws UserManagementException;
 

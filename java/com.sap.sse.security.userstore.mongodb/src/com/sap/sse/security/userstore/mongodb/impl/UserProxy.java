@@ -250,4 +250,9 @@ public class UserProxy implements User {
     public boolean getDidOptOutOfMarketingEmails() {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public void setDidOptOutOfMarketingEmails(boolean didOptOutOfMarketingEmails) {
+        throw new UnsupportedOperationException();
+    }
 }
