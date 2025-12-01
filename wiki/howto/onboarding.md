@@ -189,6 +189,9 @@ If git is not in the Path system environment variable, the gradle build will not
 ### Build for deployment
 Open a shell (preferrably a git bash or a cygwin bash), cd to the git workspace's root folder and issue "./configuration/buildAndUpdateProduct.sh build". This should build the software and run all the tests. If you want to avoid the tests being executed, use the -t option. If you only want to build one GWT permutation (Chrome/English), use the -b option. When inside the SAP VPN, add the -p option for proxy use. Run the build script without arguments to get usage hints.
 
+### Development Environment
+Read [[here|wiki/info/landscape/development-environment]] and importantly for [[pushing to main|https://wiki.sapsailing.com/wiki/info/landscape/development-environment.md#git-bugzilla-and-our-branches]]. 
+
 ### Steps to consider for using other GWT modules
 
 1. For Eclipse Build
