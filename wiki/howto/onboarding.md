@@ -125,16 +125,17 @@ Go to Window ⇒ Preferences and change the following two settings:
 ### Steps to build and run the Sailing Analytics
 
 1. Check out the ``main`` branch from the git repository. The ``main`` branch is the main development branch. Please check that you start your work based on this branch.
-2. Setup and configure Eclipse
+2. If you are on Windows, keep in mind you may run into the following problem. By default, the filesystem in Windows enforces a 260 character limit on paths. The longest path length for a file in this project, if the drive name is included, is 263 characters. A possible solution is to pass a single character name for the project folder in the git clone command, and clone the project on drive root, which may bring the longest file path down to compatible length. Alternatively, Windows 10 and 11 offer settings to enable a much much longer maximum file path that requires additional configuration. You may check that out at your own will.
+3. Setup and configure Eclipse
    - Import all Race Analysis projects from the `java/` subdirectory of the git main folder (make sure to import via the wizard [but without smart import] "Import ⇒ General ⇒ Projects from Folder or Archive" in Eclipse, and additionally make sure to scan for nested projects!)
    - In "Window ⇒ Preferences ⇒ Plug-in Development ⇒ Target Platform" set the Eclipse target platform to `Race Analysis Target` (located in com.sap.sailing.targetplatform/definitions//race-analysis-p2-remote.target) 
    - Wait until the target platform has been resolved completely
    - Start a clean build (Project ⇒ Clean)
-3. To get a clean workspace, additional steps should be performed once:
+4. To get a clean workspace, additional steps should be performed once:
    1. Run "GWT Dashboards SDM" launch configuration. After successful start, launch configuration can be stopped.
    2. Run "GWT Security SDM" launch configuration. After successful start, launch configuration can be stopped.
    3. Run "GWT xdStorage Sample SDM" launch configuration. After successful start, launch configuration can be stopped.
-4. Run the Race Analysis Suite
+5. Run the Race Analysis Suite
    1. Ensure your local MongoDB Server is running; depending on your platform, maybe you can start your MongoDB using ``sudo systemctl start mongod``, or you may have to do something like:
       1. Create a folder for the mongoDB to store the data. For existing folders make sure they do not contain a `mongod.lock` file 
       2. Open a terminal and navigate to the location of the MongoDB installation `cd /somePathTo MongoDBInstallation/mongodb/bin`
@@ -142,13 +143,13 @@ Go to Window ⇒ Preferences and change the following two settings:
        `./mongod --dbpath /somePathTo/MongoDBDataDirectory`
    2. Run "GWT Sailing SDM" in the debug dropdown
    3. Start the appropriate Eclipse back-end launch configuration (in most cases 'Sailing Server (no Proxy)'). You´ll find this in the debug dropdown.
-5. Import races within the Race Analysis Suite
+6. Import races within the Race Analysis Suite
    - Choose "GWT Sailing SDM" in the "Development Mode" Tab and open "...AdminConsole.html...". This should open [http://127.0.0.1:8888/gwt/AdminConsole](http://127.0.0.1:8888/gwt/AdminConsole). (It is normal that the first try fails. Reload the page after the first try)
    - Default Login: user "admin", password "admin"
    - In the list on the left, click on "Connectors"
    - For TracTrac Events: In the "TracTrac Connections" Form, fill in the JSON URL [http://germanmaster.traclive.dk/events/event_20120905_erEuropean/jsonservice.php](http://germanmaster.traclive.dk/events/event_20120905_erEuropean/jsonservice.php)(all other required information will be filled in automatically)
    - Press "List Races"
-6. Further useful launch configurations
+7. Further useful launch configurations
    - Use SAP JVM Profiler. If you used the script above and installed the SAPJVM instead of the jdk, you can now open the profiling perspective by clicking on Window ⇒ Perspective ⇒ Open Perspective ⇒ Profiling)
    - Debugging gwt: For further instructions please see [here](./development/super-dev-mode)
 
