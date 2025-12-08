@@ -2043,25 +2043,27 @@ public class MongoObjectFactoryImpl implements MongoObjectFactory {
             final Document competitorManeuver = new Document();
             competitorManeuver.put(FieldNames.COMPETITOR_ID.name(), e.getKey().getId());
             final List<Document> maneuverList = new ArrayList<>();
-            for (final Maneuver maneuver : e.getValue()) {
-                final Document maneuverDoc = new Document();
-                maneuverDoc.put(FieldNames.TYPE.name(), maneuver.getType().name());
-                maneuverDoc.put(FieldNames.TACK.name(), maneuver.getNewTack().name());
-                maneuverDoc.put(FieldNames.POSITION_LAT_RAD.name(), maneuver.getPosition().getLatRad());
-                maneuverDoc.put(FieldNames.POSITION_LNG_RAD.name(), maneuver.getPosition().getLngRad());
-                maneuverDoc.put(FieldNames.TIMEPOINT.name(), maneuver.getTimePoint().asMillis());
-                final Document mainCurveBoundariesDoc = new Document();
-                maneuverDoc.put(FieldNames.MAIN_CURVE_BOUNDARIES.name(), storeMainCurveBoundaries(maneuver.getMainCurveBoundaries(), mainCurveBoundariesDoc));
-                final Document maeuverCurveWithStableSpeedAndBoundariesDoc = new Document();
-                maneuverDoc.put(FieldNames.MANEUVER_CURVE_WITH_STABLE_SPEED_AND_COURSE_BOUNDERIES.name(), storeMainCurveBoundaries(maneuver.getManeuverCurveWithStableSpeedAndCourseBoundaries(), maeuverCurveWithStableSpeedAndBoundariesDoc));
-                maneuverDoc.put(FieldNames.MAX_TURNING_RATE_IN_DEGREE_PER_SECOUND.name(), maneuver.getMaxTurningRateInDegreesPerSecond());
-                maneuverDoc.put(FieldNames.INDEX_OF_PASSED_WAYPOINT.name(), maneuver.getMarkPassing() == null ? -1 : course.getIndexOfWaypoint(maneuver.getMarkPassing().getWaypoint()));
-                maneuverDoc.put(FieldNames.TIME_AS_MILLIS.name(), maneuver.getDuration().asMillis());
-                maneuverDoc.put(FieldNames.MANEUVER_LOSS.name(), maneuver.getManeuverLoss() == null ? null : storeManeuverLoss(maneuver.getManeuverLoss()));
-                maneuverList.add(maneuverDoc); 
+            if (e.getValue() != null) {
+                for (final Maneuver maneuver : e.getValue()) {
+                    final Document maneuverDoc = new Document();
+                    maneuverDoc.put(FieldNames.TYPE.name(), maneuver.getType().name());
+                    maneuverDoc.put(FieldNames.TACK.name(), maneuver.getNewTack().name());
+                    maneuverDoc.put(FieldNames.POSITION_LAT_RAD.name(), maneuver.getPosition().getLatRad());
+                    maneuverDoc.put(FieldNames.POSITION_LNG_RAD.name(), maneuver.getPosition().getLngRad());
+                    maneuverDoc.put(FieldNames.TIMEPOINT.name(), maneuver.getTimePoint().asMillis());
+                    final Document mainCurveBoundariesDoc = new Document();
+                    maneuverDoc.put(FieldNames.MAIN_CURVE_BOUNDARIES.name(), storeMainCurveBoundaries(maneuver.getMainCurveBoundaries(), mainCurveBoundariesDoc));
+                    final Document maeuverCurveWithStableSpeedAndBoundariesDoc = new Document();
+                    maneuverDoc.put(FieldNames.MANEUVER_CURVE_WITH_STABLE_SPEED_AND_COURSE_BOUNDERIES.name(), storeMainCurveBoundaries(maneuver.getManeuverCurveWithStableSpeedAndCourseBoundaries(), maeuverCurveWithStableSpeedAndBoundariesDoc));
+                    maneuverDoc.put(FieldNames.MAX_TURNING_RATE_IN_DEGREE_PER_SECOUND.name(), maneuver.getMaxTurningRateInDegreesPerSecond());
+                    maneuverDoc.put(FieldNames.INDEX_OF_PASSED_WAYPOINT.name(), maneuver.getMarkPassing() == null ? -1 : course.getIndexOfWaypoint(maneuver.getMarkPassing().getWaypoint()));
+                    maneuverDoc.put(FieldNames.TIME_AS_MILLIS.name(), maneuver.getDuration().asMillis());
+                    maneuverDoc.put(FieldNames.MANEUVER_LOSS.name(), maneuver.getManeuverLoss() == null ? null : storeManeuverLoss(maneuver.getManeuverLoss()));
+                    maneuverList.add(maneuverDoc); 
+                }
+                competitorManeuver.put(FieldNames.MANEUVERS.name(), maneuverList);
+                result.add(competitorManeuver);
             }
-            competitorManeuver.put(FieldNames.MANEUVERS.name(), maneuverList);
-            result.add(competitorManeuver);
         }
         return result;
     }
