@@ -8,6 +8,13 @@
          <h5 class="articleSubheadline">December 2025</h5>
          <ul class="bulletList">
             <li>Added boat class Fareast 28R.</li>
+            <li>When no wind speed is measured at all, let the clustering into different tacks make
+                assumptions (e.g., 10kts true wind speed) for the wind direction estimation from the
+                courses over ground. This wind speed default assumption is then used to determine
+                average maneuver angles for the boat type in those wind speeds, which in turn helps
+                computing the minimum course difference required between the clusters for the different
+                tacks. All this helps to improve wind direction estimation results if no wind speed
+                is provided at all.</li>
          </ul>
          <h5 class="articleSubheadline">October 2025</h5>
          <ul class="bulletList">
