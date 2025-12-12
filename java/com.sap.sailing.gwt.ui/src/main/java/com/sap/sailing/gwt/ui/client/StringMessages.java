@@ -2554,4 +2554,5 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages,
     String unlock();
     String ipsLockedForUserCreationAbuse();
     String unableToLoadIpsBlockedForUserCreationAbuse();
+    String sourceCode();
 }
