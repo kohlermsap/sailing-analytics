@@ -1,6 +1,5 @@
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder" xmlns:g="urn:import:com.google.gwt.user.client.ui" xmlns:s="urn:import:com.sap.sailing.gwt.home.client.shared">
-    <ui:with field="i18n" type="com.sap.sailing.gwt.ui.client.StringMessages" />
 	<ui:with field="res"
 		type="com.sap.sailing.gwt.common.client.SharedResources" />
     <ui:with field="shr" type="com.sap.sailing.gwt.home.shared.SharedHomeResources" />
@@ -10,42 +9,50 @@
     <!-- The search/social media page footer-->
     <div class="{local_res.css.socialfooter}">
       <div class="{res.mediaCss.grid}">
-        <h3 class="{local_res.css.socialfooter_heading} {res.mediaCss.small12} {res.mediaCss.columns}">
-          <ui:text from='{i18n.followSapSports}' />
+        <h3 ui:field="socialHeading" class="{local_res.css.socialfooter_heading} {res.mediaCss.small12} {res.mediaCss.columns}">
         </h3>
-        <div class="{local_res.css.socialfooter_item} {local_res.css.socialfooter_itemleft} {res.mediaCss.small6} {res.mediaCss.columns}">
-          <a href="https://x.com/sap" target="_blank" class="{local_res.css.socialfooter_item_contentwrapper}">
+        <div class="{local_res.css.socialfooter_items}">
+        <div ui:field="xItem" class="{local_res.css.socialfooter_item}">
+          <a ui:field="xLink" target="_blank" class="{local_res.css.socialfooter_item_contentwrapper}">
             <img src="{shr.twitter.getSafeUri}" class="{local_res.css.socialfooter_item_icon}"></img>
             <div class="{local_res.css.socialfooter_item_text}">
-              <div class="{local_res.css.socialfooter_item_text_top}">
-                <ui:text from='{i18n.sapSportsOn}' />
+              <div ui:field="xTopText" class="{local_res.css.socialfooter_item_text_top}">
               </div>
               <div class="{local_res.css.socialfooter_item_text_bottom}">X</div>
             </div>
           </a>
         </div>
-        <div class="{local_res.css.socialfooter_item} {local_res.css.socialfooter_itemright} {res.mediaCss.small6} {res.mediaCss.columns}">
-          <a href="https://www.facebook.com/SAP" target="_blank" class="{local_res.css.socialfooter_item_contentwrapper}">
+        <div ui:field="facebookItem" class="{local_res.css.socialfooter_item}">
+          <a ui:field="facebookLink" target="_blank" class="{local_res.css.socialfooter_item_contentwrapper}">
             <img src="{shr.facebook.getSafeUri}" class="{local_res.css.socialfooter_item_icon}"></img>
             <div class="{local_res.css.socialfooter_item_text}">
-              <div class="{local_res.css.socialfooter_item_text_top}">
-                <ui:text from='{i18n.sapSportsOn}' />
+              <div ui:field="facebookTopText" class="{local_res.css.socialfooter_item_text_top}">
               </div>
               <div class="{local_res.css.socialfooter_item_text_bottom}">Facebook</div>
             </div>
           </a>
         </div>
-        <div class="{local_res.css.socialfooter_item} {local_res.css.socialfooter_itemcenter} {res.mediaCss.small12} {res.mediaCss.columns}">
-          <a href="https://www.instagram.com/sap/" target="_blank" class="{local_res.css.socialfooter_item_contentwrapper}">
+        <div ui:field="gitHubItem" class="{local_res.css.socialfooter_item}">
+          <a ui:field="gitHubLink" target="_blank" class="{local_res.css.socialfooter_item_contentwrapper}">
+            <img src="{shr.githubWhite.getSafeUri}" class="{local_res.css.socialfooter_item_icon}"></img>
+            <div class="{local_res.css.socialfooter_item_text}">
+              <div ui:field="gitHubTopText" class="{local_res.css.socialfooter_item_text_top}">
+              </div>
+              <div class="{local_res.css.socialfooter_item_text_bottom}">GitHub</div>
+            </div>
+          </a>
+        </div>
+        <div ui:field="instagramItem" class="{local_res.css.socialfooter_item}">
+          <a ui:field="instagramLink" target="_blank" class="{local_res.css.socialfooter_item_contentwrapper}">
             <img src="{shr.instagramInverse.getSafeUri}" class="{local_res.css.socialfooter_item_icon}"></img>
             <div class="{local_res.css.socialfooter_item_text}">
-              <div class="{local_res.css.socialfooter_item_text_top}">
-                <ui:text from='{i18n.sapSportsOn}' />
+              <div ui:field="instagramTopText" class="{local_res.css.socialfooter_item_text_top}">
               </div>
               <div class="{local_res.css.socialfooter_item_text_bottom}">Instagram</div>
             </div>
           </a>
         </div>
+      </div>
       </div>
     </div>
   </g:HTMLPanel>

@@ -17,7 +17,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.sap.sailing.domain.common.DetailType;
 import com.sap.sailing.domain.common.dto.AbstractLeaderboardDTO;
 import com.sap.sailing.gwt.common.authentication.FixedSailingAuthentication;
-import com.sap.sailing.gwt.common.authentication.SAPSailingHeaderWithAuthentication;
+import com.sap.sailing.gwt.common.authentication.SailingHeaderWithAuthentication;
 import com.sap.sailing.gwt.common.communication.routing.ProvidesLeaderboardRouting;
 import com.sap.sailing.gwt.settings.client.leaderboard.LeaderboardContextDefinition;
 import com.sap.sailing.gwt.settings.client.leaderboard.LeaderboardPerspectiveLifecycle;
@@ -251,7 +251,7 @@ public class LeaderboardEntryPoint extends AbstractSailingReadEntryPoint impleme
             if (leaderboardDisplayName == null || leaderboardDisplayName.isEmpty()) {
                 leaderboardDisplayName = leaderboardName;
             }
-            SAPSailingHeaderWithAuthentication header = new SAPSailingHeaderWithAuthentication(leaderboardDisplayName);
+            SailingHeaderWithAuthentication header = new SailingHeaderWithAuthentication(leaderboardDisplayName);
             PaywallResolver paywallResolver = new PaywallResolverImpl(getUserService(), getSubscriptionServiceFactory());
             new FixedSailingAuthentication(getUserService(), paywallResolver, header.getAuthenticationMenuView());
             mainPanel.addNorth(header, 75);

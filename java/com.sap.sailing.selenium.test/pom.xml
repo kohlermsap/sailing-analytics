@@ -371,6 +371,11 @@
                   <autoStart>true</autoStart>
                 </bundle>
                 <bundle>
+                  <id>com.sap.sse.branding.sap</id>
+                  <level>5</level>
+                  <autoStart>true</autoStart>
+                </bundle>
+                <bundle>
                   <id>org.eclipse.jetty.osgi.boot</id>
                   <level>3</level>
                   <autoStart>true</autoStart>

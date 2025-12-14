@@ -49,16 +49,16 @@ public class TracTracAdapterImpl implements TracTracAdapter {
     @Override
     public RaceHandle addTracTracRace(TrackerManager trackerManager, URL paramURL, URI liveURI, URI storedURI,
             URI courseDesignUpdateURI, RaceLogStore raceLogStore, RegattaLogStore regattaLogStore,
-            long timeoutInMilliseconds, String tracTracUsername, String tracTracPassword, String raceStatus,
-            String raceVisibility, boolean trackWind, boolean correctWindDirectionByMagneticDeclination, int timeoutInMillis,
-            boolean useOfficialEventsToUpdateRaceLog, RaceTrackingHandler raceTrackingHandler) throws Exception {
+            long timeoutInMilliseconds, String tracTracApiToken, String raceStatus, String raceVisibility,
+            boolean trackWind, boolean correctWindDirectionByMagneticDeclination, int timeoutInMillis, boolean useOfficialEventsToUpdateRaceLog,
+            RaceTrackingHandler raceTrackingHandler) throws Exception {
         return trackerManager.addRace(
                 /* regattaToAddTo */null,
                 getTracTracDomainFactory().createTrackingConnectivityParameters(paramURL, liveURI, storedURI,
                         courseDesignUpdateURI,
                         /* startOfTracking */null,
                         /* endOfTracking */null, delayToLiveInMillis, /* offsetToStartTimeOfSimulatedRace */null, /* ignoreTracTracMarkPassings */ false,
-                        raceLogStore, regattaLogStore, tracTracUsername, tracTracPassword, raceStatus, raceVisibility, trackWind, correctWindDirectionByMagneticDeclination,
+                        raceLogStore, regattaLogStore, tracTracApiToken, raceStatus, raceVisibility, trackWind, correctWindDirectionByMagneticDeclination,
                         /* preferReplayIfAvailable */ false, timeoutInMillis, useOfficialEventsToUpdateRaceLog,
                         /* liveURIFromConfiguration */ null, /* storedURIFromConfiguration */ null),
                 timeoutInMilliseconds, raceTrackingHandler);
@@ -68,31 +68,31 @@ public class TracTracAdapterImpl implements TracTracAdapter {
     public RaceHandle addTracTracRace(TrackerManager trackerManager, RegattaIdentifier regattaToAddTo, URL paramURL,
             URI liveURI, URI storedURI, URI courseDesignUpdateURI, TimePoint startOfTracking, TimePoint endOfTracking,
             RaceLogStore raceLogStore, RegattaLogStore regattaLogStore, long timeoutInMilliseconds,
-            Duration offsetToStartTimeOfSimulatedRace, boolean useInternalMarkPassingAlgorithm, String tracTracUsername,
-            String tracTracPassword, String raceStatus, String raceVisibility, boolean trackWind,
-            boolean correctWindDirectionByMagneticDeclination, boolean useOfficialEventsToUpdateRaceLog, URI liveURIFromConfiguration, URI storedURIFromConfiguration) throws Exception {
+            Duration offsetToStartTimeOfSimulatedRace, boolean useInternalMarkPassingAlgorithm, String tracTracApiToken,
+            String raceStatus, String raceVisibility, boolean trackWind, boolean correctWindDirectionByMagneticDeclination,
+            boolean useOfficialEventsToUpdateRaceLog, URI liveURIFromConfiguration, URI storedURIFromConfiguration) throws Exception {
         return trackerManager.addRace(
                 regattaToAddTo,
                 getTracTracDomainFactory().createTrackingConnectivityParameters(paramURL, liveURI, storedURI,
                         courseDesignUpdateURI, startOfTracking, endOfTracking, delayToLiveInMillis,
-                        offsetToStartTimeOfSimulatedRace, useInternalMarkPassingAlgorithm, raceLogStore, regattaLogStore, tracTracUsername, tracTracPassword,
+                        offsetToStartTimeOfSimulatedRace, useInternalMarkPassingAlgorithm, raceLogStore, regattaLogStore, tracTracApiToken,
                         raceStatus, raceVisibility, trackWind, correctWindDirectionByMagneticDeclination, /* preferReplayIfAvailable */ false,
                         (int) timeoutInMilliseconds, useOfficialEventsToUpdateRaceLog, liveURIFromConfiguration, storedURIFromConfiguration), timeoutInMilliseconds);
     }
 
     @Override
-    public Util.Pair<String, List<RaceRecord>> getTracTracRaceRecords(URL jsonURL, boolean loadClientParams)
+    public Util.Pair<String, List<RaceRecord>> getTracTracRaceRecords(URL jsonURL, boolean loadClientParams, String tracTracApiToken)
             throws IOException, ParseException, org.json.simple.parser.ParseException, URISyntaxException {
         logger.info("Retrieving TracTrac race records from " + jsonURL);
-        JSONService jsonService = getTracTracDomainFactory().parseJSONURLWithRaceRecords(jsonURL, loadClientParams);
+        JSONService jsonService = getTracTracDomainFactory().parseJSONURLWithRaceRecords(jsonURL, loadClientParams, tracTracApiToken);
         logger.info("OK retrieving TracTrac race records from " + jsonURL);
         return new Util.Pair<String, List<RaceRecord>>(jsonService.getEventName(), jsonService.getRaceRecords());
     }
 
     @Override
-    public RaceRecord getSingleTracTracRaceRecord(URL jsonURL, String raceId, boolean loadClientParams)
+    public RaceRecord getSingleTracTracRaceRecord(URL jsonURL, String raceId, boolean loadClientParams, String tracTracApiToken)
             throws Exception {
-        JSONService service = getTracTracDomainFactory().parseJSONURLForOneRaceRecord(jsonURL, raceId, loadClientParams);
+        JSONService service = getTracTracDomainFactory().parseJSONURLForOneRaceRecord(jsonURL, raceId, loadClientParams, tracTracApiToken);
         if (!service.getRaceRecords().isEmpty()) {
             return service.getRaceRecords().get(0);
         }
@@ -101,11 +101,9 @@ public class TracTracAdapterImpl implements TracTracAdapter {
     
     @Override
     public TracTracConfiguration createTracTracConfiguration(String creatorName, String name, String jsonURL,
-            String liveDataURI,
-            String storedDataURI, String courseDesignUpdateURI, String tracTracUsername, String tracTracPassword) {
+            String liveDataURI, String storedDataURI, String courseDesignUpdateURI, String tracTracApiToken) {
         return getTracTracDomainFactory().createTracTracConfiguration(creatorName, name, jsonURL, liveDataURI,
-                storedDataURI,
-                courseDesignUpdateURI, tracTracUsername, tracTracPassword);
+                storedDataURI, courseDesignUpdateURI, tracTracApiToken);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.sap.sailing.gwt.home.desktop.places.solutions;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -21,5 +22,13 @@ public class TabletAndDesktopSolutionsView extends Composite implements Solution
         super();
         solutions = new Solutions(navigationTab, placesNavigator);
         initWidget(uiBinder.createAndBindUi(this));
+    }
+
+    public void setContentHtml(SafeHtml html) {
+        solutions.setInSailingContentHtml(html);
+    }
+
+    public void clearContent() {
+        solutions.clearInSailingContent();
     }
 }

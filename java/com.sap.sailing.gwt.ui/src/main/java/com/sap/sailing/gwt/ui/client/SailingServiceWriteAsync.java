@@ -318,11 +318,11 @@ public interface SailingServiceWriteAsync extends FileStorageManagementGwtServic
 
     void trackWithSwissTiming(RegattaIdentifier regattaToAddTo, List<SwissTimingRaceRecordDTO> rrs, String hostname,
             int port, boolean trackWind, boolean correctWindByDeclination, boolean useInternalMarkPassingAlgorithm,
-            String updateURL, String updateUsername, String updatePassword, String eventName,
-            String manage2SailEventUrl, AsyncCallback<Void> asyncCallback);
+            String updateURL, String apiToken, String eventName, String manage2SailEventUrl,
+            AsyncCallback<Void> asyncCallback);
 
     void createTracTracConfiguration(String name, String jsonURL, String liveDataURI, String storedDataURI,
-            String courseDesignUpdateURI, String tracTracUsername, String tracTracPassword, AsyncCallback<Void> callback);
+            String courseDesignUpdateURI, String tracTracApiToken, AsyncCallback<Void> callback);
 
     /**
      * @param creatorUserName
@@ -447,7 +447,7 @@ public interface SailingServiceWriteAsync extends FileStorageManagementGwtServic
             AsyncCallback<Void> callback);
 
     void createSwissTimingConfiguration(String configName, String jsonURL, String hostname, Integer port,
-            String updateURL, String updateUsername, String updatePassword, AsyncCallback<Void> asyncCallback);
+            String updateURL, String apiToken, AsyncCallback<Void> asyncCallback);
 
     void updateSwissTimingConfiguration(SwissTimingConfigurationWithSecurityDTO configuration,
             AsyncCallback<Void> asyncCallback);
@@ -586,7 +586,7 @@ public interface SailingServiceWriteAsync extends FileStorageManagementGwtServic
     void removeIgtimiDevice(String deviceSerialNumber, AsyncCallback<Void> asyncCallback);
 
     void importWindFromIgtimi(List<RaceDTO> selectedRaces, boolean correctByDeclination,
-            AsyncCallback<Map<RegattaAndRaceIdentifier, Integer>> asyncCallback);
+            String optionalBearerTokenOrNull, AsyncCallback<Map<RegattaAndRaceIdentifier, Integer>> asyncCallback);
 
     /**
      * The boolean result reflects whether a connection to the device identified by {@code serialNumber}

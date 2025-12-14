@@ -15,10 +15,14 @@ Require-Bundle: com.google.gwt.user;bundle-version="2.10.0";resolution:=optional
  com.sap.sse
 Bundle-ActivationPolicy: lazy
 Web-ContextPath: /gwt-base
-Import-Package: com.sap.sse.security,
+Import-Package: com.sap.sse.branding.shared,
+ com.sap.sse.security,
+ com.sun.jersey.spi.container.servlet;version="[1.17.0,2.0.0)",
  javax.servlet;version="3.1.0",
  javax.servlet.descriptor;version="3.1.0",
  javax.servlet.http;version="3.1.0",
+ javax.ws.rs;version="[1.1.0,2.0.0)",
+ javax.ws.rs.core;version="[1.1.0,2.0.0)",
  org.apache.commons.io,
  org.apache.shiro;version="1.2.2",
  org.apache.shiro.subject;version="1.2.2",

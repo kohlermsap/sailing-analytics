@@ -49,9 +49,7 @@ public class EditSTL extends javax.swing.JDialog {
      */
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    @SuppressWarnings("serial")
     private void initComponents() {
-
         jLabel1 = new javax.swing.JLabel();
         jRaceID = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
@@ -66,48 +64,36 @@ public class EditSTL extends javax.swing.JDialog {
         jButton2 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jCompetitorList = new javax.swing.JList<Competitor>();
-
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-
         jLabel1.setText("Race ID:");
-
         jRaceID.setText("jTextField1");
-
         jLabel2.setText("Sail Number:");
-
         jSailNumber.setText("jTextField1");
-
         jLabel3.setText("NOC:");
-
         jNOC.setModel(new javax.swing.DefaultComboBoxModel<String>(new String[] { "AUS", "FRA", "GBR", "GER", "ITA", "USA" }));
         jNOC.setSelectedIndex(2);
-
         jLabel4.setText("Name:");
-
         jName.setText("jTextField1");
-
         jButton1.setText("Add");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
-
         jRemove.setText("Remove");
         jRemove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jRemoveActionPerformed(evt);
             }
         });
-
         jButton2.setText("Ok");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
-
         jCompetitorList.setModel(new javax.swing.AbstractListModel<Competitor>() {
+            private static final long serialVersionUID = 1L;
             Competitor[] competitors = { new CompetitorWithoutID("Item 1", "DEU", "Item 1"),
                     new CompetitorWithoutID("Item 2", "DEU", "Item 2"),
                     new CompetitorWithoutID("Item 3", "DEU", "Item 3"),
@@ -117,7 +103,6 @@ public class EditSTL extends javax.swing.JDialog {
             public Competitor getElementAt(int i) { return competitors[i]; }
         });
         jScrollPane1.setViewportView(jCompetitorList);
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(

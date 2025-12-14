@@ -13,6 +13,7 @@ import java.util.List;
 import javax.xml.bind.DatatypeConverter;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.openqa.selenium.WebElement;
 
 import com.sap.sailing.selenium.core.SeleniumTestCase;
@@ -93,20 +94,25 @@ public class WhitelabelTest extends AbstractSeleniumTest {
         setWhitelabel(true, getContextRoot());
     }
 
+    @AfterEach
+    public void tearDown() {
+        setWhitelabel(false, getContextRoot());
+    }
+
     @SeleniumTestCase
     public void testHomepageWhitelabel() throws UnsupportedEncodingException {
         HomePage homePage = HomePage.goToPage(getWebDriver(), getContextRoot());
         assertThat(homePage.getPageTitle(), not(containsString("SAP")));
         validateIsDisplayed(homePage.getFavicon(), false);
-        validateIsDisplayed(homePage.getSolutionsPageLink(), false);
+        validateIsDisplayed(homePage.getSolutionsPageLink(), true); // Solutions is de-branded in its contents, so we can show the tab to it even when de-branded
         validateIsDisplayed(homePage.getSapSailingHeaderImage(), false);
         assertThat(homePage.getLogoAnchor().getAttribute("target"), equalTo(""));
         validateIsDisplayed(homePage.getSocialmediaFooter(), false);
         validateIsDisplayed(homePage.getCopyrightDiv(), false);
-        validateIsDisplayed(homePage.getImprintLink(), false);
+        validateIsDisplayed(homePage.getImprintLink(), true); // we're obliged to show the open source licenses of the components used, also when de-branded
         validateIsDisplayed(homePage.getPrivacyLink(), false);
         validateIsDisplayed(homePage.getSupportLink(), false);
-        validateIsDisplayed(homePage.getNewsLink(), false);
+        validateIsDisplayed(homePage.getNewsLink(), true); // What's New is de-branded in its contents, so we can show the link to it even when de-branded
         validateIsDisplayed(homePage.getLanguageSelectionLabel(), true);
         assertThat(homePage.getLanguageSelectionLabel().getText(), not(containsString("SAP")));
         RaceBoardPage raceboardPage = RaceBoardPage.goToRaceboardUrl(getWebDriver(), getContextRoot(), REGATTA_49ER_WITH_SUFFIX,

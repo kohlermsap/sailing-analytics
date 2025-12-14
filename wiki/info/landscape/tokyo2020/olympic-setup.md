@@ -502,7 +502,6 @@ REPLICATE_MASTER_BEARER_TOKEN="***"
 REPLICATION_HOST=localhost
 REPLICATION_PORT=5673
 USE_ENVIRONMENT=live-master-server
-ADDITIONAL_JAVA_ARGS="${ADDITIONAL_JAVA_ARGS} -Dcom.sap.sse.debranding=true"
 ```
 
 ### Replicas
@@ -532,7 +531,6 @@ REPLICATION_HOST=localhost
 REPLICATION_PORT=5672
 REPLICATION_CHANNEL=${SERVER_NAME}-replica
 USE_ENVIRONMENT=live-replica-server
-ADDITIONAL_JAVA_ARGS="${ADDITIONAL_JAVA_ARGS} -Dcom.sap.sse.debranding=true"
 ```
 
 Replicas in region ``eu-west-1`` can be launched using the following user data, making use of the established MongoDB live replica set in the region:
@@ -549,7 +547,6 @@ REPLICATE_MASTER_SERVLET_PORT=8888
 REPLICATE_MASTER_EXCHANGE_NAME=tokyo2020
 REPLICATE_MASTER_QUEUE_HOST=rabbit-ap-northeast-1.sapsailing.com
 REPLICATE_MASTER_BEARER_TOKEN="***"
-ADDITIONAL_JAVA_ARGS="${ADDITIONAL_JAVA_ARGS} -Dcom.sap.sse.debranding=true"
 ```
 
 (Adjust the release accordingly, of course). (NOTE: During the first production days of the event we noticed that it was really a BAD IDEA to have all replicas use the same DB set-up, all writing to the MongoDB PRIMARY of the "live" replica set in eu-west-1. With tens of replicas running concurrently, this led to a massive block-up based on MongoDB not writing fast enough. This gave rise to a new application server AMI which now has a MongoDB set-up included, using "replica" as the MongoDB replica set name. Now, each replica hence can write into its own MongoDB instance, isolated from all others and scaling linearly.)
@@ -568,7 +565,6 @@ REPLICATE_MASTER_SERVLET_PORT=8888
 REPLICATE_MASTER_EXCHANGE_NAME=tokyo2020
 REPLICATE_MASTER_QUEUE_HOST=rabbit-ap-northeast-1.sapsailing.com
 REPLICATE_MASTER_BEARER_TOKEN="***"
-ADDITIONAL_JAVA_ARGS="${ADDITIONAL_JAVA_ARGS} -Dcom.sap.sse.debranding=true"
 ```
 
 ### Application Servers

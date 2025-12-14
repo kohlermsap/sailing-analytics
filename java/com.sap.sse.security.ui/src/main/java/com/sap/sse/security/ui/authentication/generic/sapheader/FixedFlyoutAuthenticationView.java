@@ -12,7 +12,7 @@ import com.sap.sse.gwt.common.CommonSharedResources;
 import com.sap.sse.security.ui.authentication.view.FlyoutAuthenticationView;
 
 /**
- * {@link FlyoutAuthenticationView} styled to work with {@link SAPHeaderWithAuthentication}. This is used in cases when
+ * {@link FlyoutAuthenticationView} styled to work with {@link BrandedHeaderWithAuthentication}. This is used in cases when
  * the header is positioned as fixed on top of the page.
  */
 public class FixedFlyoutAuthenticationView extends GenericFlyoutAuthenticationView {

@@ -222,8 +222,9 @@ import com.sap.sailing.domain.regattalike.IsRegattaLike;
 import com.sap.sailing.domain.regattalike.LeaderboardThatHasRegattaLike;
 import com.sap.sailing.domain.regattalog.RegattaLogStore;
 import com.sap.sailing.domain.resultimport.ResultUrlProvider;
+import com.sap.sailing.domain.shared.tracking.AddResult;
+import com.sap.sailing.domain.shared.tracking.TrackingConnectorInfo;
 import com.sap.sailing.domain.statistics.Statistics;
-import com.sap.sailing.domain.tracking.AddResult;
 import com.sap.sailing.domain.tracking.BravoFixTrack;
 import com.sap.sailing.domain.tracking.DynamicRaceDefinitionSet;
 import com.sap.sailing.domain.tracking.DynamicSensorFixTrack;
@@ -244,7 +245,6 @@ import com.sap.sailing.domain.tracking.TrackedRace;
 import com.sap.sailing.domain.tracking.TrackedRaceStatus;
 import com.sap.sailing.domain.tracking.TrackedRegatta;
 import com.sap.sailing.domain.tracking.TrackedRegattaListener;
-import com.sap.sailing.domain.tracking.TrackingConnectorInfo;
 import com.sap.sailing.domain.tracking.WindLegTypeAndLegBearingAndORCPerformanceCurveCache;
 import com.sap.sailing.domain.tracking.WindPositionMode;
 import com.sap.sailing.domain.tracking.WindStore;
@@ -331,6 +331,7 @@ import com.sap.sailing.server.tagging.TaggingServiceFactory;
 import com.sap.sailing.server.util.EventUtil;
 import com.sap.sailing.shared.server.SharedSailingData;
 import com.sap.sse.ServerInfo;
+import com.sap.sse.branding.BrandingConfigurationService;
 import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Distance;
 import com.sap.sse.common.Duration;
@@ -614,7 +615,7 @@ Replicator {
     private final FullyInitializedReplicableTracker<SecurityService> securityServiceTracker;
 
     private final CourseAndMarkConfigurationFactory courseAndMarkConfigurationFactory;
-
+    
     /**
      * Providing the constructor parameters for a new {@link RacingEventServiceImpl} instance is a bit tricky
      * in some cases because containment and initialization order of some types is fairly tightly coupled.
@@ -659,7 +660,8 @@ Replicator {
                 /* sailingNotificationService */ null, /* trackedRaceStatisticsCache */ null,
                 restoreTrackedRaces, /* securityServiceTracker */ null, /* sharedSailingDataTracker */ null,
                 /* replicationServiceTracker */ null, /* scoreCorrectionProviderServiceTracker */ null,
-                /* competitorProviderServiceTracker */ null, /* resultUrlRegistryServiceTracker */ null);
+                /* competitorProviderServiceTracker */ null, /* resultUrlRegistryServiceTracker */ null,
+                /* brandingConfigurationServiceTracker */ null);
     }
 
     /**
@@ -688,7 +690,10 @@ Replicator {
             boolean restoreTrackedRaces,
             FullyInitializedReplicableTracker<SecurityService> securityServiceTracker, FullyInitializedReplicableTracker<SharedSailingData> sharedSailingDataTracker,
             ServiceTracker<ReplicationService, ReplicationService> replicationServiceTracker,
-            ServiceTracker<ScoreCorrectionProvider, ScoreCorrectionProvider> scoreCorrectionProviderServiceTracker, ServiceTracker<CompetitorProvider, CompetitorProvider> competitorProviderServiceTracker, ServiceTracker<ResultUrlRegistry, ResultUrlRegistry> resultUrlRegistryServiceTracker) {
+            ServiceTracker<ScoreCorrectionProvider, ScoreCorrectionProvider> scoreCorrectionProviderServiceTracker,
+            ServiceTracker<CompetitorProvider, CompetitorProvider> competitorProviderServiceTracker,
+            ServiceTracker<ResultUrlRegistry, ResultUrlRegistry> resultUrlRegistryServiceTracker,
+            ServiceTracker<BrandingConfigurationService, BrandingConfigurationService> brandingConfigurationServiceTracker) {
         this((final RaceLogAndTrackedRaceResolver raceLogResolver) -> {
             return new ConstructorParameters() {
                 private final MongoObjectFactory mongoObjectFactory = PersistenceFactory.INSTANCE
@@ -760,7 +765,7 @@ Replicator {
                 /* scoreCorrectionProviderServiceTracker */ null, /* competitorProviderServiceTracker */ null,
                 /* resultUrlRegistryServiceTracker */ null);
     }
-
+ 
     public RacingEventServiceImpl(final DomainObjectFactory domainObjectFactory, MongoObjectFactory mongoObjectFactory,
             MediaDB mediaDB, WindStore windStore, SensorFixStore sensorFixStore, boolean restoreTrackedRaces) {
         this((final RaceLogAndTrackedRaceResolver raceLogResolver) -> {

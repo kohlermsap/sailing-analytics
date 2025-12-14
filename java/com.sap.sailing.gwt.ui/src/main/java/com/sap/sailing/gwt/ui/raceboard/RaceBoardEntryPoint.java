@@ -20,7 +20,7 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.sap.sailing.domain.common.DetailType;
 import com.sap.sailing.domain.common.dto.CompetitorDTO;
 import com.sap.sailing.gwt.common.authentication.FixedSailingAuthentication;
-import com.sap.sailing.gwt.common.authentication.SAPSailingHeaderWithAuthentication;
+import com.sap.sailing.gwt.common.authentication.SailingHeaderWithAuthentication;
 import com.sap.sailing.gwt.common.communication.routing.ProvidesLeaderboardRouting;
 import com.sap.sailing.gwt.settings.client.raceboard.RaceBoardPerspectiveOwnSettings;
 import com.sap.sailing.gwt.settings.client.raceboard.RaceboardContextDefinition;
@@ -45,7 +45,7 @@ import com.sap.sse.gwt.client.player.Timer.PlayModes;
 import com.sap.sse.gwt.client.shared.perspective.PerspectiveCompositeSettings;
 import com.sap.sse.gwt.client.shared.settings.DefaultOnSettingsLoadedCallback;
 import com.sap.sse.gwt.settings.SettingsToUrlSerializer;
-import com.sap.sse.security.ui.authentication.generic.sapheader.SAPHeaderWithAuthentication;
+import com.sap.sse.security.ui.authentication.generic.sapheader.BrandedHeaderWithAuthentication;
 import com.sap.sse.security.ui.client.premium.PaywallResolver;
 import com.sap.sse.security.ui.client.premium.PaywallResolverImpl;
 import com.sap.sse.security.ui.settings.ComponentContextWithSettingsStorage;
@@ -142,7 +142,7 @@ public class RaceBoardEntryPoint extends AbstractSailingReadEntryPoint implement
 
     private void createErrorPage(String message) {
         final DockLayoutPanel vp = new DockLayoutPanel(Unit.PX);
-        final SAPHeaderWithAuthentication header = new SAPSailingHeaderWithAuthentication();
+        final BrandedHeaderWithAuthentication header = new SailingHeaderWithAuthentication();
         PaywallResolver paywallResolver = new PaywallResolverImpl(getUserService(), getSubscriptionServiceFactory());
         new FixedSailingAuthentication(getUserService(), paywallResolver, header.getAuthenticationMenuView());
         RootLayoutPanel.get().add(vp);
@@ -150,7 +150,7 @@ public class RaceBoardEntryPoint extends AbstractSailingReadEntryPoint implement
         final Label infoText = new Label(message);
         infoText.getElement().getStyle().setMargin(1, Unit.EM);
         vp.add(infoText);
-        // TODO: Styling of error page slightly differs from the other usages of SAPSailingHeaderWithAuthentication
+        // TODO: Styling of error page slightly differs from the other usages of SailingHeaderWithAuthentication
         // because of the root font-size. Adjustments are postponed because they might affect the whole page content.
     }
 

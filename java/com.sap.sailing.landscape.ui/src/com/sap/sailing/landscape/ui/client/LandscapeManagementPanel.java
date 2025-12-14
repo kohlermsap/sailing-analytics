@@ -948,9 +948,9 @@ public class LandscapeManagementPanel extends SimplePanel {
                                         applicationReplicaSetToDefineLandingPageFor.getMaster(),
                                         applicationReplicaSetToDefineLandingPageFor.getReplicas(),
                                         applicationReplicaSetToDefineLandingPageFor.getVersion(),
+                                        applicationReplicaSetToDefineLandingPageFor.getReleaseNotesLink(),
                                         applicationReplicaSetToDefineLandingPageFor.getHostname(),
-                                        newDefaultRedirect,
-                                        applicationReplicaSetToDefineLandingPageFor.getAutoScalingGroupAmiId()));
+                                        newDefaultRedirect, applicationReplicaSetToDefineLandingPageFor.getAutoScalingGroupAmiId()));
                                 Notification.notify(stringMessages.successfullyUpdatedLandingPage(), NotificationType.SUCCESS);
                             }
                         });
@@ -1561,7 +1561,7 @@ public class LandscapeManagementPanel extends SimplePanel {
                                 new AsyncCallback<Void>() {
                                     @Override
                                     public void onSuccess(Void result) {
-                                        Notification.notify(stringMessages.success(), NotificationType.SUCCESS);
+                                        Notification.notify(stringMessages.unlockedSuccessfully(), NotificationType.SUCCESS);
                                         proxiesTableBusy.setBusy(false);
                                         refreshProxiesTable();
                                     }

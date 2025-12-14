@@ -31,7 +31,7 @@ import com.sap.sse.common.Stoppable;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.Util;
 import com.sap.sse.common.Util.Pair;
-import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
+import com.sap.sse.i18n.ResourceBundleStringMessages;
 import com.sap.sse.mail.queue.MailQueue;
 
 public class SailingNotificationServiceImpl implements SailingNotificationService {
@@ -42,7 +42,7 @@ public class SailingNotificationServiceImpl implements SailingNotificationServic
     private final Set<Stoppable> toStop = new HashSet<>();
     private final MailQueue mailQueue;
     private RacingEventService racingEventService;
-    private final ResourceBundleStringMessagesImpl messages;
+    private final ResourceBundleStringMessages messages;
 
     private final BoatClassResultsNotificationSet boatClassResults;
     private final BoatClassUpcomingRaceNotificationSet boatClassUpcomingRace;
@@ -59,7 +59,7 @@ public class SailingNotificationServiceImpl implements SailingNotificationServic
             BoatClassUpcomingRaceNotificationSet boatClassUpcomingRace,
             CompetitorResultsNotificationSet competitorResults) throws MalformedURLException {
         this.mailQueue = mailQueue;
-        this.messages = new ResourceBundleStringMessagesImpl(STRING_MESSAGES_BASE_NAME,
+        this.messages = ResourceBundleStringMessages.create(STRING_MESSAGES_BASE_NAME,
                 this.getClass().getClassLoader(), StandardCharsets.UTF_8.name());
         toStop.add(this.boatClassResults = boatClassResults);
         toStop.add(this.boatClassUpcomingRace = boatClassUpcomingRace);

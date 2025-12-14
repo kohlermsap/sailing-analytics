@@ -44,14 +44,14 @@ import com.sap.sailing.domain.common.tracking.impl.CompactionNotPossibleExceptio
 import com.sap.sailing.domain.common.tracking.impl.GPSFixImpl;
 import com.sap.sailing.domain.common.tracking.impl.GPSFixMovingImpl;
 import com.sap.sailing.domain.common.tracking.impl.VeryCompactGPSFixMovingImpl;
+import com.sap.sailing.domain.shared.tracking.impl.TimeRangeCache;
+import com.sap.sailing.domain.shared.tracking.impl.TrackImpl;
 import com.sap.sailing.domain.tracking.DynamicGPSFixTrack;
 import com.sap.sailing.domain.tracking.GPSFixTrack;
 import com.sap.sailing.domain.tracking.impl.DynamicGPSFixMovingTrackImpl;
 import com.sap.sailing.domain.tracking.impl.DynamicGPSFixTrackImpl;
 import com.sap.sailing.domain.tracking.impl.GPSFixTrackImpl;
 import com.sap.sailing.domain.tracking.impl.MaxSpeedCache;
-import com.sap.sailing.domain.tracking.impl.TimeRangeCache;
-import com.sap.sailing.domain.tracking.impl.TrackImpl;
 import com.sap.sse.common.AbstractBearing;
 import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Distance;
@@ -156,7 +156,6 @@ public class TrackTest {
      * {@link Timed} objects in ascending order, this method compares those results to the ordinary explicit calls
      * to {@link GPSFixTrack#getEstimatedPosition(TimePoint, boolean)}.
      */
-    @SuppressWarnings("serial")
     @Test
     public void testGetEstimatedPositionSingleVsIteratedWithSmallerSteps() {
         TimePoint start = gpsFix1.getTimePoint().minus((gpsFix5.getTimePoint().asMillis()-gpsFix1.getTimePoint().asMillis())/2);
@@ -164,13 +163,15 @@ public class TrackTest {
         List<Timed> timeds = new ArrayList<>();
         for (TimePoint t = start; !t.after(end); t = t.plus((gpsFix5.getTimePoint().asMillis()-gpsFix1.getTimePoint().asMillis())/10)) {
             final TimePoint finalT = t;
-            timeds.add(new Timed() {public TimePoint getTimePoint() { return finalT; }});
+            timeds.add(new Timed() {
+                private static final long serialVersionUID = 7038806820707652754L;
+                public TimePoint getTimePoint() { return finalT; }
+            });
         }
         assertEqualEstimatedPositionsSingleVsIterated(timeds, /* extrapolate */ true);
         assertEqualEstimatedPositionsSingleVsIterated(timeds, /* extrapolate */ false);
     }
 
-    @SuppressWarnings("serial")
     @Test
     public void testGetEstimatedPositionSingleVsIteratedWithLargerSteps() {
         TimePoint start = gpsFix1.getTimePoint().minus((gpsFix5.getTimePoint().asMillis()-gpsFix1.getTimePoint().asMillis())/2);
@@ -178,7 +179,10 @@ public class TrackTest {
         List<Timed> timeds = new ArrayList<>();
         for (TimePoint t = start; !t.after(end); t = t.plus(gpsFix5.getTimePoint().asMillis()-gpsFix1.getTimePoint().asMillis())) {
             final TimePoint finalT = t;
-            timeds.add(new Timed() {public TimePoint getTimePoint() { return finalT; }});
+            timeds.add(new Timed() {
+                private static final long serialVersionUID = -6329517520161330872L;
+                public TimePoint getTimePoint() { return finalT; }
+            });
         }
         assertEqualEstimatedPositionsSingleVsIterated(timeds, /* extrapolate */ true);
         assertEqualEstimatedPositionsSingleVsIterated(timeds, /* extrapolate */ false);

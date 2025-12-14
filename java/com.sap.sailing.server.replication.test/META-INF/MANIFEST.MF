@@ -7,6 +7,8 @@ Bundle-Vendor: SAP
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Fragment-Host: com.sap.sse.replication
 Import-Package: com.rabbitmq.client;version="2.8.4",
+ com.sap.sse.branding,
+ com.sap.sse.branding.shared,
  org.apache.commons.math;version="2.1.0"
 Require-Bundle: com.sap.sailing.server,
  com.sap.sailing.server.interface,

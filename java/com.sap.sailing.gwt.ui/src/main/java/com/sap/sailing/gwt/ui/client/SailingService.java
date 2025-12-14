@@ -129,7 +129,7 @@ public interface SailingService extends RemoteService, RemoteReplicationService 
     List<EventDTO> getEvents() throws Exception;
 
     Util.Pair<String, List<TracTracRaceRecordDTO>> listTracTracRacesInEvent(String eventJsonURL,
-            boolean listHiddenRaces) throws UnauthorizedException, Exception;
+            boolean listHiddenRaces, String tracTracApiToken) throws UnauthorizedException, Exception;
 
     void replaySwissTimingRace(RegattaIdentifier regattaIdentifier, Iterable<SwissTimingReplayRaceDTO> replayRaces,
             boolean trackWind, boolean correctWindByDeclination, boolean useInternalMarkPassingAlgorithm)
@@ -598,4 +598,7 @@ public interface SailingService extends RemoteService, RemoteReplicationService 
     List<CourseAreaDTO> getCourseAreaForEventOfLeaderboard(String leaderboardName);
 
     String getGoogleMapsLoaderAuthenticationParams();
+    
+    String getBrandAffiliationWithSailing(String locale);
+    
 }

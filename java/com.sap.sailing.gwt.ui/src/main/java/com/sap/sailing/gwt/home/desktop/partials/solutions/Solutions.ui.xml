@@ -2,187 +2,128 @@
 <ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder" xmlns:g="urn:import:com.google.gwt.user.client.ui"
              xmlns:sb="urn:import:com.sap.sailing.gwt.home.shared.partials.storebadges">
     <ui:with field="i18n" type="com.sap.sailing.gwt.ui.client.StringMessages" />
-	<ui:with field="res"
-		type="com.sap.sailing.gwt.common.client.SharedResources" />
-	<ui:with field="local_res"
-		type="com.sap.sailing.gwt.home.desktop.partials.solutions.SolutionsResources" />
-	<g:HTMLPanel>
-		<!-- Page displays all solutions -->
-		<div class="{local_res.css.solutions}">
-			<div class="{local_res.css.solutions_nav}">
-				<div class="{res.mediaCss.grid} {local_res.css.gridalternator}">
-					<div class="{res.mediaCss.small12} {res.mediaCss.columns}">
-						<g:Anchor ui:field="sapInSailingAnchor" styleName="{local_res.css.solutions_nav_link}">
-							<ui:text from='{i18n.solutionsSISHeadline}' />
-						</g:Anchor>
-						<g:Anchor ui:field="sailingAnalyticsAnchor" styleName="{local_res.css.solutions_nav_link}">
-							<ui:text from='{i18n.solutionsSAPHeadline}' />
-						</g:Anchor>
-						<g:Anchor ui:field="raceAnchor" styleName="{local_res.css.solutions_nav_link}">
-							<ui:text from='{i18n.solutionsRaceHeadline}' />
-						</g:Anchor>
-						<g:Anchor ui:field="inSightAnchor" styleName="{local_res.css.solutions_nav_link}">
-							<ui:text from='{i18n.solutionsInSightHeadline}' />
-						</g:Anchor>
-						<g:Anchor ui:field="buoyPingerAnchor" styleName="{local_res.css.solutions_nav_link}">
-							<ui:text from='{i18n.solutionsBuoyPingerHeadline}' />
-						</g:Anchor>
-						<g:Anchor ui:field="simulatorAnchor" styleName="{local_res.css.solutions_nav_link}">
-							<ui:text from='{i18n.solutionsSimulatorHeadline}' />
-						</g:Anchor>
-					</div>
-				</div>
-			</div>
+    <ui:with field="res"
+        type="com.sap.sailing.gwt.common.client.SharedResources" />
+    <ui:with field="local_res"
+        type="com.sap.sailing.gwt.home.desktop.partials.solutions.SolutionsResources" />
+    <g:HTMLPanel>
+        <!-- Page displays all solutions -->
+        <div class="{local_res.css.solutions}">
+            <div class="{local_res.css.solutions_nav}">
+                <div class="{res.mediaCss.grid} {local_res.css.gridalternator}">
+                    <div class="{res.mediaCss.small12} {res.mediaCss.columns}">
+                        <g:Anchor ui:field="inSailingAnchor" styleName="{local_res.css.solutions_nav_link}">
+                        </g:Anchor>
+                        <g:Anchor ui:field="sailingAnalyticsAnchor" styleName="{local_res.css.solutions_nav_link}">
+                        </g:Anchor>
+                        <g:Anchor ui:field="raceAnchor" styleName="{local_res.css.solutions_nav_link}">
+                        </g:Anchor>
+                        <g:Anchor ui:field="inSightAnchor" styleName="{local_res.css.solutions_nav_link}">
+                        </g:Anchor>
+                        <g:Anchor ui:field="buoyPingerAnchor" styleName="{local_res.css.solutions_nav_link}">
+                        </g:Anchor>
+                        <g:Anchor ui:field="simulatorAnchor" styleName="{local_res.css.solutions_nav_link}">
+                            <ui:text from='{i18n.solutionsSimulatorHeadline}' />
+                        </g:Anchor>
+                    </div>
+                </div>
+            </div>
 
-			<div class="{local_res.css.solutions}">
-				<div ui:field="sapInSailingDiv"
-					class="{local_res.css.solutions_content} {local_res.css.solutions_contentsapinsailing}">
-					<div class="{res.mediaCss.grid} {local_res.css.gridalternator}">
-						<div class="{res.mediaCss.small12} {res.mediaCss.columns}">
-							<div class="{local_res.css.solutions_contentsapinsailing_body}">
-								<h2>
-									<ui:text from='{i18n.sapInSailing}' />
-								</h2>
-								<p>
-									<ui:text from='{i18n.contentSapInSailing1}' />
-								</p>
-								<ul>
-									<li>
-										<ui:text from='{i18n.contentSapInSailing2}' />
-									</li>
-									<li>
-										<ui:text from='{i18n.contentSapInSailing3}' />
-									</li>
-									<li>
-										<ui:text from='{i18n.contentSapInSailing4}' />
-									</li>
-								</ul>
-								<p>
-									<ui:text from='{i18n.contentSapInSailing5}' />
-								</p>
-								<ul>
-									<li>
-										<ui:text from='{i18n.contentSapInSailing7}' />
-									</li>
-									<li>
-										<ui:text from='{i18n.contentSapInSailing10}' />
-									</li>
-									<li>
-										<ui:text from='{i18n.contentSapInSailing11}' />
-									</li>
-									<li>
-										<ui:text from='{i18n.contentSapInSailing12}' />
-									</li>
-                                                                        <li>
-                                                                                <ui:text from='{i18n.contentSapInSailing13}' />
-                                                                        </li>
-                  						</ul>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div ui:field="sailingAnalyticsDiv"
-					class="{local_res.css.solutions_content} {local_res.css.solutions_contentsap}">
-					<div class="{res.mediaCss.grid} {local_res.css.gridalternator}">
-						<div
-							class="{res.mediaCss.small5} {res.mediaCss.smalloffset7} {res.mediaCss.columns}">
-							<h2>
-								<ui:text from='{i18n.sapSailingAnalyticsTitle}' />
-							</h2>
-							<p>
-								<ui:text from='{i18n.contentSapSailingAnalytics1}' />
-							</p>
-							<p>
-								<ui:text from='{i18n.contentSapSailingAnalytics2}' />
-							</p>
-							<g:Anchor ui:field="sailingAnalyticsDetailsAnchor"
-								styleName="{res.mainCss.button}">
-								<ui:text from='{i18n.sapSailingAnalyticsReadMore}' />
-							</g:Anchor>
-						</div>
-					</div>
-				</div>
-				<div ui:field="raceDiv"
-					class="{local_res.css.solutions_content} {local_res.css.solutions_contentsapsailingracemanager}">
-					<div class="{res.mediaCss.grid} {local_res.css.gridalternator}">
-						<div class="{res.mediaCss.small12} {res.mediaCss.column}">
-							<div
-								class="{local_res.css.solutions_contentsapsailingracemanager_body}">
-								<h2>
-									<ui:text from='{i18n.sapSailingRaceManager}' />
-								</h2>
-								<p>
-									<ui:text from='{i18n.contentSapSailingRaceManager}' />
-								</p>
-								<sb:PlayStoreBadge targetUrl="{i18n.playstoreRacecommitteeApp}"/>
-								<g:Anchor ui:field="raceCommitteeAppDetailsAnchor"
-									styleName="{res.mainCss.button}">
-									<ui:text from='{i18n.sapSailingRaceManagerReadMore}' />
-								</g:Anchor>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div ui:field="inSightDiv"
-					class="{local_res.css.solutions_content} {local_res.css.solutions_contentsapsailinsight}">
-					<div class="{res.mediaCss.grid} {local_res.css.gridalternator}">
-						<div
-							class="{res.mediaCss.small5} {res.mediaCss.smalloffset7} {res.mediaCss.columns}">
-							<h2>
-								<ui:text from='{i18n.sapSailInSight}' />
-							</h2>
-							<p>
-								<ui:text from='{i18n.contentSapSailInSight}' />
-							</p>
-							<sb:AppStoreBadge targetUrl="{i18n.appstoreSapSailInsight}"/>
-							<sb:PlayStoreBadge targetUrl="{i18n.playstoreInsightApp}"/>
-							<g:Anchor ui:field="inSightAppDetailsAnchor"
-								styleName="{res.mainCss.button}">
-								<ui:text from='{i18n.sapSailInSightReadMore}' />
-							</g:Anchor>
-						</div>
-					</div>
-				</div>
-				<div ui:field="buoyPingerDiv"
-					class="{local_res.css.solutions_content} {local_res.css.solutions_contentsapsailingbuoypinger}">
-					<div class="{res.mediaCss.grid} {local_res.css.gridalternator}">
-						<div class="{res.mediaCss.small12} {res.mediaCss.column}">
-							<div
-								class="{local_res.css.solutions_contentsapsailingbuoypinger_body}">
-								<h2>
-									<ui:text from='{i18n.sapSailingBuoyPinger}' />
-								</h2>
-								<p>
-									<ui:text from='{i18n.contentSapSailingBuoyPinger}' />
-								</p>
-								<sb:PlayStoreBadge targetUrl="{i18n.playStoreBuoyPingerApp}"/>
-								<g:Anchor ui:field="buoyPingerAppDetailsAnchor"
-									styleName="{res.mainCss.button}">
-									<ui:text from='{i18n.sapSailingBuoyPingerReadMore}' />
-								</g:Anchor>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div ui:field="simulatorDiv"
-					class="{local_res.css.solutions_content} {local_res.css.solutions_contentsimulator}">
-					<div class="{res.mediaCss.grid} {local_res.css.gridalternator}">
-						<div
-							class="{res.mediaCss.small5} {res.mediaCss.smalloffset7} {res.mediaCss.columns}">
-							<h2>
-								<ui:text from='{i18n.strategySimulator}' />
-							</h2>
-							<p>
-								<ui:text from='{i18n.contentStrategySimulator}' />
-							</p>
-							<g:Anchor ui:field="simulatorAppDetailsAnchor"
-								styleName="{res.mainCss.button}">
-								<ui:text from='{i18n.strategySimulatorReadMore}' />
-							</g:Anchor>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</g:HTMLPanel>
+            <div class="{local_res.css.solutions}">
+                <div ui:field="inSailingDiv"
+                    class="{local_res.css.solutions_content} {local_res.css.solutions_contentsapinsailing}">
+                    <div class="{res.mediaCss.grid} {local_res.css.gridalternator}">
+                        <div class="{res.mediaCss.small12} {res.mediaCss.columns}">
+                            <div ui:field="inSailingDivAlternator" class="{local_res.css.solutions_contentsapinsailing_body}">
+                                    <h2 ui:field="inSailingDivHeader"/>
+                                   <div ui:field="inSailingContentDiv"></div> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div ui:field="sailingAnalyticsDiv"
+                    class="{local_res.css.solutions_content} {local_res.css.solutions_contentsap}">
+                    <div ui:field="sailingAnalyticsDivGridAlternator" class="{res.mediaCss.grid} {local_res.css.gridalternator}">
+                        <div
+                            class="{res.mediaCss.small5} {res.mediaCss.smalloffset7} {res.mediaCss.columns}">
+                            <h2 ui:field="sailingAnalyticsTitleHeader"/>
+                            <p ui:field="contentSailingAnalytics1" />
+                            <p ui:field="contentSailingAnalytics2" />
+                            <g:Anchor ui:field="sailingAnalyticsDetailsAnchor"
+                                styleName="{res.mainCss.button}">
+                                <ui:text from='{i18n.sailingRaceManagerReadMore}' />
+                            </g:Anchor>
+                        </div>
+                    </div>
+                </div>
+                <div ui:field="raceDiv"
+                    class="{local_res.css.solutions_content} {local_res.css.solutions_contentsapsailingracemanager}">
+                    <div class="{res.mediaCss.grid} {local_res.css.gridalternator}">
+                        <div class="{res.mediaCss.small12} {res.mediaCss.column}">
+                            <div ui:field="raceDivGridAlternator" class="{local_res.css.solutions_contentsapsailingracemanager_body}">
+                                <h2 ui:field="sailingRaceManagerHeader" />
+                                <p ui:field="contentSailingRaceManager" />
+                                <sb:PlayStoreBadge targetUrl="{i18n.playstoreRacecommitteeApp}"/>
+                                <g:Anchor ui:field="raceCommitteeAppDetailsAnchor"
+                                    styleName="{res.mainCss.button}">
+                                    <ui:text from='{i18n.sailingRaceManagerReadMore}' />
+                                </g:Anchor>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div ui:field="inSightDiv"
+                    class="{local_res.css.solutions_content} {local_res.css.solutions_contentsapsailinsight}">
+                    <div ui:field="inSightDivAlternator" class="{res.mediaCss.grid} {local_res.css.gridalternator}">
+                        <div
+                            class="{res.mediaCss.small5} {res.mediaCss.smalloffset7} {res.mediaCss.columns}">
+                            <h2 ui:field="sailInSightHeader"/>
+                            <p ui:field="contentSailInSight" />
+                            <sb:AppStoreBadge targetUrl="{i18n.appstoreSapSailInsight}"/>
+                            <sb:PlayStoreBadge targetUrl="{i18n.playstoreInsightApp}"/>
+                            <g:Anchor ui:field="inSightAppDetailsAnchor"
+                                styleName="{res.mainCss.button}">
+                                <ui:text from='{i18n.sailInSightReadMore}' />
+                            </g:Anchor>
+                        </div>
+                    </div>
+                </div>
+                <div ui:field="buoyPingerDiv"
+                    class="{local_res.css.solutions_content} {local_res.css.solutions_contentsapsailingbuoypinger}">
+                    <div class="{res.mediaCss.grid} {local_res.css.gridalternator}">
+                        <div class="{res.mediaCss.small12} {res.mediaCss.column}">
+                            <div ui:field="buoyPingerDivAlternator"
+                                class="{local_res.css.solutions_contentsapsailingbuoypinger_body}">
+                                <h2 ui:field="sailingBuoyPingerHeader"/>
+                                <p ui:field="contentSailingBuoyPinger" />
+                                <sb:PlayStoreBadge targetUrl="{i18n.playStoreBuoyPingerApp}"/>
+                                <g:Anchor ui:field="buoyPingerAppDetailsAnchor"
+                                    styleName="{res.mainCss.button}">
+                                    <ui:text from='{i18n.sailingBuoyPingerReadMore}' />
+                                </g:Anchor>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div ui:field="simulatorDiv"
+                    class="{local_res.css.solutions_content} {local_res.css.solutions_contentsimulator}">
+                    <div ui:field="simulatorDivAlternator" class="{res.mediaCss.grid} {local_res.css.gridalternator}">
+                        <div
+                            class="{res.mediaCss.small5} {res.mediaCss.smalloffset7} {res.mediaCss.columns}">
+                            <h2>
+                                <ui:text from='{i18n.strategySimulator}' />
+                            </h2>
+                            <p>
+                                <ui:text from='{i18n.contentStrategySimulator}' />
+                            </p>
+                            <g:Anchor ui:field="simulatorAppDetailsAnchor"
+                                styleName="{res.mainCss.button}">
+                                <ui:text from='{i18n.strategySimulatorReadMore}' />
+                            </g:Anchor>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </g:HTMLPanel>
 </ui:UiBinder>

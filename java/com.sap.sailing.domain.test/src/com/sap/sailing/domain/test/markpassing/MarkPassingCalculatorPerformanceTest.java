@@ -22,13 +22,13 @@ import com.sap.sailing.domain.markpassingcalculation.CandidateFinder;
 import com.sap.sailing.domain.markpassingcalculation.impl.CandidateChooserImpl;
 import com.sap.sailing.domain.markpassingcalculation.impl.CandidateFinderImpl;
 import com.sap.sailing.domain.markpassingcalculation.impl.CandidateImpl;
-import com.sap.sailing.domain.test.measurements.Measurement;
-import com.sap.sailing.domain.test.measurements.MeasurementCase;
-import com.sap.sailing.domain.test.measurements.MeasurementXMLFile;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.Util;
 import com.sap.sse.common.impl.DegreeBearingImpl;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
+import com.sap.sse.testutils.Measurement;
+import com.sap.sse.testutils.MeasurementCase;
+import com.sap.sse.testutils.MeasurementXMLFile;
 
 public class MarkPassingCalculatorPerformanceTest extends AbstractMockedRaceMarkPassingTest {
 

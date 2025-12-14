@@ -68,7 +68,7 @@
 		<url-pattern>*.html</url-pattern>
 	</filter-mapping>
     <listener>
-        <listener-class>com.sap.sse.debranding.ClientConfigurationListener</listener-class>
+        <listener-class>com.sap.sse.branding.ClientConfigurationListener</listener-class>
     </listener>
 	<filter>
         <filter-name>SameSiteFilter</filter-name>

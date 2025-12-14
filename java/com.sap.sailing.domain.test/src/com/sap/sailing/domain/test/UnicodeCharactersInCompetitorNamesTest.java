@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
@@ -69,7 +70,7 @@ public class UnicodeCharactersInCompetitorNamesTest {
                                                 /* startOfTracking */null, /* endOfTracking */null, /* delayToLiveInMillis */0l,
                                                 /* offsetToStartTimeOfSimulatedRace */ null, /* ignoreTracTracMarkPassings*/
                                                 false, EmptyRaceLogStore.INSTANCE, EmptyRegattaLogStore.INSTANCE, domainFactory,
-                                                "tracTest", "tracTest", "", "", /* trackWind */ false, /* correctWindDirectionByMagneticDeclination */ true,
+                                                AbstractTracTracLiveTest.getTracTracApiToken(), "", "", /* trackWind */ false, /* correctWindDirectionByMagneticDeclination */ true,
                                                 /* preferReplayIfAvailable */ false, /* timeoutInMillis */ (int) RaceTracker.TIMEOUT_FOR_RECEIVING_RACE_DEFINITION_IN_MILLISECONDS,
                                                 /* useOfficialEventsToUpdateRaceLog */ false, /* liveURIFromConfiguration */ null, /* storedURIFromConfiguration */ null),
                                                 RaceTracker.TIMEOUT_FOR_RECEIVING_RACE_DEFINITION_IN_MILLISECONDS,
@@ -88,11 +89,11 @@ public class UnicodeCharactersInCompetitorNamesTest {
                 + Charset.isSupported(Charset.defaultCharset().name()));
         String charsetname = System.getProperty("test.charset", "UTF-8");
         System.out.println("Using "+charsetname+" for input stream reader");
-        BufferedReader localBufferedReader = new BufferedReader(
-                new InputStreamReader(
-                        new URL(
-                                "http://" + TracTracConnectionConstants.HOST_NAME + "/events/event_20110609_KielerWoch/clientparams.php?event=event_20110609_KielerWoch&race=5b08a9ee-9933-11e0-85be-406186cbf87c")
-                                .openStream(), charsetname));
+        final URL url = new URL(
+                "http://" + TracTracConnectionConstants.HOST_NAME + "/events/event_20110609_KielerWoch/clientparams.php?event=event_20110609_KielerWoch&race=5b08a9ee-9933-11e0-85be-406186cbf87c");
+        final URLConnection connection = url.openConnection();
+        connection.setRequestProperty("Authorization", "Bearer "+AbstractTracTracLiveTest.getTracTracApiToken());
+        BufferedReader localBufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), charsetname));
         String line;
         while ((line=localBufferedReader.readLine()) != null) {
             System.out.println(line);

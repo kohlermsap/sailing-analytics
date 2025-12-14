@@ -74,7 +74,7 @@ public class ParseTracTracJSONServiceOutputTest {
     @Test
     public void testWeymouthOnline() throws MalformedURLException, IOException, java.text.ParseException, ParseException, URISyntaxException {
         JSONService jsonService = DomainFactory.INSTANCE.parseJSONURLWithRaceRecords(new URL(
-                "http://" + TracTracConnectionConstants.HOST_NAME + "/events/event_20110505_SailingTea/jsonservice.php?trickOurProxy=true"), true);
+                "http://" + TracTracConnectionConstants.HOST_NAME + "/events/event_20110505_SailingTea/jsonservice.php?trickOurProxy=true"), true, AbstractTracTracLiveTest.getTracTracApiToken());
         assertEquals("Academy Tracking 2011", jsonService.getEventName());
         List<RaceRecord> races = jsonService.getRaceRecords();
         assertTrue(races.size()>=28);
@@ -91,7 +91,7 @@ public class ParseTracTracJSONServiceOutputTest {
     @Test
     public void testWeymouthURIsOnline() throws MalformedURLException, IOException, java.text.ParseException, ParseException, URISyntaxException {
         JSONService jsonService = DomainFactory.INSTANCE.parseJSONURLWithRaceRecords(new URL(
-                "http://" + TracTracConnectionConstants.HOST_NAME + "/events/event_20110505_SailingTea/jsonservice.php"), true);
+                "http://" + TracTracConnectionConstants.HOST_NAME + "/events/event_20110505_SailingTea/jsonservice.php"), true, AbstractTracTracLiveTest.getTracTracApiToken());
         List<RaceRecord> races = jsonService.getRaceRecords();
         assertFalse(races.isEmpty());
         for (RaceRecord race : races) {
@@ -115,7 +115,7 @@ public class ParseTracTracJSONServiceOutputTest {
     @Test
     public void testHamiltonOnline() throws MalformedURLException, IOException, java.text.ParseException, ParseException, URISyntaxException {
         JSONService jsonService = DomainFactory.INSTANCE.parseJSONURLWithRaceRecords(new URL(
-                "http://" + TracTracConnectionConstants.HOST_NAME + "/events/event_20110308_SAPWorldCh/jsonservice.php?humba=trala"), true);
+                "http://" + TracTracConnectionConstants.HOST_NAME + "/events/event_20110308_SAPWorldCh/jsonservice.php?humba=trala"), true, AbstractTracTracLiveTest.getTracTracApiToken());
         assertEquals("SAP 2011 505 World Championship", jsonService.getEventName());
         List<RaceRecord> races = jsonService.getRaceRecords();
         assertEquals(14, races.size());

@@ -13,7 +13,7 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.sap.sailing.domain.common.security.SecuredDomainType;
 import com.sap.sailing.gwt.common.authentication.FixedSailingAuthentication;
-import com.sap.sailing.gwt.common.authentication.SAPSailingHeaderWithAuthentication;
+import com.sap.sailing.gwt.common.authentication.SailingHeaderWithAuthentication;
 import com.sap.sailing.gwt.ui.client.AbstractSailingReadEntryPoint;
 import com.sap.sailing.gwt.ui.client.SimulatorService;
 import com.sap.sailing.gwt.ui.client.SimulatorServiceAsync;
@@ -192,7 +192,7 @@ public class SimulatorEntryPoint extends AbstractSailingReadEntryPoint {
     }
 
     private void createSimulatorPanel(ServerInfoDTO serverInfo) {
-        SAPSailingHeaderWithAuthentication header  = new SAPSailingHeaderWithAuthentication(getStringMessages().strategySimulatorTitle());
+        SailingHeaderWithAuthentication header  = new SailingHeaderWithAuthentication(getStringMessages().strategySimulatorTitle());
         PaywallResolver paywallResolver = new PaywallResolverImpl(getUserService(), getSubscriptionServiceFactory());
         GenericAuthentication genericSailingAuthentication = new FixedSailingAuthentication(getUserService(), paywallResolver, header.getAuthenticationMenuView());
         AuthorizedContentDecorator authorizedContentDecorator = new GenericAuthorizedContentDecorator(genericSailingAuthentication);

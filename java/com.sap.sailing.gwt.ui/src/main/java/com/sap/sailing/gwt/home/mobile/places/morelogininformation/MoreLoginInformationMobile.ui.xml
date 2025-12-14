@@ -23,31 +23,29 @@
     <a:Accordion>
         <a:header>
             <g:HTMLPanel>
-                <h1 class="{style.title}">
-                    <ui:text from="{i18n.moreLoginInformationHeadline}" />
+                <h1 class="{style.title}" ui:field="headline">
                 </h1>
-                <p>
-                    <ui:text from="{i18n.moreLoginInformationIntroduction}" />
+                <p ui:field="intro">
                 </p>
             </g:HTMLPanel>
         </a:header>
         <a:item>
-            <login:MoreLoginInformationContentMobile
+            <login:MoreLoginInformationContentMobile ui:field="sailorProfiles"
                 title="{i18n.moreLoginInformationSectionSailorProfilesHeading}" image="{local_res.sailorprofiles}"
                 content="{i18n.moreLoginInformationSectionSailorProfilesDescription}" />
         </a:item>
         <a:item>
-            <login:MoreLoginInformationContentMobile
+            <login:MoreLoginInformationContentMobile ui:field="userSettings"
                 title="{i18n.moreLoginInformationSectionUserSettingsHeading}" image="{local_res.settings}"
                 content="{i18n.moreLoginInformationSectionUserSettingsDescription}" />
         </a:item>
         <a:item>
-            <login:MoreLoginInformationContentMobile
-                title="{i18n.strategySimulator}" image="{local_res.simulator}"
-                content="{i18n.moreLoginInformationSectionStrategySimulatorDescription}" />
+            <login:MoreLoginInformationContentMobile ui:field="strategySimulator"
+                title="{i18n.strategySimulatorTitle}" image="{local_res.simulator}"
+                content=""/>
         </a:item>
         <a:item>
-            <login:MoreLoginInformationContentMobile
+            <login:MoreLoginInformationContentMobile ui:field="userNotifications"
                 title="{i18n.moreLoginInformationSectionUserNotificationsHeading}"
                 image="{local_res.notifications}"
                 content="{i18n.moreLoginInformationSectionUserNotificationsDescription}" />

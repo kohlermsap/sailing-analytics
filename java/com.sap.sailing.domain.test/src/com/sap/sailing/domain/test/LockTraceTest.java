@@ -11,12 +11,12 @@ import java.util.concurrent.locks.Lock;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import com.sap.sailing.domain.test.measurements.Measurement;
-import com.sap.sailing.domain.test.measurements.MeasurementCase;
-import com.sap.sailing.domain.test.measurements.MeasurementXMLFile;
 import com.sap.sse.common.Util;
 import com.sap.sse.concurrent.LockUtil;
 import com.sap.sse.concurrent.NamedReentrantReadWriteLock;
+import com.sap.sse.testutils.Measurement;
+import com.sap.sse.testutils.MeasurementCase;
+import com.sap.sse.testutils.MeasurementXMLFile;
 
 public class LockTraceTest {
     private static class LockingThread extends Thread {

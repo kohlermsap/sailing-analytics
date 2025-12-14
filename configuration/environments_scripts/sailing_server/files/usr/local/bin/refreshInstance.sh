@@ -153,17 +153,11 @@ install_environment ()
 load_from_release_file ()
 {
     if [[ ${INSTALL_FROM_RELEASE} == "" ]]; then
-        INSTALL_FROM_RELEASE="$(wget -O - https://releases.sapsailing.com/ 2>/dev/null | grep main- | tail -1 | sed -e 's/^.*\(main-[0-9]*\).*$/\1/')"
-        echo "You didn't provide a release. Defaulting to latest master build https://releases.sapsailing.com/$INSTALL_FROM_RELEASE"
-        # Alternatively, to download a release from Github, here is how the latest Java8/main-release can be obtained:
-        #   curl -L -H 'Authorization: Bearer ***' https://api.github.com/repos/SAP/sailing-analytics/releases 2>/dev/null | jq -r 'sort_by(.created_at) | reverse | map(select(.name | startswith("main-")))[0].assets[] | select(.content_type=="application/x-tar").id'
-        # will output something like:
-        #   169233159
-        # which can then be used in a request such as:
-        #   curl -L -o main-1234567890.tar.gz -H 'Accept: application/octet-stream' -H 'Authorization: Bearer ***' 'https://api.github.com/repos/SAP/sailing-analytics/releases/assets/169233159'
-        # Or to obtain the latest docker-17 release, try this:
-        #   curl -L -H 'Authorization: Bearer ***' https://api.github.com/repos/SAP/sailing-analytics/releases 2>/dev/null | jq -r 'sort_by(.created_at) | reverse | map(select(.name | startswith("docker-17-")))[0].assets[] | select(.content_type=="application/x-tar").id'
-        # and then on like above...
+        GITHUB_RELEASE=$( curl -L "https://api.github.com/repos/SAP/sailing-analytics/releases?per_page=100" 2>/dev/null | jq -r 'sort_by(.created_at) | reverse | map(select(.name | startswith("main-")))[0].assets[] | select(.content_type=="application/x-tar")' )
+        INSTALL_FROM_RELEASE=$( echo "${GITHUB_RELEASE}" | jq -r '.name' | sed -e 's/\.tar\.gz$//' )
+        echo "You didn't provide a release. Defaulting to latest main branch build ${INSTALL_FROM_RELEASE}"
+    else
+        GITHUB_RELEASE=$( curl -L "https://api.github.com/repos/SAP/sailing-analytics/releases?per_page=100" 2>/dev/null | jq -r 'sort_by(.created_at) | reverse | map(select(.name=="'${INSTALL_FROM_RELEASE}'"))[0].assets[] | select(.content_type=="application/x-tar")' )
     fi
     if which mail; then
         if [ -n "${BUILD_COMPLETE_NOTIFY}" ]; then
@@ -182,8 +176,8 @@ load_from_release_file ()
         SCP_HOST=$( echo ${INSTALL_FROM_SCP_USER_AT_HOST_AND_PORT} | sed -e 's/^\([^:]*\):\?\([0-9]*\)\?$/\1/' )
         scp ${SCP_PORT_OPTION} ${SCP_HOST}:/home/trac/releases/${INSTALL_FROM_RELEASE}/${RELEASE_FILE_NAME} .
     else
-        echo "Loading from release file https://releases.sapsailing.com/${INSTALL_FROM_RELEASE}/${RELEASE_FILE_NAME}"
-        wget https://releases.sapsailing.com/${INSTALL_FROM_RELEASE}/${RELEASE_FILE_NAME}
+        echo "Loading from release file $( echo "${GITHUB_RELEASE}" | jq -r '.browser_download_url' )"
+        wget $( echo "${GITHUB_RELEASE}" | jq -r '.browser_download_url' )
     fi
     load_from_local_release_file
 }

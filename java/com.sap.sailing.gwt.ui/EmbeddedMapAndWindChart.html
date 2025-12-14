@@ -6,13 +6,13 @@
        <meta http-equiv="REFRESH" content="0; url=/browser-info.html">
     <![endif]-->
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>${applicationScope['clientConfigurationContext.SAP']}Sailing Analytics Race Board</title>
+    <title>${clientConfigurationContext['brandTitle']}Sailing Analytics Race Board</title>
     <meta content='width = device-width, initial-scale = 1.0, user-scalable = yes' name='viewport'>
     <meta content='yes' name='apple-mobile-web-app-capable'>
     <meta content='black' name='apple-mobile-web-app-status-bar-style'>
     <!-- <link href='iphone-splash-screen.png' rel='apple-touch-startup-image'> -->
-    <link href='images/sap-sailing-app-icon${applicationScope['clientConfigurationContext.whitelabeled']}.png' rel='apple-touch-icon'>
-    <link rel="shortcut icon" type="image/x-icon" href="images/sap${applicationScope['clientConfigurationContext.whitelabeled']}.ico" />
+    <link href='images/sap-sailing-app-icon${clientConfigurationContext['whitelabeled']}.png' rel='apple-touch-icon'>
+    <link rel="shortcut icon" type="image/x-icon" href="images/sap${clientConfigurationContext['whitelabeled']}.ico" />
     <!--<link href='http://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700,300italic,400italic,500italic,700italic' rel='stylesheet' type='text/css'>-->
     <!--  <link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700,300,300italic' rel='stylesheet' type='text/css'>-->
     
@@ -21,11 +21,7 @@
     <link rel="stylesheet" type="text/css" href="EmbeddedMapAndWindChart.css">
     
     <script type="text/javascript" src="js/jquery-3.6.0.min.js"></script>
-    <script>
-       document.clientConfigurationContext = {
-            debrandingActive: ${applicationScope['clientConfigurationContext.debrandingActive']}
-       };
-    </script>
+    <script type="text/javascript" src="/gwt-base/api/client_configuration_context"></script>
     <script type="text/javascript" language="javascript" src="com.sap.sailing.gwt.ui.EmbeddedMapAndWindChart/com.sap.sailing.gwt.ui.EmbeddedMapAndWindChart.nocache.js"></script>
 
     <!-- Loading Indicator -->
@@ -101,7 +97,7 @@
         style="position:absolute;width:0;height:0;border:0"></iframe>
     <!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
     <div id="loading" class="loading">
-        <p class="sapsailing">${applicationScope['clientConfigurationContext.SAP']}Sailing Analytics</p>
+        <p class="sapsailing">${clientConfigurationContext['brandTitle']}Sailing Analytics</p>
         <noscript>
             <p style="margin: 10px 40px;">
                 By delivering real time analytics around race rankings, speeds, maneuvers, bearings etc., SAP is helping

@@ -42,7 +42,7 @@
 	<set-property name="gwt.logging.systemHandler" value="ENABLED" />
 
     <!-- module containing locale configuration -->
-    <inherits name='com.sap.sailing.gwt.common.SailingLocalesSinglePermutation' />
+    <inherits name='com.sap.sailing.gwt.common.SailingLocalesAllPermutations' />
 
 	<!-- Turning CSS obfuscation off -->
 	<!-- <set-configuration-property name="CssResource.style" value="pretty"/> -->

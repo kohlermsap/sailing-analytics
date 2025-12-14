@@ -11,8 +11,9 @@ import com.sap.sailing.landscape.SailingAnalyticsMetrics;
 import com.sap.sailing.landscape.SailingAnalyticsProcess;
 import com.sap.sailing.landscape.SailingReleaseRepository;
 import com.sap.sailing.landscape.common.SharedLandscapeConstants;
+import com.sap.sse.branding.BrandingConfigurationService;
+import com.sap.sse.branding.sap.SAPBrandingConfiguration;
 import com.sap.sse.common.Util;
-import com.sap.sse.debranding.ClientConfigurationListener;
 import com.sap.sse.landscape.DefaultProcessConfigurationVariables;
 import com.sap.sse.landscape.ProcessConfigurationVariable;
 import com.sap.sse.landscape.Release;
@@ -33,7 +34,7 @@ extends AwsApplicationConfiguration<ShardingKey, SailingAnalyticsMetrics, Sailin
      * <li>If no {@link #setTelnetPort(int) telnet port} is provided, the {@link #DEFAULT_TELNET_PORT} is used (14888).</li>
      * <li>If no {@link #setExpeditionPort(int) expedition UDP port} is provided, the {@link #DEFAULT_EXPEDITION_PORT} is used (2010).</li>
      * <li>If no {@link #setServerDirectory(String) server directory} is specified, it defaults to {@link ApplicationProcessHost#DEFAULT_SERVER_PATH}.</li>
-     * <li>If no {@link #setRelease(Release) release} is specified, it defaults to {@link SailingReleaseRepository#getLatestMasterRelease()}.</li>
+     * <li>If no {@link #setRelease(Release) release} is specified, it defaults to {@link SailingReleaseRepository#getLatestDefaultRelease()}.</li>
      * <li>The {@link DefaultProcessConfigurationVariables#ADDITIONAL_JAVA_ARGS} variable is extended by system properties that configure
      *     security, landscape data, and basic sailing master data to be shared across the {@link SharedLandscapeConstants#DEFAULT_DOMAIN_NAME} domain.</li>
      * </ul>
@@ -144,7 +145,7 @@ extends AwsApplicationConfiguration<ShardingKey, SailingAnalyticsMetrics, Sailin
 
         @Override
         protected Optional<Release> getRelease() {
-            return Optional.of(super.getRelease().orElse(SailingReleaseRepository.INSTANCE.getLatestMasterRelease()));
+            return Optional.of(super.getRelease().orElse(SailingReleaseRepository.INSTANCE.getLatestDefaultRelease()));
         }
 
         /**
@@ -202,7 +203,7 @@ extends AwsApplicationConfiguration<ShardingKey, SailingAnalyticsMetrics, Sailin
             final List<String> result = new ArrayList<>();
             Util.addAll(getAdditionalJavaArgsForSharedSecurity(SharedLandscapeConstants.DEFAULT_DOMAIN_NAME, SharedLandscapeConstants.DEFAULT_SECURITY_SERVICE_REPLICA_SET_NAME), result);
             // TODO check whether we're really running under the default sapsailing.com domain, before activating SAP branding...
-            result.add("-D"+ClientConfigurationListener.DEBRANDING_PROPERTY_NAME+"=false"); // activate branding when running under default SAP domain
+            result.add("-D"+BrandingConfigurationService.BRANDING_ID_PROPERTY_NAME+"="+SAPBrandingConfiguration.ID); // activate branding when running under default SAP domain
             return result;
         }
 

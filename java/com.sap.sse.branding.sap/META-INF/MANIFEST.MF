@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Sap
+Bundle-SymbolicName: com.sap.sse.branding.sap
+Bundle-Version: 1.0.0.qualifier
+Export-Package: com.sap.sse.branding.sap
+Bundle-Activator: com.sap.sse.branding.sap.Activator
+Bundle-Vendor: SAP
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Automatic-Module-Name: com.sap.sse.branding.sap
+Import-Package: com.sap.sse.branding,
+ com.sap.sse.branding.shared,
+ com.sap.sse.i18n,
+ org.osgi.framework;version="1.3.0"
+Bundle-ActivationPolicy: lazy
+Web-ContextPath: /sap-branding

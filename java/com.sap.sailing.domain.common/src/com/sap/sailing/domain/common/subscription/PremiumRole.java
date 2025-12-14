@@ -13,7 +13,6 @@ import com.sap.sse.security.shared.impl.SecuredSecurityTypes;
  */
 public class PremiumRole extends RolePrototype {
     private static final UUID ROLE_ID = UUID.fromString("7021e7a2-569a-11ec-bf63-0242ac130002");
-    private static final long serialVersionUID = 8032532973066767581L;
     private static final PremiumRole INSTANCE = new PremiumRole();
 
     PremiumRole() {

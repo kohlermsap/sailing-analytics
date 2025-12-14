@@ -127,10 +127,6 @@ public class LinkBuilder implements Builder<LinkBuilder, SafeHtml> {
         return (port == 443 ? "https" : "http") + "://" + host + ":" + port + "/gwt/status";
     }
 
-    private String getReleaseNotesLink(final String version) {
-        return "https://releases.sapsailing.com/" + version + "/release-notes.txt";
-    }
-
     /**
      * Checks if an attribute is null and throws an exception if so. 
      *
@@ -193,7 +189,7 @@ public class LinkBuilder implements Builder<LinkBuilder, SafeHtml> {
             case Version:
                 checkAttribute(replicaSet, "Replicaset");
                 final String version = replicaSet.getVersion();
-                final String releaseNotesLink = getReleaseNotesLink(version);
+                final String releaseNotesLink = replicaSet.getReleaseNotesLink();
                 appendEc2Link(builder, releaseNotesLink, version);
                 break;
             case MasterHost:

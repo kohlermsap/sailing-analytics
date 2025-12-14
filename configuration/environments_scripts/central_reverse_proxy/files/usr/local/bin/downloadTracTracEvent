@@ -1,6 +1,6 @@
 #!/bin/bash
 # Example usage:
-#   ./downloadTracTracEvent https://event.tractrac.com/events/event_20150625_KielerWoch/jsonservice.php /tmp/KielerWoche2015
+#   ./downloadTracTracEvent https://event.tractrac.com/events/event_20150625_KielerWoch/jsonservice.php /tmp/KielerWoche2015 [ {TracTracAPIToken} ]
 #
 # To obtain the set of TracTrac JSON URLs currently in use by the archive, on
 # dbserver.internal.sapsailing.com try this:
@@ -9,25 +9,34 @@
 #   for i in `cat /tmp/tractrac-json-urls`; do ./downloadTracTracEvent $i /tmp/tractrac-tracks; done
 # and you will get a folder per event under /tmp/tractrac-tracks with all .mtb and .txt files as well
 # as the .json file in them.
+# If a TracTrac API token is passed as the last parameter, it will be used to authenticate the requests
+# made to TracTrac.
 EVENT_JSON_URL="${1}"
 EVENT_DB="$( basename $( dirname ${EVENT_JSON_URL} ) )"
 TARGET_DIR="${2}/${EVENT_DB}"
+TRACTRAC_API_TOKEN="${3}"
+if [ -n "${TRACTRAC_API_TOKEN}" ]; then
+  WGET_AUTHENTICATION_OPTION="--header=Authorization: Bearer ${TRACTRAC_API_TOKEN}"
+  echo "Authenticating the TracTrac requests"
+else
+  WGET_AUTHENTICATION_OPTION=""
+fi
 if [ ! -d "${TARGET_DIR}" ]; then
   echo "${TARGET_DIR} does not exist; making it..."
   mkdir -p "${TARGET_DIR}"
 fi
 pushd "${TARGET_DIR}"
 # create a patched version of the .json file that uses only relative params_url values:
-wget -O - "${EVENT_JSON_URL}" | sed -e 's/"params_url":"[^"]*\/\([^"/]*\.txt\)"/"params_url":"\1"/g' >"${EVENT_DB}.json"
-for params_url in `wget -O - "${EVENT_JSON_URL}" | jq -r '.races[].params_url'`; do
+wget -O - "${WGET_AUTHENTICATION_OPTION}" "${EVENT_JSON_URL}" | sed -e 's/"params_url":"[^"]*\/\([^"/]*\.txt\)"/"params_url":"\1"/g' >"${EVENT_DB}.json"
+for params_url in `wget -O - "${WGET_AUTHENTICATION_OPTION}" "${EVENT_JSON_URL}" | jq -r '.races[].params_url'`; do
   echo ${params_url}
-  wget "${params_url}"
+  wget "${WGET_AUTHENTICATION_OPTION}" "${params_url}"
   FILE="`basename ${params_url}`"
   STORED_URI_PART=`grep -i ^stored-uri: "${FILE}" | head -1 | sed -e 's/^stored-uri://'`
   STORED_URI="`dirname ${EVENT_JSON_URL}`/${STORED_URI_PART}"
   echo "stored-uri: ${STORED_URI}"
   # presumably the dirname of the stored URI is something like "datafiles"
   mkdir -p `dirname ${STORED_URI_PART}`
-  wget -O "${STORED_URI_PART}" "${STORED_URI}"
+  wget -O "${STORED_URI_PART}" "${WGET_AUTHENTICATION_OPTION}" "${STORED_URI}"
 done
 popd

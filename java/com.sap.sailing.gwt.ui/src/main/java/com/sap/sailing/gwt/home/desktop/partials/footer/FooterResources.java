@@ -16,5 +16,13 @@ public interface FooterResources extends ClientBundle {
         String sitefooter_links();
         String sitefooter_links_link();
         String sitefooter_language();
+        String dfooter();
+        String dfooter_row();
+        String dfooter_left();
+        String dfooter_right();
+        String dfooter_item();
+        String dfooter_copyright();
+        String dfooter_link();
+        String dfooter_language();
     }
 }

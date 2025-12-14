@@ -36,7 +36,6 @@ import com.sap.sse.common.Util;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.mail.MailException;
 import com.sap.sse.i18n.ResourceBundleStringMessages;
-import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
 import com.sap.sse.operationaltransformation.Operation;
 import com.sap.sse.replication.FullyInitializedReplicableTracker;
 import com.sap.sse.replication.OperationWithResult;
@@ -362,7 +361,7 @@ public class ReplicationReceiverImpl implements ReplicationReceiver, Runnable {
     }
 
     private void sendMailAboutShutdownSignalException(ShutdownSignalException sse) {
-        final ResourceBundleStringMessages stringMessages = new ResourceBundleStringMessagesImpl(STRING_MESSAGES_BASE_NAME, getClass().getClassLoader(), StandardCharsets.UTF_8.name());
+        final ResourceBundleStringMessages stringMessages = ResourceBundleStringMessages.create(STRING_MESSAGES_BASE_NAME, getClass().getClassLoader(), StandardCharsets.UTF_8.name());
         final SecurityService securityService = getSecurityService();
         if (securityService == null) {
             logger.warning("No security service available; cannot send mail about shutdown signal exception");

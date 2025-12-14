@@ -2,7 +2,6 @@ package com.sap.sse.security.ui.authentication.login;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.uibinder.client.UiBinder;
@@ -13,7 +12,6 @@ import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
-import com.sap.sse.gwt.shared.ClientConfiguration;
 
 /**
  * Widget that shows a message to inform the user that it has benefits to log in. There are two links the user can
@@ -57,7 +55,6 @@ public class LoginHintContent extends Composite {
         });
         DOM.sinkEvents(main, Event.ONCLICK);
         DOM.setEventListener(main, new EventListener() {
-
             @Override
             public void onBrowserEvent(Event event) {
                 com.google.gwt.dom.client.EventTarget eventTarget = event.getEventTarget();
@@ -65,15 +62,10 @@ public class LoginHintContent extends Composite {
                     return;
                 }
                 final Element target = eventTarget.cast();
-                if(target != moreInfo.getElement() && target != dismiss.getElement()){
+                if (target != moreInfo.getElement() && target != dismiss.getElement()){
                     toLogin.run();
                 }
             }
         });
-
-        if (!ClientConfiguration.getInstance().isBrandingActive()) {
-            moreInfo.getElement().getStyle().setDisplay(Display.NONE);
-        }
-
     }
 }

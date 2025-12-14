@@ -51,9 +51,7 @@ public class EditCCG extends javax.swing.JDialog {
      */
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    @SuppressWarnings("serial")
     private void initComponents() {
-
         jBuoyType = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         jRaceID = new javax.swing.JTextField();
@@ -130,6 +128,7 @@ public class EditCCG extends javax.swing.JDialog {
         });
 
         jMarkList.setModel(new javax.swing.AbstractListModel<CCGMessage>() {
+            private static final long serialVersionUID = 1L;
             CCGMessage[] ccgMessages = { new CCGMessage("Item 1", new ArrayList<Mark>()),
                     new CCGMessage("Item 2", new ArrayList<Mark>()),
                     new CCGMessage("Item 3", new ArrayList<Mark>()),

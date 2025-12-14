@@ -15,9 +15,7 @@ import com.sap.sse.gwt.client.context.data.ClientConfigurationContextDataJSO;
  *
  */
 public final class ClientConfigurationContextDataFactoryImpl {
-
-	public native ClientConfigurationContextDataJSO getInstance() /*-{
-		return $doc.clientConfigurationContext;
-	}-*/;
-
+    public native ClientConfigurationContextDataJSO getInstance() /*-{
+        return $doc.clientConfigurationContext;
+    }-*/;
 }

@@ -54,9 +54,7 @@ public class EditTMD extends javax.swing.JDialog {
      */
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    @SuppressWarnings("serial")
     private void initComponents() {
-
         jLabel1 = new javax.swing.JLabel();
         jRaceId = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
@@ -73,51 +71,37 @@ public class EditTMD extends javax.swing.JDialog {
         jButton3 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTmdData = new javax.swing.JList<TimingDataElement>();
-
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-
         jLabel1.setText("Race ID:");
-
         jRaceId.setText("jTextField1");
-
         jLabel2.setText("Sail number:");
-
         jSailNumber.setText("jTextField2");
-
         jLabel3.setText("Mark index:");
-
         jMarkIndex.setText("1");
-
         jLabel4.setText("Rank:");
-
         jRank.setText("1");
-
         jLabel5.setText("Time since start:");
-
         jTimeSinceStart.setText("00:12:14");
-
         jButton1.setText("Remove");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
-
         jButton2.setText("Add");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
-
         jButton3.setText("Ok");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
             }
         });
-
         jTmdData.setModel(new javax.swing.AbstractListModel<TimingDataElement>() {
+            private static final long serialVersionUID = 1L;
             TimingDataElement[] strings = { new TimingDataElement(1, 1, new Date()),
                     new TimingDataElement(2, 2, new Date()),
                     new TimingDataElement(3, 3, new Date()),
@@ -127,7 +111,6 @@ public class EditTMD extends javax.swing.JDialog {
             public TimingDataElement getElementAt(int i) { return strings[i]; }
         });
         jScrollPane1.setViewportView(jTmdData);
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(

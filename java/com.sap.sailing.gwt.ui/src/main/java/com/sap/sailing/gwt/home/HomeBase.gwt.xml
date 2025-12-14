@@ -8,6 +8,7 @@
 	<!-- Other module inherits -->
 	
 	<inherits name="com.sap.sse.gwt.SSESharedGWT" />
+	<inherits name="com.sap.sse.branding.SSEBranding" />
 	<inherits name="com.sap.sse.SSECommon" />
 	<inherits name="com.sap.sailing.domain.SailingDomain" />
     <inherits name="com.sap.sailing.landscape.LandscapeCommon" />
@@ -24,7 +25,7 @@
   	<inherits name='com.google.gwt.maps.Maps' />
   	
     <!-- module containing locale configuration -->
-	<inherits name='com.sap.sailing.gwt.common.SailingLocalesSinglePermutation' />
+	<inherits name='com.sap.sailing.gwt.common.SailingLocalesAllPermutations' />
 	
 	<source path='client' />
 	<source path='shared' />

@@ -2,6 +2,7 @@ package com.sap.sse.i18n.impl;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.ResourceBundle.Control;
 import java.util.regex.Matcher;
@@ -10,10 +11,11 @@ import java.util.regex.Pattern;
 import com.sap.sse.i18n.ResourceBundleStringMessages;
 
 public class ResourceBundleStringMessagesImpl implements ResourceBundleStringMessages {
-    
+    private static final Locale DEFAULT_LOCALE = Locale.ENGLISH;
     private final String resourceBaseName;
     private final ClassLoader resourceClassLoader;
     private String encoding;
+    private ResourceBundle result;
     
     public ResourceBundleStringMessagesImpl(String resourceBaseName, ClassLoader resourceClassLoader, String encoding) {
         this.resourceBaseName = resourceBaseName;
@@ -34,7 +36,14 @@ public class ResourceBundleStringMessagesImpl implements ResourceBundleStringMes
     
     @Override
     public String get(Locale locale, String messageKey, String... parameters) {
-        final String message = getResourceBundle(locale).getString(messageKey);
+        final ResourceBundle bundle = getResourceBundle(locale) == null ? getResourceBundle(DEFAULT_LOCALE)
+                : getResourceBundle(locale);
+        String message;
+        try {
+            message = bundle.getString(messageKey);
+        } catch (MissingResourceException e) {
+            message = getResourceBundle(DEFAULT_LOCALE).getString(messageKey);
+        }
         return get(message, parameters);
     }
 
@@ -100,12 +109,18 @@ public class ResourceBundleStringMessagesImpl implements ResourceBundleStringMes
     }
 
     private ResourceBundle getResourceBundle(Locale locale) {
-        Control controller = Util.createControl(encoding);
-        if (resourceClassLoader != null) {
-            return ResourceBundle.getBundle(resourceBaseName, locale, resourceClassLoader, controller);
-        } else {
-            return ResourceBundle.getBundle(resourceBaseName, locale, controller);
+        final Control controller = Util.createControl(encoding);
+        try {
+            if (resourceClassLoader != null) {
+                result = ResourceBundle.getBundle(resourceBaseName, locale, resourceClassLoader, controller);
+            } else {
+                result = ResourceBundle.getBundle(resourceBaseName, locale, controller);
+            }
+        } catch (MissingResourceException e) {
+            // try again with default locale
+            return getResourceBundle(Locale.getDefault());
         }
+        return result;
     }
 
     @Override

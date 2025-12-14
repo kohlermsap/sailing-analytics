@@ -3,6 +3,7 @@ package com.sap.sailing.gwt.home.mobile.places.event.latestnews;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import com.google.gwt.place.shared.Prefix;
 import com.sap.sailing.gwt.common.client.navigation.PlaceTokenPrefixes;
@@ -34,7 +35,8 @@ public class LatestNewsPlace extends AbstractEventPlace implements HasMobileVers
     }
 
     public String getTitle() {
-        return (ClientConfiguration.getInstance().isBrandingActive() ? StringMessages.INSTANCE.sapSailing()
+        return (ClientConfiguration.getInstance().isBrandingActive() 
+                ? ClientConfiguration.getInstance().getSailingAnalyticsSailing(Optional.empty())
                 : StringMessages.INSTANCE.whitelabelSailing());
     }
 

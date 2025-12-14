@@ -141,13 +141,17 @@ import com.sap.sailing.domain.racelog.RaceLogAndTrackedRaceResolver;
 import com.sap.sailing.domain.ranking.OneDesignRankingMetric;
 import com.sap.sailing.domain.ranking.RankingMetric;
 import com.sap.sailing.domain.ranking.RankingMetric.RankingInfo;
+import com.sap.sailing.domain.shared.tracking.AddResult;
+import com.sap.sailing.domain.shared.tracking.LineDetails;
+import com.sap.sailing.domain.shared.tracking.Track;
+import com.sap.sailing.domain.shared.tracking.TrackingConnectorInfo;
+import com.sap.sailing.domain.shared.tracking.impl.LineDetailsImpl;
+import com.sap.sailing.domain.shared.tracking.impl.TimedComparator;
 import com.sap.sailing.domain.ranking.RankingMetricConstructor;
-import com.sap.sailing.domain.tracking.AddResult;
 import com.sap.sailing.domain.tracking.BravoFixTrack;
 import com.sap.sailing.domain.tracking.DynamicSensorFixTrack;
 import com.sap.sailing.domain.tracking.GPSFixTrack;
 import com.sap.sailing.domain.tracking.GPSTrackListener;
-import com.sap.sailing.domain.tracking.LineDetails;
 import com.sap.sailing.domain.tracking.Maneuver;
 import com.sap.sailing.domain.tracking.MarkPassing;
 import com.sap.sailing.domain.tracking.MarkPositionAtTimePointCache;
@@ -155,7 +159,6 @@ import com.sap.sailing.domain.tracking.RaceChangeListener;
 import com.sap.sailing.domain.tracking.RaceExecutionOrderProvider;
 import com.sap.sailing.domain.tracking.RaceListener;
 import com.sap.sailing.domain.tracking.SensorFixTrack;
-import com.sap.sailing.domain.tracking.Track;
 import com.sap.sailing.domain.tracking.TrackFactory;
 import com.sap.sailing.domain.tracking.TrackedLeg;
 import com.sap.sailing.domain.tracking.TrackedLegOfCompetitor;
@@ -163,7 +166,6 @@ import com.sap.sailing.domain.tracking.TrackedRace;
 import com.sap.sailing.domain.tracking.TrackedRaceStatus;
 import com.sap.sailing.domain.tracking.TrackedRaceWithWindEssentials;
 import com.sap.sailing.domain.tracking.TrackedRegatta;
-import com.sap.sailing.domain.tracking.TrackingConnectorInfo;
 import com.sap.sailing.domain.tracking.WindLegTypeAndLegBearingAndORCPerformanceCurveCache;
 import com.sap.sailing.domain.tracking.WindPositionMode;
 import com.sap.sailing.domain.tracking.WindStore;
@@ -2981,7 +2983,9 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
         Pair<Double, Double> result;
         double defaultAngle = getRace().getBoatClass().getMinimumAngleBetweenDifferentTacksUpwind();
         double threshold = 10;
-        result = usePolarsIfPossible(wind, defaultAngle, LegType.UPWIND, threshold);
+        result = usePolarsIfPossible(wind != null && wind.getKnots()==0?new WindImpl(wind.getPosition(),
+                wind.getTimePoint(), new KnotSpeedWithBearingImpl(10 /* default 10kts */, wind.getBearing())):wind,
+                defaultAngle, LegType.UPWIND, threshold);
         return result;
     }
 

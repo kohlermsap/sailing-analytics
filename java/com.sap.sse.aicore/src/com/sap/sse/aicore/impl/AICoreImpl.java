@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -123,8 +124,14 @@ public class AICoreImpl implements AICore {
     public JSONObject getJSONResponse(HttpUriRequest request) throws UnsupportedOperationException, ClientProtocolException, URISyntaxException, IOException, ParseException {
         final CloseableHttpClient client = getHttpClient();
         final HttpResponse response = client.execute(request);
-        if (response.getStatusLine().getStatusCode() >= 400) {
-            throw new IOException("Error fetching "+request.getRequestLine()+": ("+response.getStatusLine().getStatusCode()+") "+response.getStatusLine().getReasonPhrase());
+        final int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode == 401) {
+            throw new SecurityException("Authentication failed: "+response.getStatusLine().getReasonPhrase());
+        } else if (statusCode == 403) {
+            throw new AccessControlException("Authorization failed: " + response.getStatusLine().getReasonPhrase());
+        }
+        if (statusCode >= 400) {
+            throw new IOException("Error fetching "+request.getRequestLine()+": ("+statusCode+") "+response.getStatusLine().getReasonPhrase());
         }
         final JSONObject configurationsJson = (JSONObject) new JSONParser().parse(new InputStreamReader(response.getEntity().getContent()));
         return configurationsJson;

@@ -1,5 +1,7 @@
 package com.sap.sailing.gwt.home.desktop.places.user.profile;
 
+import java.util.Optional;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -82,9 +84,9 @@ public class TabletAndDesktopUserProfileView extends Composite
     @Override
     public void navigateTabsTo(final AbstractUserProfilePlace place) {
         tabPanelUi.activatePlace(place);
-        final StringBuilder titleBuilder = new StringBuilder(
-                (ClientConfiguration.getInstance().isBrandingActive() ? StringMessages.INSTANCE.sapSailing()
-                        : StringMessages.INSTANCE.whitelabelSailing())).append(" - ");
+        final StringBuilder titleBuilder = new StringBuilder(ClientConfiguration.getInstance().isBrandingActive() 
+                ? ClientConfiguration.getInstance().getSailingAnalyticsSailing(Optional.empty())
+                : StringMessages.INSTANCE.whitelabelSailing()).append(" - ");
 
         titleBuilder.append(place.getLocationTitle());
 

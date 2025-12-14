@@ -2,6 +2,7 @@ package com.sap.sailing.gwt.home.shared.places.subscription;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import com.google.gwt.place.shared.Place;
@@ -36,7 +37,8 @@ public class SubscriptionPlace extends Place implements HasLocationTitle, HasMob
     }
 
     public String getTitle() {
-        return (ClientConfiguration.getInstance().isBrandingActive() ? StringMessages.INSTANCE.sapSailing()
+        return (ClientConfiguration.getInstance().isBrandingActive() 
+                ? ClientConfiguration.getInstance().getSailingAnalyticsSailing(Optional.empty())
                 : StringMessages.INSTANCE.whitelabelSailing()) + " - " + StringMessages.INSTANCE.subscription();
     }
 

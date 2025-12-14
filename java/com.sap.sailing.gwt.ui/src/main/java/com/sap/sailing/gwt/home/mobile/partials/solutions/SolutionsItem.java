@@ -10,5 +10,4 @@ public class SolutionsItem extends AccordionItem {
     public SolutionsItem(String title, ImageResource image, boolean showInitial) {
         super(title, image, title, showInitial);
     }
-
 }

@@ -15,6 +15,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 import com.sap.sailing.domain.common.BoatClassMasterdata;
+import com.sap.sailing.domain.test.AbstractTracTracLiveTest;
 import com.sap.sailing.selenium.core.BySeleniumId;
 import com.sap.sailing.selenium.core.FindBy;
 import com.sap.sailing.selenium.pages.PageArea;
@@ -122,6 +123,7 @@ public class TracTracEventManagementPanelPO extends PageArea {
     public void addConnectionAndListTrackableRaces(String url) {
         AddTracTracConnectionDialogPO dialog = addConnection();
         dialog.setJsonUrl(url);
+        dialog.setTracTracApiToken(AbstractTracTracLiveTest.getTracTracApiToken());
         dialog.pressOk();
         listRacesForExistingConnection(url);
     }

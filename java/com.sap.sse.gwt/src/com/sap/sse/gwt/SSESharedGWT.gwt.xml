@@ -9,6 +9,7 @@
   
   <inherits name="com.google.gwt.activity.Activity" />
   <inherits name="com.sap.sse.common.SSECommonSerializers" />
+  <inherits name="com.sap.sse.branding.SSEBranding" />
   <source path='client'/>
   <source path='shared'/>
 </module>

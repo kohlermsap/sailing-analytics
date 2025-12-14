@@ -39,8 +39,8 @@ import com.sap.sse.gwt.client.IconResources;
 import com.sap.sse.gwt.client.Notification;
 import com.sap.sse.gwt.client.Notification.NotificationType;
 import com.sap.sse.gwt.client.ServerInfoDTO;
-import com.sap.sse.gwt.client.controls.listedit.StringListEditorComposite;
 import com.sap.sse.gwt.client.controls.listedit.GenericStringListEditorComposite.ExpandedUi;
+import com.sap.sse.gwt.client.controls.listedit.StringListEditorComposite;
 import com.sap.sse.security.shared.HasPermissions;
 import com.sap.sse.security.shared.HasPermissions.DefaultActions;
 import com.sap.sse.security.shared.dto.OwnershipDTO;
@@ -52,6 +52,7 @@ import com.sap.sse.security.ui.client.UserStatusEventHandler;
 import com.sap.sse.security.ui.client.component.AccessControlledButtonPanel;
 import com.sap.sse.security.ui.client.component.EditOwnershipDialog;
 import com.sap.sse.security.ui.client.component.editacl.EditACLDialog;
+import com.sap.sse.security.ui.shared.IpToTimedLockDTO;
 
 public class LocalServerManagementPanel extends SimplePanel {
     private final SailingServiceWriteAsync sailingService;
@@ -63,6 +64,7 @@ public class LocalServerManagementPanel extends SimplePanel {
     private Anchor groupOwnerInfo, userOwnerInfo;
     private CheckBox isStandaloneServerCheckbox, isPublicServerCheckbox, isSelfServiceServerCheckbox;
     private CheckBox isCORSWildcardCheckbox;
+    private Label activeBrandingIdLabel;
     private StringListEditorComposite corsAllowedOriginsTextArea;
 
     private ServerInfoDTO currentServerInfo;
@@ -86,11 +88,15 @@ public class LocalServerManagementPanel extends SimplePanel {
         mainPanel.add(this.buttonPanel = createServerActionsUi(userService));
         mainPanel.add(createServerInfoUI());
         mainPanel.add(createServerConfigurationUI());
+        mainPanel.add(createBearerTokenAbusePanel());
+        mainPanel.add(createUserCreationAbusePanel());
         refreshServerConfiguration();
         if (userService.hasServerPermission(ServerActions.CONFIGURE_CORS_FILTER)) {
             mainPanel.add(createCORSFilterConfigurationUI());
             refreshCORSConfiguration();
         }
+        refreshBrandingConfiguration();
+        mainPanel.add(createDebrandingConfigurationUI());
     }
 
     @Override
@@ -121,6 +127,17 @@ public class LocalServerManagementPanel extends SimplePanel {
                 () -> configACL.openDialog(currentServerInfo));
         return buttonPanel;
     }
+    
+    private Widget createDebrandingConfigurationUI() {
+        final ServerDataCaptionPanel captionPanel = new ServerDataCaptionPanel(stringMessages.debrandingConfiguration(), 1);
+        VerticalPanel brandingPanel = new VerticalPanel();
+        brandingPanel.setSpacing(4);
+        activeBrandingIdLabel = new Label();
+        brandingPanel.add(activeBrandingIdLabel);
+        captionPanel.addWidget(stringMessages.activeBranding(), brandingPanel);
+        return captionPanel;
+    }
+
 
     private Widget createServerInfoUI() {
         final ServerDataCaptionPanel captionPanel = new ServerDataCaptionPanel(stringMessages.serverInformation(), 4);
@@ -141,6 +158,44 @@ public class LocalServerManagementPanel extends SimplePanel {
         isSelfServiceServerCheckbox = captionPanel.addCheckBox(stringMessages.selfServiceServer() + ":", callback);
         isSelfServiceServerCheckbox.ensureDebugId("isSelfServiceServerCheckbox");
         return captionPanel;
+    }
+
+    private Widget createBearerTokenAbusePanel() {
+        final ServerDataCaptionPanel panel = new ServerDataCaptionPanel(stringMessages.ipsLockedForBearerTokenAbuse(), 3);
+        panel.ensureDebugId("bearerTokenAbusePanel");
+        final IPBlocklistTableWrapper table = new IPBlocklistTableWrapper(sailingService, userService,
+                stringMessages.unableToLoadIpsBlockedForBearerTokenAbuse(), stringMessages, errorReporter) {
+            @Override
+            protected void fetchData(AsyncCallback<ArrayList<IpToTimedLockDTO>> callback) {
+                userService.getUserManagementService().getClientIPBasedTimedLocksForBearerTokenAbuse(callback);
+            }
+
+            @Override
+            protected void unlockIP(String ip, AsyncCallback<Void> asyncCallback) {
+                userService.getUserManagementWriteService().releaseBearerTokenLockOnIp(ip, asyncCallback);
+            }
+        };
+        panel.setContentWidget(table.asWidget());
+        return panel;
+    }
+
+    private Widget createUserCreationAbusePanel() {
+        final ServerDataCaptionPanel panel = new ServerDataCaptionPanel(stringMessages.ipsLockedForUserCreationAbuse(), 3);
+        panel.ensureDebugId("userCreationAbusePanel");
+        final IPBlocklistTableWrapper table = new IPBlocklistTableWrapper(sailingService, userService,
+                stringMessages.unableToLoadIpsBlockedForUserCreationAbuse(), stringMessages, errorReporter) {
+            @Override
+            protected void fetchData(AsyncCallback<ArrayList<IpToTimedLockDTO>> callback) {
+                userService.getUserManagementService().getClientIPBasedTimedLocksForUserCreation(callback);
+            }
+
+            @Override
+            protected void unlockIP(String ip, AsyncCallback<Void> asyncCallback) {
+                userService.getUserManagementWriteService().releaseUserCreationLockOnIp(ip, asyncCallback);
+            }
+        };
+        panel.setContentWidget(table.asWidget());
+        return panel;
     }
 
     private Widget createCORSFilterConfigurationUI() {
@@ -235,7 +290,11 @@ public class LocalServerManagementPanel extends SimplePanel {
         sailingService.getServerConfiguration(new RefreshAsyncCallback<>(this::updateServerConfiguration));
     }
     
-    private void refreshCORSConfiguration() {
+    public void refreshBrandingConfiguration() {
+        userService.getUserManagementService().getBrandingConfigurationId(new RefreshAsyncCallback<>(this::updateBrandingConfiguration));
+    }
+    
+    public void refreshCORSConfiguration() {
         if (userService.hasServerPermission(ServerActions.CONFIGURE_CORS_FILTER)) {
             userService.getUserManagementService().getCORSFilterConfiguration(new RefreshAsyncCallback<>(this::updateCORSFilterConfiguration));
         }
@@ -276,6 +335,10 @@ public class LocalServerManagementPanel extends SimplePanel {
         isStandaloneServerCheckbox.setEnabled(true);
         isPublicServerCheckbox.setValue(result.isPublic(), false);
         isSelfServiceServerCheckbox.setValue(result.isSelfService(), false);
+    }
+    
+    private void updateBrandingConfiguration(String brandingConfigurationId) {
+        activeBrandingIdLabel.setText(brandingConfigurationId == null ? stringMessages.none() : brandingConfigurationId);
     }
     
     private void updateCORSFilterConfiguration(Pair<Boolean, ArrayList<String>> corsFilterConfiguration) {

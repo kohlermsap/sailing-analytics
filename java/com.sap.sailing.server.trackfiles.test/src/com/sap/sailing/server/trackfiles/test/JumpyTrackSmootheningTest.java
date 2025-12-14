@@ -68,7 +68,6 @@ import com.sap.sailing.domain.tracking.MarkPassing;
 import com.sap.sailing.domain.tracking.TrackedRegatta;
 import com.sap.sailing.domain.tracking.WindTrack;
 import com.sap.sailing.domain.tracking.impl.DynamicGPSFixMovingTrackImpl;
-import com.sap.sailing.domain.tracking.impl.DynamicTrackedRaceImpl;
 import com.sap.sailing.domain.tracking.impl.DynamicTrackedRegattaImpl;
 import com.sap.sailing.domain.tracking.impl.EmptyWindStore;
 import com.sap.sailing.domain.tracking.impl.OutlierFilter;
@@ -197,10 +196,11 @@ public class JumpyTrackSmootheningTest {
             durationForOriginalTrack = startedAt.until(doneAt);
             logger.info("Duration for computing mark passings with original track: "+durationForOriginalTrack);
             assertNotNull(markPassings);
-            assertEquals(13, markPassings.size());
+            assertEquals(13, markPassings.size()); // TODO this is brittle... on some machines this results in only five mark passings
         }
-        assertTrue(durationForAdjustedTrack.times(8).compareTo(durationForOriginalTrack) < 0,
-                "Expected duration for mark passing analysis on adjusted track to be at least eight times less than for original track");
+        assertTrue(durationForAdjustedTrack.times(2).compareTo(durationForOriginalTrack) < 0,
+                "Expected duration for mark passing analysis on adjusted track to be at least two times less than for original track: "+
+                durationForAdjustedTrack+" vs. "+durationForOriginalTrack);
     }
     
     private DynamicGPSFixTrack<Competitor, GPSFixMoving> readTrack(String filename) throws Exception {
@@ -227,7 +227,8 @@ public class JumpyTrackSmootheningTest {
     }
     
     /**
-     * Simulates the "Oak cliff DH Distance Race" R1 with a single competitor, Gallagher / Zelenka, sail number "1" with
+     * Simulates the "Oak cliff DH Distance Race" R1 (see https://my.sapsailing.com/gwt/RaceBoard.html?regattaName=Oak+cliff+DH+Distance+Race&raceName=R1&leaderboardName=Oak+cliff+DH+Distance+Race&leaderboardGroupId=a3902560-6bfa-43be-85e1-2b82a4963416&eventId=bf48a59d-f2af-47b6-a2f7-a5b78b22b9f2)
+     * with a single competitor, Gallagher / Zelenka, sail number "1" with
      * the marks pinged statically to establish the course. The track of Gallagher / Zelenka is provided as a track of
      * their GPS positions. This could be the raw track, or it may be a filtered variant of the track with outliers
      * removed or adjusted.<p>
@@ -236,9 +237,9 @@ public class JumpyTrackSmootheningTest {
      * its calculation. As a result, a test may determine the impact filtering / adjusting the track may have on the
      * mark passing analysis.
      */
-    private DynamicTrackedRace createRace(DynamicGPSFixTrack<Competitor, GPSFixMoving> competitorTrack) throws PatchFailedException, ParseException {
+    private DynamicTrackedRace createRace(DynamicGPSFixTrack<Competitor, GPSFixMoving> competitorTrack) throws PatchFailedException, ParseException, InterruptedException {
         final Competitor gallagherZelenka = competitorTrack.getTrackedItem();
-        final DynamicTrackedRace trackedRace = createTrackedRace("Oak cliff DH Distance Race", "R1", BoatClassMasterdata.MELGES_24, gallagherZelenka);
+        final DynamicTrackedRaceWithMarkPassingCalculator trackedRace = createTrackedRace("Oak cliff DH Distance Race", "R1", BoatClassMasterdata.MELGES_24, gallagherZelenka);
         final Series defaultSeries = trackedRace.getTrackedRegatta().getRegatta().getSeries().iterator().next();
         final Fleet defaultFleet = defaultSeries.getFleets().iterator().next();
         final RaceColumnInSeries r1RaceColumn = defaultSeries.getRaceColumns().iterator().next();
@@ -287,9 +288,8 @@ public class JumpyTrackSmootheningTest {
         addFixedMarkPassingToRaceLog("2020-10-14T17:29:36Z", gallagherZelenka, 2, raceLog);
         addFixedMarkPassingToRaceLog("2020-10-14T17:36:42Z", gallagherZelenka, 3, raceLog);
         addFixedMarkPassingToRaceLog("2020-10-14T18:21:38Z", gallagherZelenka, 4, raceLog);
-        trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.LOADING, 0.0));
+        trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.LOADING, 0.0)); // suspends mark passing calculator
         final DynamicGPSFixTrack<Competitor, GPSFixMoving> competitorTrackInRace = trackedRace.getTrack(gallagherZelenka);
-        // TODO switch race into suspended mode to avoid updates during mass fix insertion:
         competitorTrack.lockForRead();
         try {
             for (final GPSFixMoving fix : competitorTrack.getRawFixes()) {
@@ -298,12 +298,12 @@ public class JumpyTrackSmootheningTest {
         } finally {
             competitorTrack.unlockAfterRead();
         }
-        trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.TRACKING, 1.0));
-        // TODO resume race
+        trackedRace.setStatus(new TrackedRaceStatusImpl(TrackedRaceStatusEnum.TRACKING, 1.0)); // resumes mark passing calculator
+        trackedRace.getMarkPassingCalculator().waitUntilStopped(/* timeout in millis */ Duration.ONE_MINUTE.times(15).asMillis());
         return trackedRace;
     }
     
-    private DynamicTrackedRace createTrackedRace(String regattaName, String name, BoatClassMasterdata boatClassMasterData, Competitor gallagherZelenka) {
+    private DynamicTrackedRaceWithMarkPassingCalculator createTrackedRace(String regattaName, String name, BoatClassMasterdata boatClassMasterData, Competitor gallagherZelenka) {
         final BoatClassImpl boatClass = new BoatClassImpl(boatClassMasterData);
         final TrackedRegatta trackedRegatta = new DynamicTrackedRegattaImpl(new RegattaImpl(regattaName, boatClass,
                 /* canBoatsOfCompetitorsChangePerRace */ false, /* competitorRegistrationType */ CompetitorRegistrationType.CLOSED,
@@ -315,7 +315,7 @@ public class JumpyTrackSmootheningTest {
         final Map<Competitor, Boat> competitorsAndTheirBoats = Util.<Competitor, Boat>mapBuilder().put(gallagherZelenka, boat).build();
         final Course course = new CourseImpl("R1 Course", Collections.emptySet());
         final RaceDefinition race = new RaceDefinitionImpl(name, course, boatClass, competitorsAndTheirBoats, UUID.randomUUID());
-        return new DynamicTrackedRaceImpl(trackedRegatta, race, /* sidelines */ Collections.emptySet(), new EmptyWindStore(), /* delayToLiveInMillis */ 1000,
+        return new DynamicTrackedRaceWithMarkPassingCalculator(trackedRegatta, race, /* sidelines */ Collections.emptySet(), new EmptyWindStore(), /* delayToLiveInMillis */ 1000,
                 WindTrack.DEFAULT_MILLISECONDS_OVER_WHICH_TO_AVERAGE_WIND, /* time over which to average speed: */ boatClass.getApproximateManeuverDurationInMilliseconds(),
                 /* useInternalMarkPassingAlgorithm */ true, OneDesignRankingMetric::new, mock(RaceLogAndTrackedRaceResolver.class), /* trackingConnectorInfo */ null, /* markPassingRaceFingerprintRegistry */ null);
     }

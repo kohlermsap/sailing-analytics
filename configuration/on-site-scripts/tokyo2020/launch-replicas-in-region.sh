@@ -78,8 +78,7 @@ REPLICATE_MASTER_SERVLET_HOST=tokyo-ssh.internal.sapsailing.com
 REPLICATE_MASTER_SERVLET_PORT=8888
 REPLICATE_MASTER_EXCHANGE_NAME=tokyo2020
 REPLICATE_MASTER_QUEUE_HOST=rabbit-ap-northeast-1.sapsailing.com
-REPLICATE_MASTER_BEARER_TOKEN=${BEARER_TOKEN}
-ADDITIONAL_JAVA_ARGS=\"${ADDITIONAL_JAVA_ARGS} -Dcom.sap.sse.debranding=true\"" --ebs-optimized --key-name $KEY_NAME --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=SL Tokyo2020 (Upgrade Replica)},{Key=sailing-analytics-server,Value=tokyo2020}]" "ResourceType=volume,Tags=[{Key=Name,Value=SL Tokyo2020 (Upgrade Replica)}]" | jq -r '.Instances[].PrivateIpAddress + " " + .Instances[].InstanceId' )
+REPLICATE_MASTER_BEARER_TOKEN=${BEARER_TOKEN}" --ebs-optimized --key-name $KEY_NAME --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=SL Tokyo2020 (Upgrade Replica)},{Key=sailing-analytics-server,Value=tokyo2020}]" "ResourceType=volume,Tags=[{Key=Name,Value=SL Tokyo2020 (Upgrade Replica)}]" | jq -r '.Instances[].PrivateIpAddress + " " + .Instances[].InstanceId' )
   EXIT_CODE=$?
   if [ "${EXIT_CODE}" != "0" ]; then
     echo "Error launching instance in region ${REGION}. Exiting with status ${EXIT_CODE}"

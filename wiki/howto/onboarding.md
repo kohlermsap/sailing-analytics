@@ -10,7 +10,9 @@ First of all, make sure you've looked at [http://www.amazon.de/Patterns-Elements
 
 1. Git Account
 
-   - The primary Git repository for the project is hosted on Github (see [https://github.com/SAP/sailing-analytics](https://github.com/SAP/sailing-analytics)). To clone, use ``git@github.com:SAP/sailing-analytics.git``. To gain write access you have to become member of the [sailing-analytics-team](https://github.com/orgs/SAP/teams/sailing-analytics-team) organization. For that you need to [link your Github user to the Github SAP organization](https://wiki.one.int.sap/wiki/display/ospodocs/Self-Service+for+Joining+an+SAP+GitHub+Organization). We still have a shadow repository around that, e.g., powers our Wiki at [https://wiki.sapsailing.com](https://wiki.sapsailing.com) and which lives at ``ssh://trac@sapsailing.com/home/trac/git``. 
+   - The primary Git repository for the project is hosted on Github (see [https://github.com/SAP/sailing-analytics](https://github.com/SAP/sailing-analytics)). To clone, use ``git@github.com:SAP/sailing-analytics.git``.
+   - If you are on Windows, keep in mind you may run into the following problem. By default, the filesystem in Windows enforces a 260 character limit on paths. The longest path length for a file in this project, if the drive name is included, is 263 characters. A possible solution is to pass a single character name for the project folder in the git clone command, and clone the project on drive root, which may bring the longest file path down to compatible length. Alternatively, Windows 10 and 11 offer settings to enable a much much longer maximum file path that requires additional configuration. You may check that out at your own will.
+   - To gain write access you have to become member of the [sailing-analytics-team](https://github.com/orgs/SAP/teams/sailing-analytics-team) organization. For that you need to [link your Github user to the Github SAP organization](https://wiki.one.int.sap/wiki/display/ospodocs/Self-Service+for+Joining+an+SAP+GitHub+Organization). For that to work, your Github account needs to have your @sap.com e-mail address assigned and verified. We still have a shadow repository around that, e.g., powers our Wiki at [https://wiki.sapsailing.com](https://wiki.sapsailing.com) and which lives at ``ssh://trac@sapsailing.com/home/trac/git``. 
 
    - In case you'd like to get access to the external git at `ssh://trac@sapsailing.com/home/trac/git` please send your SSH public key to one of the project maintainers, requesting git access. Make sure to NOT generate the key using Putty. Putty keys don't work reliably under Linux and on Windows/Cygwin environments. Use ssh-keygen in a Cygwin or Linux or MacOS/X environment instead. For further instructions for generating an ssh-key see [GitHub](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).  
    Note: If you want to use the ssh-key in the context of our solution, it can be an RSA or ED25519 format. Example for creating a key: `ssh-keygen -t ed25519 -b 512 -C "test@test.com"`. Make sure to set a non-empty password for your key.
@@ -40,9 +42,9 @@ First of all, make sure you've looked at [http://www.amazon.de/Patterns-Elements
 6. RabbitMQ, download from [http://www.rabbitmq.com](http://www.rabbitmq.com). Requires Erlang to be installed. RabbitMQ installer will assist in installing Erlang. Some sources report that there may be trouble with the latest versions of RabbitMQ. In some cases, McAffee seems to block the installation of the latest version on SAP hardware; in other cases connection problems to the newest versions have been reported. We know that version 3.6.8 works well. [https://github.com/rabbitmq/rabbitmq-server/releases/tag/rabbitmq_v3_6_8](https://github.com/rabbitmq/rabbitmq-server/releases/tag/rabbitmq_v3_6_8)
 7.  Maven 3.1.1 (or higher), [http://maven.apache.org](http://maven.apache.org)
     A setup guide for windows can be found on this webpage: [https://maven.apache.org/guides/getting-started/windows-prerequisites.html](https://maven.apache.org/guides/getting-started/windows-prerequisites.html)
-8.  Forked GWT SDK 2.11.1 release candidate ([https://static.sapsailing.com/gwt-2.11.1.zip](https://static.sapsailing.com/gwt-2.11.1.zip)). The official releases can be found at [http://www.gwtproject.org/download.html](http://www.gwtproject.org/download.html)
+8.  Forked GWT SDK 2.12.4 release [https://github.com/SAP/gwt-forward-serialization-rpc/releases/download/gwt-2.12.4/gwt-2.12.4.zip](https://github.com/SAP/gwt-forward-serialization-rpc/releases/download/gwt-2.12.4/gwt-2.12.4.zip)). The official releases can be found at [http://www.gwtproject.org/download.html](http://www.gwtproject.org/download.html)
     but shouldn't be used unless we roll back the changes of branch ``bug5077`` or GWT has merged and released the [pull request 9779](https://github.com/gwtproject/gwt/pull/9779).
-    Download the GWT DSK and extract it to a location of your preference (e.g. `C:\Program Files\gwt` on Windows or `/opt` on Linux or MacOS/X).
+    Download the GWT SDK and extract it to a location of your preference (e.g. `C:\Program Files\gwt` on Windows or `/opt` on Linux or MacOS/X).
     You will see in section [Tuning the Eclipse Installation](#onboarding-information_sap-sailing-analytics-development-setup_tuning-the-eclipse-installation)
     below how you announce this GWT SDK to your Eclipse installation.
 9. Standalone Android SDK (see section "Additional steps required for Android projects"). OPTIONALLY: You may additionally install Android Studio ([https://developer.android.com/tools/studio/index.html](https://developer.android.com/tools/studio/index.html)) or IntelliJ IDEA ([https://www.jetbrains.com/idea/download/](https://www.jetbrains.com/idea/download/)).
@@ -189,6 +191,9 @@ If git is not in the Path system environment variable, the gradle build will not
 ### Build for deployment
 Open a shell (preferrably a git bash or a cygwin bash), cd to the git workspace's root folder and issue "./configuration/buildAndUpdateProduct.sh build". This should build the software and run all the tests. If you want to avoid the tests being executed, use the -t option. If you only want to build one GWT permutation (Chrome/English), use the -b option. When inside the SAP VPN, add the -p option for proxy use. Run the build script without arguments to get usage hints.
 
+### Development Environment
+Read [[here|wiki/info/landscape/development-environment]] and importantly for [[pushing to main|https://wiki.sapsailing.com/wiki/info/landscape/development-environment.md#git-bugzilla-and-our-branches]]. 
+
 ### Steps to consider for using other GWT modules
 
 1. For Eclipse Build
@@ -251,4 +256,6 @@ Solution: This was occurring because the website didn't have any content in the 
 ### Tips for Mac users
 Mac users can install SDKMAN! to manage and install different JDKs.
 
-
+### Extra Reading
+Check out [refactoring patterns](https://refactoring.guru/) as a sort of cheatsheet for the aforementioned design patterns books.
+We also have an [onboarding glossary](https://wiki.sapsailing.com/wiki/howto/glossary).

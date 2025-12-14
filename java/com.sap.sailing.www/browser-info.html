@@ -1,10 +1,10 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-    <title>${applicationScope['clientConfigurationContext.SAP']}Sailing Analytics Suite - Unsupported Browser!</title>
+    <title>${clientConfigurationContext['brandTitle']}Sailing Analytics Suite - Unsupported Browser!</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <meta http-equiv="content-style-type" content="text/css" />
-    <link rel="shortcut icon" type="image/x-icon" href="images/sap${applicationScope['clientConfigurationContext.whitelabeled']}.ico" selenium-id="shortcutIcon"/>
+    <link rel="shortcut icon" type="image/x-icon" href="images/sap${clientConfigurationContext['whitelabeled']}.ico" selenium-id="shortcutIcon"/>
     <link href="start.css" rel="stylesheet" type="text/css" />
     <link href="/sailing-normalize-3.0.2.cache.css" rel="stylesheet" type="text/css" />
     <link href="browser-info.css" rel="stylesheet" type="text/css" />
@@ -12,7 +12,7 @@
 <body>
     <div class="logoAndTitlePanel">
         <script>
-            if (!${applicationScope['clientConfigurationContext.debrandingActive']}){
+            if (!${clientConfigurationContext['debrandingActive']}){
                 document.write("<a class=\"sapLogo\" href=\"http://www.sap.com?campaigncode=CRM-XH21-OSP-Sailing\"><img class=\"sapLogoImage\" src=\"/images/logo-small@2x.png\" alt=\"SAP Website\"/></a>\r\n");
             }
         </script>

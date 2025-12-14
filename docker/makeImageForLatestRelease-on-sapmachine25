@@ -1,0 +1,31 @@
+#!/bin/bash
+release_prefix=$1
+GITROOT="`dirname $0`/.."
+DOCKERDIR="${GITROOT}/docker"
+DOCKERFILE="$DOCKERDIR/Dockerfile"
+if [ "${release_prefix}" = "" ]; then
+  SET_LATEST=1
+  release_prefix="docker-25-"
+fi
+pushd "${DOCKERDIR}"
+RELEASE_TAR_GZ_FILENAME=$( ${GITROOT}/configuration/github-download-release-assets.sh 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 "${release_prefix}" )
+if [ "${RELEASE_TAR_GZ_FILENAME}" = "" ]; then
+  echo "No release with prefix ${release_prefix} found" >&2
+else
+  release=$( echo ${RELEASE_TAR_GZ_FILENAME} | sed -e 's/\.tar\.gz//' )
+  echo Release is ${release}
+  echo "Copying files from GITROOT $GITROOT into Docker workspace"
+  cp "$GITROOT/java/target/env.sh" "$DOCKERDIR"
+  cp "$GITROOT/java/target/start" "$DOCKERDIR"
+  cp "$GITROOT/java/target/configuration/JavaSE-11.profile" "$DOCKERDIR"
+  cd "$DOCKERDIR"
+  docker build --build-arg RELEASE=${release} -t ghcr.io/sap/sailing-analytics:${release} -f Dockerfile_sapsailing_on_sapmachine25 .
+  echo "Cleaning up..."
+  rm start env.sh JavaSE-11.profile ${RELEASE_TAR_GZ_FILENAME} release-notes.txt
+  docker push ghcr.io/sap/sailing-analytics:${release}
+  if [ "$SET_LATEST" = "1" ]; then
+    docker tag ghcr.io/sap/sailing-analytics:${release} ghcr.io/sap/sailing-analytics:latest-25
+    docker push ghcr.io/sap/sailing-analytics:latest-25
+  fi
+fi
+popd

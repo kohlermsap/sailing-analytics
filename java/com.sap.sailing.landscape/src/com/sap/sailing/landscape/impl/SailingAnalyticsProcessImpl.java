@@ -38,7 +38,6 @@ import com.sap.sse.landscape.aws.ApplicationProcessHost;
 import com.sap.sse.landscape.aws.AwsLandscape;
 import com.sap.sse.landscape.aws.MongoUriParser;
 import com.sap.sse.landscape.aws.impl.AwsApplicationProcessImpl;
-import com.sap.sse.landscape.impl.ReleaseImpl;
 import com.sap.sse.landscape.mongodb.Database;
 import com.sap.sse.shared.util.Wait;
 import com.sap.sse.util.HttpUrlConnectionHelper;
@@ -102,7 +101,7 @@ implements SailingAnalyticsProcess<ShardingKey> {
     private boolean updateReleaseFromStatus(JSONObject status) {
         final boolean success;
         if (status.containsKey(STATUS_RELEASE_PROPERTY_NAME)) {
-            release = new ReleaseImpl((String) status.get(STATUS_RELEASE_PROPERTY_NAME), SailingReleaseRepository.INSTANCE);
+            release = SailingReleaseRepository.INSTANCE.getRelease((String) status.get(STATUS_RELEASE_PROPERTY_NAME));
             success = true;
         } else {
             success = false;

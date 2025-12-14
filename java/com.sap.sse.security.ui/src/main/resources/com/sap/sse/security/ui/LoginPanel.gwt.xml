@@ -9,7 +9,7 @@
   <inherits name='com.sap.sse.gwt.Settings'/>
   <inherits name="com.sap.sse.gwt.Settings" />
   <inherits name="com.sap.sse.Security" />
-  <inherits name="com.sap.sse.security.ui.SecurityLocalesSinglePermutation" />
+  <inherits name="com.sap.sse.security.ui.SecurityLocalesAllPermutations" />
   <inherits name="com.sap.sse.security.SSESecuritySerializers" />
   
   <set-property name="gwt.logging.enabled" value="TRUE"/> 

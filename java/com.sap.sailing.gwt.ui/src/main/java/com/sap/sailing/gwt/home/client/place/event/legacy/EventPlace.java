@@ -1,8 +1,10 @@
 package com.sap.sailing.gwt.home.client.place.event.legacy;
 
+import java.util.Optional;
+
 import com.google.gwt.place.shared.PlaceTokenizer;
-import com.sap.sailing.gwt.ui.client.StringMessages;
 import com.sap.sse.common.Util;
+import com.sap.sailing.gwt.ui.client.StringMessages;
 import com.sap.sse.gwt.client.AbstractBasePlace;
 import com.sap.sse.gwt.shared.ClientConfiguration;
 
@@ -41,7 +43,8 @@ public class EventPlace extends AbstractBasePlace {
     }
 
     public String getTitle(String eventName) {
-        return (ClientConfiguration.getInstance().isBrandingActive() ? StringMessages.INSTANCE.sapSailing()
+        return (ClientConfiguration.getInstance().isBrandingActive()
+                ? ClientConfiguration.getInstance().getSailingAnalyticsSailing(Optional.empty())
                 : StringMessages.INSTANCE.whitelabelSailing()) + " - " + eventName;
     }
     

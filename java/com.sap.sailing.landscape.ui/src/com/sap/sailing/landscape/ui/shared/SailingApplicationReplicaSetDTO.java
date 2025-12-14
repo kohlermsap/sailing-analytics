@@ -16,6 +16,7 @@ public class SailingApplicationReplicaSetDTO<ShardingKey> implements Named, IsSe
     private SailingAnalyticsProcessDTO master;
     private ArrayList<SailingAnalyticsProcessDTO> replicas;
     private String version;
+    private String releaseNotesLink;
     private String hostname;
     private String defaultRedirectPath;
     private String autoScalingGroupAmiId;
@@ -24,12 +25,14 @@ public class SailingApplicationReplicaSetDTO<ShardingKey> implements Named, IsSe
     SailingApplicationReplicaSetDTO() {} // for GWT RPC serialization only
 
     public SailingApplicationReplicaSetDTO(String replicaSetName, SailingAnalyticsProcessDTO master,
-            Iterable<SailingAnalyticsProcessDTO> replicas, String version, String hostname, String defaultRedirectPath, String autoScalingGroupAmiId) {
+            Iterable<SailingAnalyticsProcessDTO> replicas, String version, String releaseNotesLink, String hostname,
+            String defaultRedirectPath, String autoScalingGroupAmiId) {
         super();
         this.master = master;
         this.replicaSetName = replicaSetName;
         this.version = version;
         this.replicas = new ArrayList<>();
+        this.releaseNotesLink = releaseNotesLink;
         this.hostname = hostname;
         this.defaultRedirectPath = defaultRedirectPath;
         this.autoScalingGroupAmiId = autoScalingGroupAmiId;
@@ -57,6 +60,10 @@ public class SailingApplicationReplicaSetDTO<ShardingKey> implements Named, IsSe
 
     public String getVersion() {
         return version;
+    }
+
+    public String getReleaseNotesLink() {
+        return releaseNotesLink;
     }
 
     /**

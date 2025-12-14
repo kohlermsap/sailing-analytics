@@ -46,7 +46,7 @@ public class AmazonS3FileStorageServiceImpl extends BaseFileStorageServiceImpl i
     private static final Logger logger = Logger.getLogger(AmazonS3FileStorageServiceImpl.class.getName());
 
     private static final String retrievalProtocol = "https";
-    private static final String regionRetrievalHost = "s3-eu-west-1.amazonaws.com";
+    private static final String regionRetrievalHost = "s3.dualstack.eu-west-1.amazonaws.com";
 
     private final FileStorageServicePropertyImpl accessId = new FileStorageServicePropertyImpl("accessId", false,
             /* isPassword */ false, "s3AccessIdDesc");

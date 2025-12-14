@@ -56,9 +56,7 @@ public class EditCAM extends javax.swing.JDialog {
      */
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    @SuppressWarnings("serial")
     private void initComponents() {
-
         jLabel1 = new javax.swing.JLabel();
         jRaceID = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
@@ -73,47 +71,35 @@ public class EditCAM extends javax.swing.JDialog {
         jButton3 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jMarkList = new javax.swing.JList<ClockAtMarkElement>();
-
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-
         jLabel1.setText("Race ID:");
-
         jRaceID.setText("jTextField1");
-
         jLabel2.setText("Mark index:");
-
         jMarkIndex.setText("0");
-
         jLabel3.setText("Mark time:");
-
         jMarkTime.setText("12:34:17");
-
         jLabel4.setText("Sail number:");
-
         jSailNumber.setText("w123");
-
         jButton1.setText("Ok");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
-
         jButton2.setText("Remove");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
             }
         });
-
         jButton3.setText("Add");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
             }
         });
-
         jMarkList.setModel(new javax.swing.AbstractListModel<ClockAtMarkElement>() {
+            private static final long serialVersionUID = 1L;
             ClockAtMarkElement[] clockAtMarkElements = { new ClockAtMarkElement(1, new Date(), "Item 1"),
                     new ClockAtMarkElement(1, new Date(), "Item 2"), new ClockAtMarkElement(1, new Date(), "Item 3"),
                     new ClockAtMarkElement(1, new Date(), "Item 4"), new ClockAtMarkElement(1, new Date(), "Item 5") };

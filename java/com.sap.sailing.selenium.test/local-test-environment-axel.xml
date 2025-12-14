@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Configuration file for the test environment. This file is used for the configuration of the environment for the
+  executions of the integration tests. For the execution in a local environment you should make a copy of this file,
+  change it accordingly to your local setup (eg. browser(s) to use for the tests) and adjust the property
+  "parameters.integration-tests" in your user specific settings.xml to point to your local copy of this file.
+-->
+<test-environment xmlns="http://www.sapsailing.com/test-environment"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sapsailing.com/test-environment ./test-environment-configuration.xsd ">
+  
+  <!--
+    The context root (the server) against which the tests should be executed.
+  -->
+  <context-root>http://localhost:8888/</context-root>
+  
+  <screenshots-folder>./bin/surefire-reports/</screenshots-folder>
+  
+  <!--
+    In this section necessary system properties for the different web drivers can be provided if needed. For more
+    information about available properties see the following sides:
+    
+    - http://code.google.com/p/selenium/wiki/ChromeDriver
+    - http://code.google.com/p/selenium/wiki/FirefoxDriver
+    - http://code.google.com/p/selenium/wiki/InternetExplorerDriver
+    - http://code.google.com/p/selenium/wiki/OperaDriver
+    - http://code.google.com/p/selenium/wiki/SafariDriver
+    - http://code.google.com/p/selenium/wiki/RemoteWebDriverServer
+    
+    NOTE: For the Chrome, Firefox and InternetExplorer driver an additional "server", which acts as a bridge between the
+          browser and the driver, is needed.
+  -->
+  <system-properties>
+     <!--
+        You need chromedriver to be able to run Selenium tests on Chrome/Chromium.
+        This is the path to chromedriver, not Chrome.
+        The chromedriver download is linked on the official selenium download page:
+        https://www.seleniumhq.org/download/
+     -->
+     <system-property>
+        <name>webdriver.chrome.driver</name>
+        <value>/usr/bin/chromedriver</value>
+     </system-property>
+     <!--
+        You need geckodriver to be able to run Selenium tests on Firefox.
+        This is the path to geckodriver, not Firefox.
+        The geckodriver download is linked on the official selenium download page:
+        https://www.seleniumhq.org/download/
+     -->
+     <system-property>
+        <name>webdriver.gecko.driver</name>
+        <value>/usr/bin/geckodriver</value>
+     </system-property>
+     <!--
+        geckodriver automatically finds an installed version of Firefox.
+        If no Firefox is installed on the system or another version should be used,
+        the property "webdriver.firefox.bin" may be set to specify the path.
+        The default on Windows is "C:\Program Files\Mozilla Firefox\firefox.exe"
+      -->
+     <!--
+     <system-property>
+        <name>webdriver.firefox.bin</name>
+        <value>/path/to/firefox.exe</value> 
+     </system-property>
+     -->
+     <!--
+       You need IEDriverServer.exe to successfully run selenium tests using IE 11.
+       
+       See selenium-ui-tests.md for details!
+     -->
+     <!--
+     <system-property>
+        <name>webdriver.ie.driver</name>
+        <value>C:\path\to\IEDriverServer.exe</value> 
+     </system-property>
+     -->
+  </system-properties>
+  
+  
+  <!--
+    The driver definitions define all web drivers (browsers) which should be used for the execution of the tests. This
+    means that each test will be executed once for each driver defined here. This allows to perform the tests with
+    different browsers to validate the proper functionality of the application across different browsers.
+    
+    The capabilities section can be used for fine tuning of the driver (e.g. version). For more informations see the
+    pages mentioned above.
+  -->
+  <!--
+  <driver-definition class="org.openqa.selenium.firefox.FirefoxDriver">
+  </driver-definition>
+  -->
+  <!--
+  <driver-definition class="org.openqa.selenium.chrome.ChromeDriver">
+  </driver-definition>
+  -->
+  <!-- -->
+  <driver-definition class="com.sap.sailing.selenium.core.DockerChromeDriver">
+  </driver-definition>
+  <!-- -->
+  <!--
+  <driver-definition class="org.openqa.selenium.ie.InternetExplorerDriver">
+    <capabilities>
+      <capability>
+        <name>ignoreZoomSetting</name>
+        <value>true</value>
+      </capability>
+    </capabilities>
+  </driver-definition>
+  -->
+  <!-- <driver-definition class="com.sap.sailing.selenium.core.HeadlessFirefoxDriver">
+  </driver-definition> -->
+  <!-- <driver-definition class="com.sap.sailing.selenium.core.HeadlessChromeDriver">
+  </driver-definition> -->
+</test-environment>

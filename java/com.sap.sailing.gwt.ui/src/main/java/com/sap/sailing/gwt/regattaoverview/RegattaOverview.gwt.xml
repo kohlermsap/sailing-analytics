@@ -26,7 +26,7 @@
 		
 	<source path='client'/>
     <!-- module containing locale configuration -->
-    <inherits name='com.sap.sailing.gwt.common.SailingLocalesSinglePermutation' />
+    <inherits name='com.sap.sailing.gwt.common.SailingLocalesAllPermutations' />
 
 	<inherits name="com.sap.sailing.gwt.ui.SourceAdminConsole"/>
 	<inherits name='com.sap.sailing.gwt.ui.SourceClient'/>

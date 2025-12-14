@@ -18,7 +18,6 @@ import com.sap.sse.datamining.impl.components.management.FunctionManager;
 import com.sap.sse.datamining.impl.components.management.QueryDefinitionDTOManager;
 import com.sap.sse.i18n.ResourceBundleStringMessages;
 import com.sap.sse.i18n.impl.CompoundResourceBundleStringMessages;
-import com.sap.sse.i18n.impl.ResourceBundleStringMessagesImpl;
 
 public class TestsUtil {
     
@@ -36,7 +35,7 @@ public class TestsUtil {
     
     public static ResourceBundleStringMessages getTestStringMessages() {
         if (TEST_STRING_MESSAGES == null) {
-            TEST_STRING_MESSAGES = new ResourceBundleStringMessagesImpl(TEST_STRING_MESSAGES_BASE_NAME,
+            TEST_STRING_MESSAGES = ResourceBundleStringMessages.create(TEST_STRING_MESSAGES_BASE_NAME,
                     TestsUtil.class.getClassLoader(), StandardCharsets.UTF_8.name());
         }
         return TEST_STRING_MESSAGES;
@@ -47,7 +46,7 @@ public class TestsUtil {
             EXTENDED_STRING_MESSAGES = new CompoundResourceBundleStringMessages();
             EXTENDED_STRING_MESSAGES.addStringMessages(getTestStringMessages());
             EXTENDED_STRING_MESSAGES
-                    .addStringMessages(new ResourceBundleStringMessagesImpl(PRODUCTIVE_STRING_MESSAGES_BASE_NAME,
+                    .addStringMessages(ResourceBundleStringMessages.create(PRODUCTIVE_STRING_MESSAGES_BASE_NAME,
                             TestsUtil.class.getClassLoader(), StandardCharsets.UTF_8.name()));
         }
         

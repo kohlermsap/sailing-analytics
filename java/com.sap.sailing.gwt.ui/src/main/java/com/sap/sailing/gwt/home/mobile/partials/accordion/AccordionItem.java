@@ -48,15 +48,21 @@ public class AccordionItem extends Composite {
     }
 
     public AccordionItem(String title, ImageResource image, String imageAltText, boolean showInitial) {
-        this(title, image.getSafeUri(), imageAltText, showInitial);
+        this(title, image==null?null:image.getSafeUri(), imageAltText, showInitial);
     }
 
     public AccordionItem(String title, SafeUri imageUrl, String imageAltText, boolean showInitial) {
         initWidget(uiBinder.createAndBindUi(this));
         titleUi.setInnerText(title);
-        imageUi.setSrc(imageUrl.asString());
+        if (imageUrl != null) {
+            imageUi.setSrc(imageUrl.asString());
+        }
         imageUi.setAlt(imageAltText);
         initAnimation(showInitial);
+    }
+    
+    public void setImageUrl(String imageUrl) {
+        imageUi.setSrc(imageUrl);
     }
 
     private void initAnimation(boolean showInitial) {
@@ -77,5 +83,16 @@ public class AccordionItem extends Composite {
     @UiChild
     public void addContent(Widget content) {
         contentUi.setWidget(content);
+    }
+    
+    public void setHeaderText(String text) {
+        if (text == null) text = "";
+        titleUi.setInnerText(text);
+        getElement().setAttribute("aria-label", text);
+        asWidget().setTitle(text);
+    }
+    
+    public void setContent(String content) {
+        contentWrapperUi.setInnerText(content);
     }
 }

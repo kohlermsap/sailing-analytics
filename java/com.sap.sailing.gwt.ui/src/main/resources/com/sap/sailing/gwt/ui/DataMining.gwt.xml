@@ -32,7 +32,7 @@
         <inherits name="com.sap.sailing.ExpeditionConnectorCommon" />
     	
         <!-- module containing locale configuration -->
-        <inherits name='com.sap.sailing.gwt.common.SailingLocalesSinglePermutation' />
+        <inherits name='com.sap.sailing.gwt.common.SailingLocalesAllPermutations' />
 
 	<!-- Disable logging -->
 	<set-property name="gwt.logging.enabled" value="FALSE"/>
