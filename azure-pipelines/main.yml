@@ -48,7 +48,7 @@ extends:
     # requestAuthentication: true  # enable if fetching dependencies from Artifactory or Nexus
     appCenterSlug: 'sapsailing/sapsailing-android-apps'
     jdkVersion: 11
-    androidVersion: 33
+    androidVersion: 34
     # We are building more than one app from our repository; we will use branches
     # to determine which app is to be built/released/signed
     # Default: Race Manager App
