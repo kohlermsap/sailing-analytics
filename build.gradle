@@ -13,7 +13,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath 'com.android.tools.build:gradle:7.0.4'
         classpath "org.ajoberstar:grgit:2.3.0"
     }
 }
@@ -58,10 +58,7 @@ ext {
     targetCompatibilityVersion = JavaVersion.VERSION_1_8
 
     support = "27.1.1"
-    play_services_maps = "18.2.0"
-    play_services_location = "21.0.1"
-    play_services_vision = "20.1.3"
-    play_services_gcm = "17.0.0"
+    play_services = "12.0.1"
 
     license_dialog = "1.8.0"
 
