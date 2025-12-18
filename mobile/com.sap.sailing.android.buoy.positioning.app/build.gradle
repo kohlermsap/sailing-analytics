@@ -92,18 +92,16 @@ dependencies {
 }
 
 // Custom tasks
-if (project.hasProperty("xmake")) {
-    preBuild.doLast {
-        // save the combined build info into assets/build.info file
-        def repo = org.ajoberstar.grgit.Grgit.open(dir: System.env.XMAKE_PROJECTDIR)
-        def result_line = "${repo.branch.current().getName()}-${repo.head().abbreviatedId} (${new Date().toString()})\n"
-        def assetsDir = android.sourceSets.main.assets.srcDirs.toArray()[1]
-        delete(assetsDir)
-        mkdir(assetsDir)
-        def buildInfoFile = new File(assetsDir, 'build_gradle.info').getAbsolutePath()
-        new File(buildInfoFile).write(result_line)
-        repo.close()
-    }
+preBuild.doLast {
+    // save the combined build info into assets/build.info file
+    def repo = org.ajoberstar.grgit.Grgit.open(dir: rootProject.rootDir)
+    def result_line = "${repo.branch.current().getName()}-${repo.head().abbreviatedId} (${new Date().toString()})\n"
+    def assetsDir = android.sourceSets.main.assets.srcDirs.toArray()[1]
+    delete(assetsDir)
+    mkdir(assetsDir)
+    def buildInfoFile = new File(assetsDir, 'build.info').getAbsolutePath()
+    new File(buildInfoFile).write(result_line)
+    repo.close()
 }
 
 /**
