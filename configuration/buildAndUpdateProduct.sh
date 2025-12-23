@@ -235,7 +235,7 @@ fi
 rm $START_DIR/build.log
 
 if [[ "$@" == "clean" ]]; then
-    JAVA_HOME="${JAVA8_HOME}" ./gradlew clean
+    JAVA_HOME="${JAVA17_HOME}" ./gradlew clean
     if [[ $? != 0 ]]; then
         exit 100
     fi
@@ -693,11 +693,11 @@ if [[ "$@" == "build" ]] || [[ "$@" == "all" ]]; then
         # mobile_extra="-P -with-not-android-relevant -P with-mobile"
 
         echo "Building apps with Gradle..."
-        JAVA_HOME="${JAVA8_HOME}" ./gradlew build
+        JAVA_HOME="${JAVA17_HOME}" ./gradlew build
         if [[ ${PIPESTATUS[0]} != 0 ]]; then
             exit 100
         fi
-        JAVA_HOME="${JAVA8_HOME}" ./gradlew assemble
+        JAVA_HOME="${JAVA17_HOME}" ./gradlew assemble
         if [[ ${PIPESTATUS[0]} != 0 ]]; then
             exit 100
         fi

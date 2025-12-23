@@ -110,15 +110,16 @@ public class BitmapHelper {
      * @return the Drawable of the resource
      */
     public static Drawable getAttrDrawable(Context context, @AttrRes int attrRes) {
-        Drawable drawable = null;
+        final Drawable drawable;
         TypedValue value = new TypedValue();
         if (context.getTheme().resolveAttribute(attrRes, value, true)) {
-            String[] data = String.valueOf(value.string).split("/");
-            int resId = context.getResources().getIdentifier(data[2].substring(0, data[2].length() - 4), "drawable",
-                    context.getPackageName());
-            if (resId != 0) {
-                drawable = ContextCompat.getDrawable(context, resId);
+            if (value.resourceId != 0) {
+                drawable = ContextCompat.getDrawable(context, value.resourceId);
+            } else {
+                drawable = null;
             }
+        } else {
+            drawable = null;
         }
         return drawable;
     }
