@@ -182,7 +182,6 @@ public class RoleDefinitionsPanel extends VerticalPanel {
                 }, filterablePanelRoleDefinitions.getAllListDataProvider(), table);
         final ListHandler<RoleDefinitionDTO> columnSortHandler = new ListHandler<>(rolesListDataProvider.getList());
         table.addColumnSortHandler(columnSortHandler);
-        columnSortHandler.setComparator(roleSelectionCheckboxColumn, roleSelectionCheckboxColumn.getComparator());
         final TextColumn<RoleDefinitionDTO> roleDefinitionUUidColumn = new AbstractSortableTextColumn<RoleDefinitionDTO>(
                 role -> role.getId() == null ? "<null>" : role.getId().toString(), columnSortHandler);
         final TextColumn<RoleDefinitionDTO> roleDefinitionNameColumn = new AbstractSortableTextColumn<RoleDefinitionDTO>(role->role.getName(), columnSortHandler);

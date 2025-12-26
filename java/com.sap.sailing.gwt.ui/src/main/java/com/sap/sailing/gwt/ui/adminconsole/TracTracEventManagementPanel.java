@@ -5,6 +5,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import com.google.gwt.cell.client.CheckboxCell;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -333,7 +335,21 @@ public class TracTracEventManagementPanel extends AbstractEventManagementPanel i
                         return t.id.hashCode();
                     }
                 }, racesFilterablePanel.getAllListDataProvider(), racesTable);
-        racesTable.addColumn(selectionCheckboxColumn, selectionCheckboxColumn.getHeader());
+        selectionCheckboxColumn.setSortable(false);
+        final CheckboxCell selectAllCell = new CheckboxCell();
+        final Header<Boolean> selectAllHeader = new Header<Boolean>(selectAllCell) {
+            @Override
+            public Boolean getValue() {
+                return false;
+             
+            }};
+        selectAllHeader.setUpdater(value -> {
+            for (final TracTracRaceRecordDTO race : raceList.getList()) {
+                selectionCheckboxColumn.getSelectionModel().setSelected(race, value);
+            }
+            value = !value;
+        });
+        racesTable.addColumn(selectionCheckboxColumn, selectAllHeader);
         racesTable.addColumn(regattaNameColumn, stringMessages.event());
         racesTable.addColumn(raceNameColumn, stringMessages.race());
         racesTable.addColumn(boatClassColumn, stringMessages.boatClass());

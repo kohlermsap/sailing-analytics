@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.cellview.client.AbstractCellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.Handler;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
 import com.google.gwt.user.cellview.client.TextColumn;
@@ -40,6 +42,7 @@ import com.sap.sse.gwt.client.async.MarkedAsyncCallback;
 import com.sap.sse.gwt.client.celltable.CellTableWithCheckboxResources;
 import com.sap.sse.gwt.client.celltable.EntityIdentityComparator;
 import com.sap.sse.gwt.client.celltable.FlushableCellTable;
+import com.sap.sse.gwt.client.celltable.RefreshableMultiSelectionModel;
 import com.sap.sse.gwt.client.celltable.SelectionCheckboxColumn;
 import com.sap.sse.gwt.client.dialog.DataEntryDialog.DialogCallback;
 import com.sap.sse.gwt.client.panels.AbstractFilterablePanel;
@@ -283,7 +286,27 @@ public class SwissTimingEventManagementPanel extends AbstractEventManagementPane
         raceStatusColumn.setSortable(true);
         regattaNameColumn.setSortable(true);
         seriesNameColumn.setSortable(true);
-        raceTable.addColumn(selectionColumn, selectionColumn.getHeader());
+        final RefreshableMultiSelectionModel<SwissTimingRaceRecordDTO> selectionModel =
+                new RefreshableMultiSelectionModel<SwissTimingRaceRecordDTO>(
+                        entityIdentityComparator,
+                        filterablePanelEvents.getAllListDataProvider()
+                );
+        raceTable.setSelectionModel(selectionModel);
+        selectionColumn.setSortable(false);
+        final CheckboxCell selectAllCell = new CheckboxCell();
+        final Header<Boolean> selectAllHeader = new Header<Boolean>(selectAllCell) {
+            @Override
+            public Boolean getValue() {
+                return false;
+            }
+        };
+        selectAllHeader.setUpdater(value -> {
+            for (final SwissTimingRaceRecordDTO race : raceList.getList()) {
+                selectionModel.setSelected(race, value);
+            }
+            value = !value;
+        });
+        raceTable.addColumn(selectionColumn, selectAllHeader);
         raceTable.addColumn(regattaNameColumn, stringConstants.regatta());
         raceTable.addColumn(seriesNameColumn, stringConstants.series());
         raceTable.addColumn(raceNameColumn, stringConstants.name());
@@ -291,7 +314,6 @@ public class SwissTimingEventManagementPanel extends AbstractEventManagementPane
         raceTable.addColumn(boatClassColumn, stringConstants.boatClass());
         raceTable.addColumn(genderColumn, stringConstants.gender());
         raceTable.addColumn(raceStartTimeColumn, stringConstants.startTime());
-        raceTable.setSelectionModel(selectionColumn.getSelectionModel(), selectionColumn.getSelectionManager());
         trackableRacesPanel.add(raceTable);
         raceList.addDataDisplay(raceTable);
         Handler columnSortHandler = getRaceTableColumnSortHandler(raceList.getList(), regattaNameColumn, seriesNameColumn,

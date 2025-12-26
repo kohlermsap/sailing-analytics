@@ -219,8 +219,8 @@ public class CourseTemplatePanel extends FlowPanel implements FilterablePanelPro
                 if (refreshableSelectionModel != null) {
                     refreshableSelectionModel.setSelected(ct, value);
                 }
-                value = !value;
             }
+            value = !value;
         });
         courseTemplateTable.addColumn(checkColumn, selectAllHeader);
         courseTemplateTable.setColumnWidth(checkColumn, 40, Unit.PX);

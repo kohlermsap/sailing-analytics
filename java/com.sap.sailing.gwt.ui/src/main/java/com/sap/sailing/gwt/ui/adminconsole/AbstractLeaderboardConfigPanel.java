@@ -397,13 +397,13 @@ public abstract class AbstractLeaderboardConfigPanel extends FormPanel
             AdminConsoleTableResources tableResources,
             ListHandler<StrippedLeaderboardDTO> leaderboardColumnListHandler,
             ListDataProvider<StrippedLeaderboardDTO> listDataProvider) {
-        SelectionCheckboxColumn<StrippedLeaderboardDTO> selectionCheckboxColumn = new SelectionCheckboxColumn<StrippedLeaderboardDTO>(
+        final SelectionCheckboxColumn<StrippedLeaderboardDTO> selectionCheckboxColumn = new SelectionCheckboxColumn<StrippedLeaderboardDTO>(
                 tableResources.cellTableStyle().cellTableCheckboxSelected(),
                 tableResources.cellTableStyle().cellTableCheckboxDeselected(),
                 tableResources.cellTableStyle().cellTableCheckboxColumnCell(),
                 new NameBasedStrippedLeaderboardDTOEntityIdentityComparator(), listDataProvider, leaderboardTable);
-        CheckboxCell selectAllCell = new CheckboxCell();
-        Header<Boolean> selectAllHeader = new Header<Boolean>(selectAllCell) {
+        final CheckboxCell selectAllCell = new CheckboxCell();
+        final Header<Boolean> selectAllHeader = new Header<Boolean>(selectAllCell) {
             private boolean checked = false;
             @Override
             public Boolean getValue() {
@@ -411,7 +411,7 @@ public abstract class AbstractLeaderboardConfigPanel extends FormPanel
             }};
         selectAllHeader.setUpdater(value -> {
             List<StrippedLeaderboardDTO> visibleLeaderbords = filteredLeaderboardList.getList();
-            for (StrippedLeaderboardDTO l : visibleLeaderbords) {
+            for (final StrippedLeaderboardDTO l : visibleLeaderbords) {
                 leaderboardSelectionModel.setSelected(l, value);
             }
             value = !value;

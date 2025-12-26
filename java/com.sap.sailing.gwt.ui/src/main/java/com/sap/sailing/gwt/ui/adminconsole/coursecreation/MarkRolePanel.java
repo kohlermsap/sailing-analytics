@@ -190,20 +190,20 @@ public class MarkRolePanel extends FlowPanel implements FilterablePanelProvider<
                     }
                 }, filterableMarkRoles.getAllListDataProvider(), markRolesTable);
         checkColumn.setSortable(false);
-        CheckboxCell selectAllCell = new CheckboxCell();
-        Header<Boolean> selectAllHeader = new Header<Boolean>(selectAllCell) {
+        final CheckboxCell selectAllCell = new CheckboxCell();
+        final Header<Boolean> selectAllHeader = new Header<Boolean>(selectAllCell) {
             @Override
             public Boolean getValue() {
                 return false;
             }
         };
         selectAllHeader.setUpdater(value -> {    
-            for (MarkRoleDTO role : markRoleListDataProvider.getList()) {
+            for (final MarkRoleDTO role : markRoleListDataProvider.getList()) {
                 if (refreshableSelectionModel != null) {
                     refreshableSelectionModel.setSelected(role, value);
                 }
-                value = !value;
             }
+            value = !value;
         });
         markRolesTable.addColumn(checkColumn, selectAllHeader);
         markRolesTable.setColumnWidth(checkColumn, 40, Unit.PX);

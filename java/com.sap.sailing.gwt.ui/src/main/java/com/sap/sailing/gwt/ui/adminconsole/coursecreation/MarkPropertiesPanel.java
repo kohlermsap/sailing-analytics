@@ -192,13 +192,14 @@ public class MarkPropertiesPanel extends FlowPanel implements FilterablePanelPro
                 return false;
              }
         };
+        checkColumn.setSortable(false);
         selectAllHeader.setUpdater(value -> {
             for (MarkPropertiesDTO mp : markPropertiesListDataProvider.getList()) {
                 if (refreshableSelectionModel != null) {
                     refreshableSelectionModel.setSelected(mp, value);
                 }
-                value = !value;
             }
+            value = !value;
         });
         markPropertiesTable.addColumn(checkColumn, selectAllHeader);
         markPropertiesTable.setColumnWidth(checkColumn, 40, Unit.PX);

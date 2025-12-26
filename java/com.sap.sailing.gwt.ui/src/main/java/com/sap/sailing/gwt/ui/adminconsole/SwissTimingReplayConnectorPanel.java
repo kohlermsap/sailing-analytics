@@ -6,12 +6,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import com.google.gwt.cell.client.CheckboxCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.cellview.client.AbstractCellTable;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.Handler;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
 import com.google.gwt.user.cellview.client.TextColumn;
@@ -174,10 +176,6 @@ public class SwissTimingReplayConnectorPanel extends AbstractEventManagementPane
         boatClassNamesColumn.setSortable(true);
         AdminConsoleTableResources tableRes = GWT.create(AdminConsoleTableResources.class);
         raceTable = new BaseCelltable<SwissTimingReplayRaceDTO>(/* pageSize */10000, tableRes);
-        raceTable.addColumn(raceNameColumn, stringMessages.race());
-        raceTable.addColumn(regattaNameColumn, "RSC");
-        raceTable.addColumn(boatClassNamesColumn, stringMessages.boatClass());
-        raceTable.addColumn(raceStartTrackingColumn, stringMessages.startTime());
         raceTable.setWidth("300px");
         raceList = new ListDataProvider<SwissTimingReplayRaceDTO>();
         filterablePanelEvents = new LabeledAbstractFilterablePanel<SwissTimingReplayRaceDTO>(lblFilterEvents,
@@ -194,19 +192,59 @@ public class SwissTimingReplayConnectorPanel extends AbstractEventManagementPane
                 return raceTable;
             }
         };
-        raceTable.setSelectionModel(new RefreshableMultiSelectionModel<SwissTimingReplayRaceDTO>(
-                new EntityIdentityComparator<SwissTimingReplayRaceDTO>() {
+        final RefreshableMultiSelectionModel<SwissTimingReplayRaceDTO> selectionModel =
+                new RefreshableMultiSelectionModel<SwissTimingReplayRaceDTO>(
+                        new EntityIdentityComparator<SwissTimingReplayRaceDTO>() {
+                            @Override
+                            public boolean representSameEntity(SwissTimingReplayRaceDTO dto1, SwissTimingReplayRaceDTO dto2) {
+                                return dto1.race_id.equals(dto2.race_id);
+                            }
+                            @Override
+                            public int hashCode(SwissTimingReplayRaceDTO t) {
+                                return t.race_id.hashCode();
+                            }
+                        },
+                        filterablePanelEvents.getAllListDataProvider()
+                );
+        raceTable.setSelectionModel(selectionModel);
+        final Column<SwissTimingReplayRaceDTO, Boolean> selectColumn =
+                new Column<SwissTimingReplayRaceDTO, Boolean>(new CheckboxCell(true, false)) {
                     @Override
-                    public boolean representSameEntity(SwissTimingReplayRaceDTO dto1, SwissTimingReplayRaceDTO dto2) {
-                        return dto1.race_id.equals(dto2.race_id);
+                    public Boolean getValue(SwissTimingReplayRaceDTO object) {
+                        return selectionModel.isSelected(object);
                     }
-                    @Override
-                    public int hashCode(SwissTimingReplayRaceDTO t) {
-                        return t.race_id.hashCode();
+                };
+        selectColumn.setFieldUpdater((index, object, value) -> selectionModel.setSelected(object, value));
+        selectColumn.setSortable(false);
+        final CheckboxCell selectAllCell = new CheckboxCell();
+        final Header<Boolean> selectAllHeader = new Header<Boolean>(selectAllCell) {
+            @Override
+            public Boolean getValue() {
+                // Derive state from the current selection model
+                final List<SwissTimingReplayRaceDTO> visible = raceList.getList();
+                if (visible.isEmpty()) {
+                    return false;
+                }
+                // Checked only if *all* visible rows are selected
+                for (final SwissTimingReplayRaceDTO race : visible) {
+                    if (!selectionModel.isSelected(race)) {
+                        return false;
                     }
-                }, filterablePanelEvents.getAllListDataProvider()) {
+                }
+                return true;
+            }
+        };
+        selectAllHeader.setUpdater(value -> {
+            for (SwissTimingReplayRaceDTO race : raceList.getList()) {
+                selectionModel.setSelected(race, value);
+            }
+            value = !value;
         });
-
+        raceTable.addColumn(selectColumn, selectAllHeader);
+        raceTable.addColumn(raceNameColumn, stringMessages.race());
+        raceTable.addColumn(regattaNameColumn, "RSC");
+        raceTable.addColumn(boatClassNamesColumn, stringMessages.boatClass());
+        raceTable.addColumn(raceStartTrackingColumn, stringMessages.startTime());
         racesHorizontalPanel.add(raceTable);
         racesHorizontalPanel.add(trackPanel);
         raceList.addDataDisplay(raceTable);

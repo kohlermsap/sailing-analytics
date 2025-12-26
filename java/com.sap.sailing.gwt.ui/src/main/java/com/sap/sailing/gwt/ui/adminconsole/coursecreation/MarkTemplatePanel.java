@@ -166,8 +166,8 @@ public class MarkTemplatePanel extends FlowPanel implements FilterablePanelProvi
         selectAllHeader.setUpdater(value -> {
             for (MarkTemplateDTO mt : markTemplateListDataProvider.getList()) {
                 refreshableSelectionModel.setSelected(mt, value);
-                value = !value;
             }
+            value = !value;
         });
         markTemplateTable.addColumn(checkColumn, selectAllHeader);
         markTemplateTable.setColumnWidth(checkColumn, 40, Unit.PX);
