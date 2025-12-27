@@ -6,6 +6,7 @@ import java.util.function.Function;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -20,8 +21,6 @@ import com.sap.sse.common.util.NaturalComparator;
 import com.sap.sse.gwt.client.ErrorReporter;
 import com.sap.sse.gwt.client.StringMessages;
 import com.sap.sse.gwt.client.panels.AbstractFilterablePanel;
-import com.google.gwt.user.cellview.client.Header;
-import com.google.gwt.cell.client.CheckboxCell;
 
 /**
  * The {@link #getTable() table} created and wrapped by this object offers already a {@link ListHandler} for sorting.
@@ -241,32 +240,11 @@ public abstract class TableWrapper<T, S extends RefreshableSelectionModel<T>, SM
                     getTableRes().cellTableStyle().cellTableCheckboxColumnCell(), entityIdentityComparator, dataProvider,
                     table);
             columnSortHandler.setComparator(selectionCheckboxColumn, selectionCheckboxColumn.getComparator());
-            selectionCheckboxColumn.setSortable(false);
             @SuppressWarnings("unchecked")
             final S typedSelectionModel = (S) selectionCheckboxColumn.getSelectionModel();
             selectionModel = typedSelectionModel;
             table.setSelectionModel(selectionModel, selectionCheckboxColumn.getSelectionManager());
-            final CheckboxCell selectAllCell = new CheckboxCell();
-            final Header<Boolean> selectAllHeader = new Header<Boolean>(selectAllCell) {
-                @Override
-                public Boolean getValue() {
-                    return false;
-                }
-            };
-            selectAllHeader.setUpdater(value -> {
-                for (final T mp : dataProvider.getList()) {
-                    if (selectionModel != null) {
-                        selectionModel.setSelected(mp, value);
-                    }
-                }
-            });
-            selectionModel.addSelectionChangeHandler(e -> {
-                if (selectionModel.getSelectedSet().isEmpty()) {
-                    selectAllCell.setViewData(/* key */ selectAllHeader.getValue(), false);
-                } else if (selectionModel.getSelectedSet().size() == dataProvider.getList().size()) {
-                    selectAllCell.setViewData(/* key */ selectAllHeader.getValue(), true);
-                }
-            });
+            final Header<Boolean> selectAllHeader = selectionCheckboxColumn.createHeader();
             table.addColumn(selectionCheckboxColumn, selectAllHeader);
         } else {
             @SuppressWarnings("unchecked")
