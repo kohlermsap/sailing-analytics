@@ -22,6 +22,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.cellview.client.AbstractCellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -52,8 +53,6 @@ import com.sap.sse.security.ui.client.component.DefaultActionsImagesBarCell;
 import com.sap.sse.security.ui.client.component.EditOwnershipDialog;
 import com.sap.sse.security.ui.client.component.SecuredDTOOwnerColumn;
 import com.sap.sse.security.ui.client.component.editacl.EditACLDialog;
-import com.google.gwt.cell.client.CheckboxCell;
-import com.google.gwt.user.cellview.client.Header;
 
 public class CourseTemplatePanel extends FlowPanel implements FilterablePanelProvider<CourseTemplateDTO>{
     private static AdminConsoleTableResources tableResources = GWT.create(AdminConsoleTableResources.class);
@@ -202,22 +201,7 @@ public class CourseTemplatePanel extends FlowPanel implements FilterablePanelPro
                         return t.getUuid().hashCode();
                     }
                 }, filterableCourseTemplatePanel.getAllListDataProvider(), courseTemplateTable);
-        checkColumn.setSortable(false);
-        CheckboxCell selectAllCell = new CheckboxCell();
-        Header<Boolean> selectAllHeader = new Header<Boolean>(selectAllCell) {
-            @Override
-            public Boolean getValue() {
-                return false;
-            }
-        };
-        selectAllHeader.setUpdater(value -> {
-            for (CourseTemplateDTO ct : courseTemplateListDataProvider.getList()) {
-                if (refreshableSelectionModel != null) {
-                    refreshableSelectionModel.setSelected(ct, value);
-                }
-            }
-            value = !value;
-        });
+        final Header<Boolean> selectAllHeader = checkColumn.createHeader();
         courseTemplateTable.addColumn(checkColumn, selectAllHeader);
         courseTemplateTable.setColumnWidth(checkColumn, 40, Unit.PX);
         // id
