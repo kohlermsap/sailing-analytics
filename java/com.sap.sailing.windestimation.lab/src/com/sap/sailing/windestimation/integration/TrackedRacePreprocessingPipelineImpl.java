@@ -42,10 +42,12 @@ public class TrackedRacePreprocessingPipelineImpl
     private final RaceElementsFilteringPreprocessingPipelineImpl raceElementsFilteringPreprocessingPipeline = new RaceElementsFilteringPreprocessingPipelineImpl(
             new CompleteManeuverCurveWithEstimationDataToManeuverForEstimationTransformer());
 
+    @Deprecated
     public TrackedRacePreprocessingPipelineImpl(PolarDataService polarDataService) {
         this.polarDataService = polarDataService;
     }
 
+    @Deprecated
     @Override
     public RaceWithEstimationData<ManeuverForEstimation> preprocessInput(TrackedRace element) {
         List<CompetitorTrackWithEstimationData<CompleteManeuverCurveWithEstimationData>> competitorTracks = getCompetitorTracksWithManeuverEstimationData(
@@ -58,6 +60,7 @@ public class TrackedRacePreprocessingPipelineImpl
         return preprocessedRace;
     }
 
+    @Deprecated
     public List<CompetitorTrackWithEstimationData<CompleteManeuverCurveWithEstimationData>> getCompetitorTracksWithManeuverEstimationData(
             TrackedRace trackedRace) {
         Iterable<Competitor> competitors = trackedRace.getRace().getCompetitors();
