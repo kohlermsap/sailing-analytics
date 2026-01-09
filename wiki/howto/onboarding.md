@@ -34,10 +34,10 @@ First of all, make sure you've looked at [http://www.amazon.de/Patterns-Elements
    - Request a [Hudson](https://hudson.sapsailing.com) user by sending e-mail to Axel Uhl or Simon Marcel Pamies.
 
 ### Installations
-1. Eclipse IDE for Eclipse Committers, version ["2025-03"](https://www.eclipse.org/downloads/packages/release/2025-03/r/eclipse-ide-eclipse-committers). If you are using a Mac and want to use SAPJVM, this has to be the 64 bit version. This is because SAPJVM is not available for Apple Silicon Macs, and Eclipse's OS architecture must match the JVM architecture.
+1. Eclipse IDE for Eclipse Committers, version ["2025-12"](https://www.eclipse.org/downloads/packages/release/2025-12/r/eclipse-ide-eclipse-committers). If you are using a Mac and want to use SAPJVM, this has to be the 64 bit version. This is because SAPJVM is not available for Apple Silicon Macs, and Eclipse's OS architecture must match the JVM architecture. Mac users can install SDKMAN! to manage and install different JDKs. For example Amazon Corretto 8: `sdk install java 8.0.472-amzn`.
 2. JDK 1.8 (Java SE 8), ideal is the SAPJVM 1.8: Go to [https://tools.eu1.hana.ondemand.com/#cloud](https://tools.eu1.hana.ondemand.com/#cloud), scroll down to `SAP JVM` select your operating System, extract the downloaded .zip into desired location (e.g. Windows `C:\Program Files\Java`. If you want to make this your default JDK, set the `JAVA_HOME` variable to it. In any case, set the `JAVA8_HOME` variable to it which is required by a few build scripts where certain steps currently are not yet compatible with newer JDK releases. For Gradle builds (currently using Gradle 7.6), such as our Android build process, also install Java 17 and set the `JAVA17_HOME` variable to it.
 3. Git (e.g. Git for Windows v2.18), [http://git-scm.com](http://git-scm.com) / [https://git-for-windows.github.io](https://git-for-windows.github.io)still
-4. Configure git (see [Git repository configuration essentials](#onboarding-information_sap-sailing-analytics-development-setup_git-repository-configuration-essentials))
+4. Configure git (see [Git repository configuration essentials](#git-repository-configuration-essentials))
 5. MongoDB (at least Release 6.0), download: [https://www.mongodb.com/](https://www.mongodb.com/). You may need to choose the community edition. In addition, install `mongosh`.
 6. RabbitMQ, download from [http://www.rabbitmq.com](http://www.rabbitmq.com). Requires Erlang to be installed. RabbitMQ installer will assist in installing Erlang. Some sources report that there may be trouble with the latest versions of RabbitMQ. In some cases, McAffee seems to block the installation of the latest version on SAP hardware; in other cases connection problems to the newest versions have been reported. We know that version 3.6.8 works well. [https://github.com/rabbitmq/rabbitmq-server/releases/tag/rabbitmq_v3_6_8](https://github.com/rabbitmq/rabbitmq-server/releases/tag/rabbitmq_v3_6_8)
 7.  Maven 3.1.1 (or higher), [http://maven.apache.org](http://maven.apache.org)
@@ -45,17 +45,17 @@ First of all, make sure you've looked at [http://www.amazon.de/Patterns-Elements
 8.  Forked GWT SDK 2.12.4 release [https://github.com/SAP/gwt-forward-serialization-rpc/releases/download/gwt-2.12.4/gwt-2.12.4.zip](https://github.com/SAP/gwt-forward-serialization-rpc/releases/download/gwt-2.12.4/gwt-2.12.4.zip)). The official releases can be found at [http://www.gwtproject.org/download.html](http://www.gwtproject.org/download.html)
     but shouldn't be used unless we roll back the changes of branch ``bug5077`` or GWT has merged and released the [pull request 9779](https://github.com/gwtproject/gwt/pull/9779).
     Download the GWT SDK and extract it to a location of your preference (e.g. `C:\Program Files\gwt` on Windows or `/opt` on Linux or MacOS/X).
-    You will see in section [Tuning the Eclipse Installation](#onboarding-information_sap-sailing-analytics-development-setup_tuning-the-eclipse-installation)
+    You will see in section [Tuning the Eclipse Installation](#tuning-the-eclipse-installation)
     below how you announce this GWT SDK to your Eclipse installation.
 9. Standalone Android SDK (see section "Additional steps required for Android projects"). OPTIONALLY: You may additionally install Android Studio ([https://developer.android.com/tools/studio/index.html](https://developer.android.com/tools/studio/index.html)) or IntelliJ IDEA ([https://www.jetbrains.com/idea/download/](https://www.jetbrains.com/idea/download/)).
     Make sure that the environment variable `ANDROID_HOME` is set (e.g. Windows C:\Users\\**'user'**\AppData\Local\Android\Sdk )
 10. Get the content of the git repository
     Clone the repository to your local file system from `git@github.com:SAP/sailing-analytics.git` or `ssh://trac@sapsailing.com/home/trac/git` User "trac" has all public ssh keys.
-11. Install the eclipse plugins (see [Automatic Eclipse plugin installation](#onboarding-information_sap-sailing-analytics-development-setup_automatic-eclipse-plugin-installation))
-12. Configure Eclipse (see [Tuning the Eclipse Installation](#onboarding-information_sap-sailing-analytics-development-setup_tuning-the-eclipse-installation))
-13. Configure Maven to use the correct JRE by following the instructions in the paragraph [maven-setup](#onboarding-information_sap-sailing-analytics-development-setup_maven-setup)
-14. Follow the instructions in the [development setup](#onboarding-information_sap-sailing-analytics-development-setup_sap-sailing-analytics-development-setup) to build the project.
-15. The steps for building the project for a deployment can be found in the [Build for deployment](#onboarding-information_sap-sailing-analytics-development-setup_build-for-deployment) section. This is not needed in the daily development workflow and should only be run when needed. 
+11. Install the eclipse plugins (see [Automatic Eclipse plugin installation](#automatic-eclipse-plugin-installation))
+12. Configure Eclipse (see [Tuning the Eclipse Installation](#tuning-the-eclipse-installation))
+13. Configure Maven to use the correct JRE by following the instructions in the paragraph [maven-setup](#maven-setup)
+14. Follow the instructions in the [development setup](#sap-sailing-analytics-development-setup) to build the project.
+15. The steps for building the project for a deployment can be found in the [Build for deployment](#build-for-deployment) section. This is not needed in the daily development workflow and should only be run when needed. 
 16. Install Ant: https://ant.apache.org/manual/install.html and makes sure to add to path: it is necessary for building gwt.
 17. Chrome or Firefox. Safari does not work reliably with this project.
 
@@ -80,7 +80,7 @@ Depending on the location of your local repository, it's filepaths might be too 
 Copy the settings.xml (may be in $GIT_HOME/configuration/maven-settings.xml and $GIT_HOME/configuration/maven-settings-proxy.xml) **and** the toolchains.xml from the top-level git folder to your ~/.m2 directory. Adjust the proxy settings in settings.xml accordingly (suggested settings for inside a corporate network requiring a HTTP proxy for access to external web). Set the paths inside of toolchains.xml to your JDKs depending on where you installed them (this is like setting the compiler for your IDE, but for Maven; This makes it possible to build with the same Maven configuration on every system). Make sure the mvn executable you installed above is in your path. 
 
 ### Automatic Eclipse plugin installation
-The necessary Eclipse plugins can be automatically installed into a newly unzipped version of ["2025-03"](https://www.eclipse.org/downloads/packages/release/2025-03/r/eclipse-ide-eclipse-committers) by using the `./configuration/pluginsForEclipse2025-03.p2f` file, found in the git repository cloned in _step 11_. To install the plugins open Eclipse and install Software Items from File. (File ⇒ Import ⇒ Install ⇒ Install Software from File). The description file is located at `/configuration/pluginsForEclipse2025-03.p2f`. 
+The necessary Eclipse plugins can be automatically installed into a newly unzipped version of ["2025-12"](https://www.eclipse.org/downloads/packages/release/2025-12/r/eclipse-ide-eclipse-committers) by using the `./configuration/pluginsForEclipse2025-12.p2f` file, found in the git repository cloned in _step 11_. To install the plugins open Eclipse and install Software Items from File. (File ⇒ Import ⇒ Install ⇒ Install Software from File). The description file is located at `/configuration/pluginsForEclipse2025-12.p2f`. 
 Make sure to select all Plugins (it might not be possible to select Lucene ignore that) and click next. In the pop-up dialog shown next, select the top radio button ("Update my installation to be compatible with the items being installed"). Skip the `Installation details`, accept the licence agreements and click finish. While Eclipse is installing the plugins a pop-up will appear in the background where you need to trust all plugins. Be aware that the installation may take several minutes depending on your Internet connection. 
 
 Be also aware that with this p2f-file it's not possible to update the plugins to newer versions. 
@@ -242,7 +242,9 @@ This applies only if you try to get old "GWT Dev Mode" to work, support for whic
 Install the GWT Browser Plugin for the GWT Development mode. As of 2016-08-31 Firefox is the only browser supporting the GWT plugin, you have to download Firefox version 24 for it to work. The Plugin can be found on this page: [https://code.google.com/archive/p/google-web-toolkit/downloads](https://code.google.com/archive/p/google-web-toolkit/downloads)
 
 ### Create Hudson Job
-If you want a hudson job to run when you push your branch then you can run a script in `configuration` called . Run options for a branch titled `createHudsonJobForBug.sh`. For you bug branch titled `bug<bug number>`, create a build job, which will create a release, by running the script like so: `./createHudsonJobForBug.sh <bug number>`.
+If you want a hudson job to run when you push your branch then you can run a script in `configuration` called `createHudsonJobForBug.sh`. For you bug branch titled `bug<bug number>`, create a build job, which will create a release, by running the script like so: `./createHudsonJobForBug.sh <bug number>`.
+If you'd like the script to include the bug's summary in its description, set your BUGZILLA_API_KEY environment variable to an API key you obtain from [https://bugzilla.sapsailing.com/bugzilla/userprefs.cgi?tab=apikey](https://bugzilla.sapsailing.com/bugzilla/userprefs.cgi?tab=apikey) or pass the API key as the second argument, after the bug ID, as in
+`./configuration/createHudsonJobForBug.sh <bug number> {Bugzilla-API-Key}`
 If on Windows, you may need to disable any web shields in antivirus software, to allow `curl` to function. If on Mac, you may need to install gnu-sed (``gsed``) via Homebrew.
 
 ### Issues when playing around with AWS
@@ -252,9 +254,6 @@ The path to the solution: On my instance in eu-west-2a, I ran aws --debug ec2 de
 - Problem: A load balancer's target group health checks fail. I was told the checks failed with 403 errors.
 Solution: This was occurring because the website didn't have any content in the /var/www/html. Whilst a site was still served (namely the Apache test page) it does throw a 403 error. If you fill the directory with and index.html the test then passes and a 200 code is returned
 - Problem: Target platform reload in Eclipse. Sometimes reloading via Window -> Plug-in Development -> Target Platform doesn't work, so open the target definition itself and try reloading there. Often a restart proves helpful after the reload. In addition, you can clean all projects and rebuild; then rebuild the individual projects that fail. Sometimes the errors are actually just warnings and you can try to run the GWT SDM (remember the other SDM's must be run if everything is brand new). Lastly, try clearing the plugins content found at `WORKSPACE_HOME/.metadata/.plugins/org.eclipse.pde.core/.bundle_pool/plugins`.
-
-### Tips for Mac users
-Mac users can install SDKMAN! to manage and install different JDKs.
 
 ### Extra Reading
 Check out [refactoring patterns](https://refactoring.guru/) as a sort of cheatsheet for the aforementioned design patterns books.
