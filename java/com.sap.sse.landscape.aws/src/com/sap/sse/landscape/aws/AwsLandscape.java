@@ -185,7 +185,7 @@ public interface AwsLandscape<ShardingKey> extends Landscape<ShardingKey> {
      *            private key; see also {@link #getKeyPairInfo(Region, String)}
      * @param userData
      *            zero or more strings representing the user data to be passed to the instance; multiple strings will be
-     *            concatenated, using the line separator to join them. The instance is able to read the user data throuh
+     *            concatenated, using the line separator to join them. The instance is able to read the user data through
      *            the AWS SDK installed on the instance.
      */
     default <HostT extends AwsInstance<ShardingKey>> HostT launchHost(

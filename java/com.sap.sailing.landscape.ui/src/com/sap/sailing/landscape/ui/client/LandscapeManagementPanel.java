@@ -323,8 +323,15 @@ public class LandscapeManagementPanel extends SimplePanel {
                 applicationReplicaSetToArchive -> archiveApplicationReplicaSet(stringMessages,
                         regionsTable.getSelectionModel().getSelectedObject(), applicationReplicaSetToArchive));
         applicationReplicaSetsActionColumn.addAction(ApplicationReplicaSetsImagesBarCell.ACTION_UPGRADE,
-                applicationReplicaSetToUpgrade -> upgradeApplicationReplicaSet(stringMessages,
-                        regionsTable.getSelectionModel().getSelectedObject(), Collections.singleton(applicationReplicaSetToUpgrade)));
+                applicationReplicaSetToUpgrade -> {
+                    if (applicationReplicaSetToUpgrade.isArchive()) {
+                        GWT.log("Replica set: " + applicationReplicaSetToUpgrade.getName()); 
+                    } else {
+                        upgradeApplicationReplicaSet(stringMessages,
+                            regionsTable.getSelectionModel().getSelectedObject(), Collections.singleton(applicationReplicaSetToUpgrade));
+                    }
+                }
+        );
         applicationReplicaSetsActionColumn.addAction(ApplicationReplicaSetsImagesBarCell.ACTION_DEFINE_LANDING_PAGE,
                 applicationReplicaSetForWhichToDefineLandingPage -> defineLandingPage(stringMessages,
                         regionsTable.getSelectionModel().getSelectedObject(), applicationReplicaSetForWhichToDefineLandingPage));
