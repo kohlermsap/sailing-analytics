@@ -1,6 +1,8 @@
-package com.sap.sse.common;
+package com.sap.sse.security.shared.impl;
 
 import java.io.Serializable;
+
+import com.sap.sse.common.TimePoint;
 
 /**
  * Holds information about a user's log-on history which is then used to decide whether the user account should be
@@ -8,8 +10,8 @@ import java.io.Serializable;
  * <p>
  * 
  * For example, failed password authentication requests shall be logged by the realm using calls to
- * {@link #extendLockDuration()}, successful ones with {@link #resetLock()}. Using the
- * {@link #isLocked()} method, a realm can determine if the user account to which this object belongs
+ * {@link #failedPasswordAuthentication()}, successful ones with {@link #successfulPasswordAuthentication()}. Using the
+ * {@link #isAuthenticationLocked()} method, a realm can determine if the user account to which this object belongs
  * shall currently accept password authentication.
  * <p>
  * 
@@ -19,15 +21,15 @@ import java.io.Serializable;
  * @author Axel Uhl (d043530)
  *
  */
-public interface TimedLock extends Serializable {
-    void extendLockDuration();
+public interface LockingAndBanning extends Serializable {
+    void failedPasswordAuthentication();
 
     /**
      * @return {@code true} if this locking and banning record changed due to this call
      */
-    boolean resetLock();
+    boolean successfulPasswordAuthentication();
 
-    boolean isLocked();
+    boolean isAuthenticationLocked();
 
     TimePoint getLockedUntil();
 }

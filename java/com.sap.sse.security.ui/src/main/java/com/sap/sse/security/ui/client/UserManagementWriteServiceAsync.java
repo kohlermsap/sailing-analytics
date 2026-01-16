@@ -61,10 +61,6 @@ public interface UserManagementWriteServiceAsync extends UserManagementServiceAs
     void updateRoleDefinition(RoleDefinitionDTO roleWithNewProperties, AsyncCallback<Void> callback);
 
     void deleteUser(String username, AsyncCallback<SuccessInfo> callback);
-
-    void unlockUser(String username, AsyncCallback<SuccessInfo> callback);
-
-    void unlockUsers(Set<String> username, AsyncCallback<Set<SuccessInfo>> callback);
     
     void deleteUsers(Set<String> usernames, AsyncCallback<Set<SuccessInfo>> callback);
 
@@ -125,8 +121,4 @@ public interface UserManagementWriteServiceAsync extends UserManagementServiceAs
     void setCORSFilterConfigurationAllowedOrigins(ArrayList<String> allowedOrigins, AsyncCallback<Void> callback);
 
     void fileTakedownNotice(TakedownNoticeRequestContext takedownNoticeRequestContext, AsyncCallback<Void> callback);
-    
-    void releaseUserCreationLockOnIp(String ip, AsyncCallback<Void> asyncCallback);
-    
-    void releaseBearerTokenLockOnIp(String ip, AsyncCallback<Void> asyncCallback);
 }

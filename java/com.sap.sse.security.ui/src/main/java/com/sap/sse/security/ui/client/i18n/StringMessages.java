@@ -150,11 +150,7 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages {
     String groups();
     String group();
     String errorDeletingUser(String username, String message);
-    String doYouReallyWantToUnlockUser(String name);
-    String doYouReallyWantToUnlockNUsers(int n);
-    String unlockSucceededForUser(String username);
-    String unlockFailedForUser(String username);
-    String userIsAlreadyUnlocked();
+    String doYouReallyWantToRemoveUser(String name);
     String errorTryingToUpdateUser(String username, String message);
     String ownership();
     String editObjectOwnership();
@@ -165,7 +161,6 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages {
     String userNotFound(String username);
     String usergroupNotFound(String userGroupName);
     String actionChangeACL();
-    String resetLock();
     String editACLForObject(String objectName);
     String acl();
     String errorUpdatingAcl(String name);
@@ -231,7 +226,5 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages {
     String lockedUntil();
     String passwordAuthenticationCurrentlyLockedForUser();
     String clientCurrentlyLockedForUserCreation();
-    String unlockedSuccessfully();
-    String failedToUnlock();
     String optOutOfMarketingEmails();
 }

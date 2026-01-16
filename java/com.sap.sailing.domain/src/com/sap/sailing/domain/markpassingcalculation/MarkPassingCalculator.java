@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
@@ -63,8 +64,8 @@ public class MarkPassingCalculator {
     private CandidateChooser chooser;
     private static final Logger logger = Logger.getLogger(MarkPassingCalculator.class.getName());
     private final MarkPassingUpdateListener listener;
-    private final static ExecutorService executor = ThreadPoolUtil.INSTANCE.getDefaultBackgroundTaskThreadPoolExecutor();
-    private final static ExecutorService initializationExecutor = ThreadPoolUtil.INSTANCE.createBackgroundTaskThreadPoolExecutor("MarkPassingCalculator initializations");
+    private final static ExecutorService executor = ThreadPoolUtil.INSTANCE
+            .getDefaultBackgroundTaskThreadPoolExecutor();
     private final LinkedBlockingQueue<StorePositionUpdateStrategy> queue;
 
     /**
@@ -149,7 +150,7 @@ public class MarkPassingCalculator {
         } else {
             listen = null;
         }
-        final Runnable waitForInitialization = () -> {
+        Thread t = new Thread(() -> {
             final Set<Callable<Void>> tasks = new HashSet<>();
             for (Competitor c : race.getRace().getCompetitors()) {
                 tasks.add(race.getTrackedRegatta().cpuMeterCallable(() -> {
@@ -173,11 +174,11 @@ public class MarkPassingCalculator {
                     }
                 }
             }
-        };
+        }, "MarkPassingCalculator for race " + race.getRaceIdentifier() + " initialization");
         if (waitForInitialMarkPassingCalculation) {
-            waitForInitialization.run();
+            t.run();
         } else {
-            initializationExecutor.submit(waitForInitialization);
+            t.start();
         }
     }
 
@@ -460,6 +461,8 @@ public class MarkPassingCalculator {
                 fixesForCompetitor.addAll(competitorEntry.getValue());
             }
             if (!newMarkFixes.isEmpty()) {
+                // FIXME bug 2745 use new mark fixes to invalidate chooser's mark position and mutual mark/waypoint
+                // distance cache
                 for (Entry<Competitor, List<GPSFixMoving>> fixesAffectedByNewMarkFixes : finder
                         .calculateFixesAffectedByNewMarkFixes(newMarkFixes).entrySet()) {
                     Collection<GPSFixMoving> fixes = combinedCompetitorFixesFinderConsidersAffected
@@ -590,6 +593,7 @@ public class MarkPassingCalculator {
                     suspended = false;
                 } else {
                     suspended = false;
+                    final CountDownLatch latchForRunningListenRun = new CountDownLatch(1);
                     enqueueUpdate(new StorePositionUpdateStrategy() {
                         @Override
                         public void storePositionUpdate(Map<Competitor, List<GPSFixMoving>> competitorFixes,
@@ -601,16 +605,25 @@ public class MarkPassingCalculator {
                                 List<Pair<Competitor, Integer>> suppressedMarkPassings,
                                 List<Competitor> unSuppressedMarkPassings, CandidateFinder candidateFinder,
                                 CandidateChooser candidateChooser) {
-                            if (markPassingRaceFingerprintRegistry != null) {
-                                initializationExecutor.submit(()->{
-                                    final Map<Competitor, Map<Waypoint, MarkPassing>> markPassings = race.getMarkPassings(/* waitForLatestUpdates */ true);
-                                    markPassingRaceFingerprintRegistry.storeMarkPassings(race.getRaceIdentifier(),
-                                            MarkPassingRaceFingerprintFactory.INSTANCE.createFingerprint(race),
-                                            markPassings, race.getRace().getCourse());
-                                });
-                            }
+                            latchForRunningListenRun.countDown();
+                            assert latchForRunningListenRun.getCount() == 0;
                         }
                     });
+                    if (markPassingRaceFingerprintRegistry != null) {
+                        new Thread(()->{
+                            try {
+                                latchForRunningListenRun.await();
+                                final Map<Competitor, Map<Waypoint, MarkPassing>> markPassings = race.getMarkPassings(/* waitForLatestUpdates */ true);
+                                markPassingRaceFingerprintRegistry.storeMarkPassings(race.getRaceIdentifier(),
+                                        MarkPassingRaceFingerprintFactory.INSTANCE.createFingerprint(race),
+                                        markPassings, race.getRace().getCourse());
+                            } catch (InterruptedException e) {
+                                logger.log(Level.SEVERE, "Exception while waiting for Listen.run() to start processing in MarkPassingCalculator for "+
+                                        race.getName(), e);
+                            }
+                        }, "Waiting for mark passings for "+race.getName()+" after having resumed to store the results in registry")
+                        .start();
+                    }
                 }
             }
         } finally {

@@ -13,17 +13,17 @@ import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.pam.AtLeastOneSuccessfulStrategy;
 import org.apache.shiro.realm.Realm;
 
-import com.sap.sse.common.TimedLock;
 import com.sap.sse.security.impl.Activator;
+import com.sap.sse.security.shared.impl.LockingAndBanning;
 import com.sap.sse.security.shared.impl.User;
 import com.sap.sse.util.ServiceTrackerFactory;
 
-public class AtLeastOneSuccessfulStrategyWithTimedLocks extends AtLeastOneSuccessfulStrategy {
-    private static final Logger logger = Logger.getLogger(AtLeastOneSuccessfulStrategyWithTimedLocks.class.getName());
+public class AtLeastOneSuccessfulStrategyWithLockingAndBanning extends AtLeastOneSuccessfulStrategy {
+    private static final Logger logger = Logger.getLogger(AtLeastOneSuccessfulStrategyWithLockingAndBanning.class.getName());
     
     private final Future<SecurityService> securityService;
     
-    public AtLeastOneSuccessfulStrategyWithTimedLocks() {
+    public AtLeastOneSuccessfulStrategyWithLockingAndBanning() {
         if (Activator.getContext() != null) {
             securityService = ServiceTrackerFactory.createServiceFuture(Activator.getContext(), SecurityService.class);
         } else {
@@ -55,9 +55,9 @@ public class AtLeastOneSuccessfulStrategyWithTimedLocks extends AtLeastOneSucces
                         logger.info("failed password authentication for user "+username);
                         final SecurityService mySecurityService = getSecurityService();
                         if (mySecurityService != null) {
-                            final TimedLock timedLock = mySecurityService.failedPasswordAuthentication(user);
-                            if (timedLock != null) {
-                                logger.info("User "+username+" locked for password authentication: "+timedLock);
+                            final LockingAndBanning lockingAndBanning = mySecurityService.failedPasswordAuthentication(user);
+                            if (lockingAndBanning != null) {
+                                logger.info("User "+username+" locked for password authentication: "+lockingAndBanning);
                             }
                         } else {
                             logger.warning("Account locking due to failed password authentication for user "+username+" not possible; security service not found");
@@ -81,9 +81,9 @@ public class AtLeastOneSuccessfulStrategyWithTimedLocks extends AtLeastOneSucces
                     logger.info("failed bearer token authentication for client IP "+bearerToken.getClientIP()+" with user agent "+bearerToken.getUserAgent());
                     final SecurityService mySecurityService = getSecurityService();
                     if (mySecurityService != null) {
-                        final TimedLock timedLock = mySecurityService.failedBearerTokenAuthentication(bearerToken.getClientIP());
-                        if (timedLock != null) {
-                            logger.info("Client IP "+bearerToken.getClientIP()+" locked for bearer token authentication: "+timedLock);
+                        final LockingAndBanning lockingAndBanning = mySecurityService.failedBearerTokenAuthentication(bearerToken.getClientIP());
+                        if (lockingAndBanning != null) {
+                            logger.info("Client IP "+bearerToken.getClientIP()+" locked for bearer token authentication: "+lockingAndBanning);
                         }
                     } else {
                         logger.warning("Client IP locking due to failed bearer token authentication for client IP "

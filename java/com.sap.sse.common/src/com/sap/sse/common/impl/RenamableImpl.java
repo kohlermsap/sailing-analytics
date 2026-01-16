@@ -25,4 +25,5 @@ public class RenamableImpl implements Renamable {
     public void setName(String newName) {
         this.name = newName;
     }
+
 }

@@ -19,12 +19,12 @@ import java.util.Set;
 
 import org.apache.shiro.crypto.hash.Sha256Hash;
 
-import com.sap.sse.common.TimedLock;
 import com.sap.sse.security.shared.Account;
 import com.sap.sse.security.shared.Account.AccountType;
 import com.sap.sse.security.shared.RoleDefinition;
 import com.sap.sse.security.shared.UserGroupProvider;
 import com.sap.sse.security.shared.WildcardPermission;
+import com.sap.sse.security.shared.impl.LockingAndBanning;
 import com.sap.sse.security.shared.impl.Ownership;
 import com.sap.sse.security.shared.impl.Role;
 import com.sap.sse.security.shared.impl.SecurityUserImpl;
@@ -103,26 +103,26 @@ public class UserImpl extends SecurityUserImpl<RoleDefinition, Role, UserGroup, 
 
     private Subscription[] subscriptions;
     
-    private final TimedLock timedLock;
+    private final LockingAndBanning lockingAndBanning;
 
     public UserImpl(String name, String email, Map<String, UserGroup> defaultTenantForServer,
-            UserGroupProvider userGroupProvider, TimedLock timedLock, Account... accounts) {
-        this(name, email, defaultTenantForServer, Arrays.asList(accounts), userGroupProvider, timedLock);
+            UserGroupProvider userGroupProvider, LockingAndBanning lockingAndBanning, Account... accounts) {
+        this(name, email, defaultTenantForServer, Arrays.asList(accounts), userGroupProvider, lockingAndBanning);
     }
 
     public UserImpl(String name, String email, Map<String, UserGroup> defaultTenantForServer,
-            Collection<Account> accounts, UserGroupProvider userGroupProvider, TimedLock timedLock) {
+            Collection<Account> accounts, UserGroupProvider userGroupProvider, LockingAndBanning lockingAndBanning) {
         this(name, email, /* fullName */ null, /* company */ null, /* locale */ null, /* is email validated */ false,
                 /* did opt out of marketing emails */ null, /* password reset secret */ null, /* validation secret */ null,
-                userGroupProvider, timedLock);
+                defaultTenantForServer, accounts, userGroupProvider, lockingAndBanning);
     }
 
     public UserImpl(String name, String email, String fullName, String company, Locale locale, Boolean emailValidated,
             Boolean didOptOutOfMarketingEmails, String passwordResetSecret, String validationSecret,
-            Collection<Account> accounts, UserGroupProvider userGroupProvider, TimedLock timedLock) {
+            Map<String, UserGroup> defaultTenantForServer, Collection<Account> accounts,
             UserGroupProvider userGroupProvider, LockingAndBanning lockingAndBanning) {
         super(name);
-        this.timedLock = timedLock;
+        this.lockingAndBanning = lockingAndBanning;
         this.defaultTenantForServer = defaultTenantForServer;
         this.fullName = fullName;
         this.company = company;
@@ -481,8 +481,8 @@ public class UserImpl extends SecurityUserImpl<RoleDefinition, Role, UserGroup, 
     }
 
     @Override
-    public TimedLock getTimedLock() {
-        return timedLock;
+    public LockingAndBanning getLockingAndBanning() {
+        return lockingAndBanning;
     }
 
     @Override

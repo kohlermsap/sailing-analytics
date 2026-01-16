@@ -24,7 +24,6 @@ import com.mongodb.MongoException;
 import com.mongodb.client.MongoDatabase;
 import com.sap.sse.common.Util;
 import com.sap.sse.common.Util.Pair;
-import com.sap.sse.common.impl.TimedLockImpl;
 import com.sap.sse.mongodb.MongoDBConfiguration;
 import com.sap.sse.mongodb.MongoDBService;
 import com.sap.sse.security.interfaces.UserImpl;
@@ -35,6 +34,7 @@ import com.sap.sse.security.shared.SecurityUser;
 import com.sap.sse.security.shared.UserGroupManagementException;
 import com.sap.sse.security.shared.UserManagementException;
 import com.sap.sse.security.shared.UserStoreManagementException;
+import com.sap.sse.security.shared.impl.LockingAndBanningImpl;
 import com.sap.sse.security.shared.impl.Ownership;
 import com.sap.sse.security.shared.impl.Role;
 import com.sap.sse.security.shared.impl.User;
@@ -93,7 +93,7 @@ public class UserStoreWithPersistenceTest {
 
     @Test
     public void testCreateUser() throws UserManagementException {
-        store.createUser(username, email, new TimedLockImpl());
+        store.createUser(username, email, new LockingAndBanningImpl());
         assertNotNull(store.getUserByName(username));
         assertNotNull(store.getUserByEmail(email));
 
@@ -104,12 +104,12 @@ public class UserStoreWithPersistenceTest {
 
     @Test
     public void testMasterdataIsSaved() throws UserStoreManagementException {
-        store.createUser(username, email, new TimedLockImpl());
+        store.createUser(username, email, new LockingAndBanningImpl());
         UserGroupImpl defaultTenant = createUserGroup();
         HashMap<String, UserGroup> defaultTenantForServers = new HashMap<>();
         defaultTenantForServers.put(serverName, defaultTenant);
         store.updateUser(new UserImpl(username, email, fullName, company, Locale.GERMAN, false,
-                defaultTenantForServers, Collections.emptySet(), /* userGroupProvider */ null, new TimedLockImpl()));
+                didOptOutOfMarketingEmails, null, null, defaultTenantForServers, Collections.emptySet(),
                 /* userGroupProvider */ null, new LockingAndBanningImpl()));
         newStore();
         User savedUser = store.getUserByName(username);
@@ -125,7 +125,7 @@ public class UserStoreWithPersistenceTest {
      */
     @Test
     public void testDeleteUser() throws UserManagementException {
-        store.createUser(username, email, new TimedLockImpl());
+        store.createUser(username, email, new LockingAndBanningImpl());
         store.deleteUser(username);
         assertNull(store.getUserByName(username));
         assertNull(store.getUserByEmail(email));
@@ -137,7 +137,7 @@ public class UserStoreWithPersistenceTest {
 
     @Test
     public void testSetPreferences() throws UserManagementException {
-        store.createUser(username, email, new TimedLockImpl());
+        store.createUser(username, email, new LockingAndBanningImpl());
         store.setPreference(username, prefKey, prefValue);
         assertEquals(prefValue, store.getPreference(username, prefKey));
         newStore();
@@ -146,7 +146,7 @@ public class UserStoreWithPersistenceTest {
 
     @Test
     public void testUnsetPreferences() throws UserManagementException {
-        store.createUser(username, email, new TimedLockImpl());
+        store.createUser(username, email, new LockingAndBanningImpl());
         store.setPreference(username, prefKey, prefValue);
         store.unsetPreference(username, prefKey);
         assertNull(store.getPreference(username, prefKey));
@@ -159,7 +159,7 @@ public class UserStoreWithPersistenceTest {
      */
     @Test
     public void testDeleteUserWithPreferences() throws UserManagementException {
-        store.createUser(username, email, new TimedLockImpl());
+        store.createUser(username, email, new LockingAndBanningImpl());
         store.setPreference(username, prefKey, prefValue);
         store.deleteUser(username);
         assertNull(store.getPreference(username, prefKey));
@@ -169,7 +169,7 @@ public class UserStoreWithPersistenceTest {
 
     @Test
     public void testCreateUserGroup() throws UserGroupManagementException, UserManagementException {
-        final User user = store.createUser(username, email, new TimedLockImpl());
+        final User user = store.createUser(username, email, new LockingAndBanningImpl());
         UserGroupImpl createUserGroup = createUserGroup();
         createUserGroup.add(user);
         store.updateUserGroup(createUserGroup);
@@ -198,7 +198,7 @@ public class UserStoreWithPersistenceTest {
     @Test
     public void testTenantUsers() throws UserManagementException, UserGroupManagementException {
         UserGroupImpl defaultTenant = createUserGroup();
-        final User user = store.createUser(username, email, new TimedLockImpl());
+        final User user = store.createUser(username, email, new LockingAndBanningImpl());
         defaultTenant.add(user);
         store.updateUserGroup(defaultTenant);
         user.getDefaultTenantMap().put(serverName, defaultTenant);
@@ -220,7 +220,7 @@ public class UserStoreWithPersistenceTest {
 
     @Test
     public void testUserGroups() throws UserManagementException, UserGroupManagementException {
-        final User user = store.createUser(username, email, new TimedLockImpl());
+        final User user = store.createUser(username, email, new LockingAndBanningImpl());
         final String GROUP_NAME = "group";
         final UserGroupImpl group = store.createUserGroup(UUID.randomUUID(), GROUP_NAME);
         group.add(user);
@@ -244,7 +244,7 @@ public class UserStoreWithPersistenceTest {
     @Test
     public void testGetExistingQualificationsForRoleDefinition()
             throws UserManagementException, UserGroupManagementException {
-        User user = store.createUser("def", "d@test.de", new TimedLockImpl());
+        User user = store.createUser("def", "d@test.de", new LockingAndBanningImpl());
         RoleDefinitionImpl roleDefinition = new RoleDefinitionImpl(UUID.randomUUID(), "My-Test-Role");
         store.createRoleDefinition(roleDefinition.getId(), roleDefinition.getName(), new ArrayList<>());
         UserGroupImpl userGroup = store.createUserGroup(UUID.randomUUID(), "Test-Usergroup");

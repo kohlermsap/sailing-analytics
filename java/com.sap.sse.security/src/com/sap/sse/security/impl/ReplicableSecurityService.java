@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import org.apache.shiro.session.Session;
 
-import com.sap.sse.common.TimedLock;
 import com.sap.sse.security.SecurityService;
 import com.sap.sse.security.shared.Account;
 import com.sap.sse.security.shared.QualifiedObjectIdentifier;
@@ -16,6 +15,7 @@ import com.sap.sse.security.shared.RoleDefinition;
 import com.sap.sse.security.shared.UserGroupManagementException;
 import com.sap.sse.security.shared.UserManagementException;
 import com.sap.sse.security.shared.WildcardPermission;
+import com.sap.sse.security.shared.impl.LockingAndBanning;
 import com.sap.sse.security.shared.impl.Ownership;
 import com.sap.sse.security.shared.impl.User;
 import com.sap.sse.security.shared.subscription.Subscription;
@@ -70,8 +70,6 @@ public interface ReplicableSecurityService extends SecurityService {
     Void internalUpdateUserProperties(String username, String fullName, String company, Locale locale,
             boolean didOptOutOfMarketingEmails);
 
-    Void internalResetUserTimedLock(String username);
-
     Boolean internalValidateEmail(String username, String validationSecret);
 
     Void internalSetPreference(String username, String key, String value);
@@ -125,17 +123,13 @@ public interface ReplicableSecurityService extends SecurityService {
 
     Void internalSetCORSFilterConfigurationAllowedOrigins(String serverName, String... allowedOrigins);
 
-    TimedLock internalFailedPasswordAuthentication(String username);
+    LockingAndBanning internalFailedPasswordAuthentication(String username);
 
     Boolean internalSuccessfulPasswordAuthentication(String username);
 
     Boolean internalSuccessfulBearerTokenAuthentication(String clientIP);
 
-    TimedLock internalFailedBearerTokenAuthentication(String clientIP);
+    LockingAndBanning internalFailedBearerTokenAuthentication(String clientIP);
 
-    TimedLock internalRecordUserCreationFromClientIP(String clientIP);
-
-    void internalReleaseUserCreationLockOnIp(String ip);
-
-    void internalReleaseBearerTokenLockOnIp(String ip);
+    LockingAndBanning internalRecordUserCreationFromClientIP(String clientIP);
 }

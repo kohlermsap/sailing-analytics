@@ -2547,11 +2547,4 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages,
     String strategySimulatorReadMore();
     String testConnection();
     String tracTracConnectionTestFailed(String message);
-    String ipsLockedForBearerTokenAbuse();
-    String unableToLoadIpsBlockedForBearerTokenAbuse();
-    String ipAddress();
-    String filterIpAddresses();
-    String unlock();
-    String ipsLockedForUserCreationAbuse();
-    String unableToLoadIpsBlockedForUserCreationAbuse();
 }

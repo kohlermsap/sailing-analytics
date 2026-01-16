@@ -11,9 +11,6 @@ public interface IconResources extends ClientBundle {
     @Source("images/change-acl.png")
     ImageResource changeACLIcon();
 
-    @Source("images/unlock.png")
-    ImageResource resetLockIcon();
-
     @Source("images/change-ownership.png")
     ImageResource changeOwnershipIcon();
 

@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoDatabase;
-import com.sap.sse.common.impl.TimedLockImpl;
 import com.sap.sse.mongodb.MongoDBConfiguration;
 import com.sap.sse.mongodb.MongoDBService;
 import com.sap.sse.security.interfaces.AccessControlStore;
@@ -30,6 +29,7 @@ import com.sap.sse.security.shared.TypeRelativeObjectIdentifier;
 import com.sap.sse.security.shared.UserGroupManagementException;
 import com.sap.sse.security.shared.UserStoreManagementException;
 import com.sap.sse.security.shared.WildcardPermission;
+import com.sap.sse.security.shared.impl.LockingAndBanningImpl;
 import com.sap.sse.security.shared.impl.QualifiedObjectIdentifierImpl;
 import com.sap.sse.security.shared.impl.User;
 import com.sap.sse.security.shared.impl.UserGroup;
@@ -69,7 +69,7 @@ public class AccessControlStoreTest {
         Map<String, UserGroup> defaultTenantForUser = new HashMap<>();
         defaultTenantForUser.put("dummyServer", adminTenant);
         testOwner = new UserImpl("admin", "admin@sapsailing.com", defaultTenantForUser,
-                /* userGroupProvider */ null, new TimedLockImpl());
+                /* userGroupProvider */ null, new LockingAndBanningImpl());
     }
 
     private void newStores() {
