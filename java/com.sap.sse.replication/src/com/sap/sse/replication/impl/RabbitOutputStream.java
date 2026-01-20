@@ -131,28 +131,35 @@ public class RabbitOutputStream extends OutputStream {
      * The method is synchronized as it needs exclusive and atomic access to {@link #count} and {@link #streamBuffer}.
      */
     private synchronized void sendBuffer() throws IOException {
-        if (count > 0) {
-            if (this.channel != null && this.channel.isOpen()) {
-                final byte[] message;
-                // check for the unlikely case that a client has coincidentally submitted the TERMINATION_COMMAND; we escape by
-                // appending a random byte which makes the length differ; the input stream provider will skip one byte after receiving
-                // the TERMINATION_COMMAND at the beginning of a message whose length is greater than that of the TERMINATION_COMMAND.
-                if (startsWithTerminationCommand(streamBuffer, count)) {
-                    message = new byte[count+1];
+        try {
+            if (count > 0) {
+                if (this.channel != null && this.channel.isOpen()) {
+                    final byte[] message;
+                    // check for the unlikely case that a client has coincidentally submitted the TERMINATION_COMMAND; we escape by
+                    // appending a random byte which makes the length differ; the input stream provider will skip one byte after receiving
+                    // the TERMINATION_COMMAND at the beginning of a message whose length is greater than that of the TERMINATION_COMMAND.
+                    if (startsWithTerminationCommand(streamBuffer, count)) {
+                        message = new byte[count+1];
+                    } else {
+                        message = new byte[count];
+                    }
+                    System.arraycopy(streamBuffer, 0, message, 0, count);
+                    this.channel.basicPublish(/* empty exchange name means the default exchange with direct routing;
+                                                 all queues by default bind to this exchange, using the queue name
+                                                 as the routing key.
+                                                 See also https://www.rabbitmq.com/tutorials/amqp-concepts#exchange-default
+                                               */ "", /* routingKey */ queueName, /* properties */ null, message);
+                    count = 0;
                 } else {
-                    message = new byte[count];
+                    this.closed = true;
+                    throw new IOException("AMPQ Channel seems to be closed!");
                 }
-                System.arraycopy(streamBuffer, 0, message, 0, count);
-                this.channel.basicPublish(/* empty exchange name means the default exchange with direct routing;
-                                             all queues by default bind to this exchange, using the queue name
-                                             as the routing key.
-                                             See also https://www.rabbitmq.com/tutorials/amqp-concepts#exchange-default
-                                           */ "", /* routingKey */ queueName, /* properties */ null, message);
-                count = 0;
-            } else {
-                this.closed = true;
-                throw new IOException("AMPQ Channel seems to be closed!");
             }
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "IOException while sending data to RabbitMQ queue "+queueName, e);
+            throw e; // re-throw; callers will have to know that their write failed
+            // The re-throw will most likely lead to a writeFatalException(...) on the ObjectOutputStream
+            // which doesn't help really because it breaks the protocol.
         }
     }
 

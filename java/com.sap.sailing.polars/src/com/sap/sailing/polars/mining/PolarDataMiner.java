@@ -63,11 +63,14 @@ import com.sap.sse.util.impl.ThreadFactoryWithPriority;
 
 /**
  * Entry point for the aggregation of backend polar data and backend to that data.
+ * <p>
  * 
- * Creates a polar data pipeline upon creation and puts incoming GPS fixes into that pipeline.
- * Also holds references to the actual data containers in which the aggregation results lay.
+ * Creates a polar data pipeline upon creation and puts incoming GPS fixes into that pipeline. Also holds references to
+ * the actual data containers in which the aggregation results lay.
+ * <p>
  * 
- * For more information on polars in SAP Sailing Analytics, please see: http://wiki.sapsailing.com/wiki/howto/misc/polars
+ * For more information on polars in SAP Sailing Analytics, please see:
+ * <a href="https://wiki.sapsailing.com/wiki/howto/misc/polars">https://wiki.sapsailing.com/wiki/howto/misc/polars</a>
  * 
  * @author D054528 (Frederik Petersen)
  *

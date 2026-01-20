@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -51,7 +52,6 @@ import com.sap.sailing.windestimation.data.CompetitorTrackWithEstimationData;
 import com.sap.sailing.windestimation.data.RaceWithEstimationData;
 import com.sap.sailing.windestimation.data.WindQuality;
 import com.sap.sailing.windestimation.data.transformer.CompleteManeuverCurveWithEstimationDataToManeuverForEstimationTransformer;
-import com.sap.sailing.windestimation.model.exception.ModelPersistenceException;
 import com.sap.sailing.windestimation.model.regressor.twdtransition.DistanceBasedTwdTransitionRegressorModelContext.DistanceValueRange;
 import com.sap.sailing.windestimation.model.regressor.twdtransition.DurationBasedTwdTransitionRegressorModelContext.DurationValueRange;
 import com.sap.sailing.windestimation.model.store.ClassPathReadOnlyModelStoreImpl;
@@ -66,6 +66,9 @@ import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.impl.DegreeBearingImpl;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
 import com.sap.sse.shared.util.Wait;
+import com.sap.sse.testutils.Measurement;
+import com.sap.sse.testutils.MeasurementCase;
+import com.sap.sse.testutils.MeasurementXMLFile;
 
 /**
  * 
@@ -148,7 +151,7 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
     }
 
     @Test
-    public void testIncrementalMstHmmWindEstimationForTrackedRace() throws NoWindException, ModelPersistenceException {
+    public void testIncrementalMstHmmWindEstimationForTrackedRace() throws NoWindException, IOException {
         assertTrue(windEstimationFactoryService.isReady(), "Wind estimation models are empty");
         DynamicTrackedRaceImpl trackedRace = getTrackedRace();
         WindTrack estimatedWindTrackOfTrackedRace = trackedRace
@@ -180,6 +183,9 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
                 new WindTrackCalculatorImpl(new MiddleCourseBasedTwdCalculatorImpl(),
                         new DummyBasedTwsCalculatorImpl()));
         List<WindWithConfidence<Pair<Position, TimePoint>>> windFixes = targetWindEstimation.estimateWindTrack(race);
+        final MeasurementXMLFile performanceReport = new MeasurementXMLFile(this.getClass());
+        final MeasurementCase performanceReportCase = performanceReport.addCase(getClass().getSimpleName());
+        performanceReportCase.addMeasurement(new Measurement("NumberOfTargetEstimationFixes", windFixes.size()));
         List<Wind> targetWindFixes = new ArrayList<>(windFixes.size());
         for (WindWithConfidence<Pair<Position, TimePoint>> windFix : windFixes) {
             Wind wind = windFix.getObject();
@@ -233,6 +239,7 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
         }
         assertTrue((double) foundCount / (double) targetWindFixes.size() > PERCENT_QUANTILE,
                 "Expected ratio of matching fixes to be at least "+PERCENT_QUANTILE+" but was only "+(double) foundCount / (double) estimatedWindFixes.size());
+        performanceReport.write();
     }
 
     /**
