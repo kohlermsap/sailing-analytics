@@ -97,9 +97,9 @@ public interface User extends SecurityUser<RoleDefinition, Role, UserGroup> {
      */
     Locale getLocale();
     
-    boolean getDidOptOutOfMarketingEmails();
+    boolean getDidOptOutOfFeatureAndCommunityEmails();
     
-    void setDidOptOutOfMarketingEmails(boolean didOptOutOfMarketingEmails);
+    void setDidOptOutOfFeatureAndCommunityEmails(boolean didOptOutOfFeatureAndCommunityEmails);
 
     void setLocale(Locale locale);
 

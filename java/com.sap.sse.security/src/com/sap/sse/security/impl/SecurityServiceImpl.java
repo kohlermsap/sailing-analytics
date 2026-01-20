@@ -1257,23 +1257,23 @@ implements ReplicableSecurityService, ClearStateTestSupport {
 
     @Override
     public void updateUserProperties(String username, String fullName, String company, Locale locale,
-            Boolean didOptOutOfMarketingEmails) throws UserManagementException {
+            Boolean didOptOutOfFeatureAndCommunityEmails) throws UserManagementException {
         final User user = store.getUserByName(username);
         if (user == null) {
             throw new UserManagementException(UserManagementException.USER_DOES_NOT_EXIST);
         }
-        apply(new UpdateUserPropertiesOperation(username, fullName, company, locale, didOptOutOfMarketingEmails));
+        apply(new UpdateUserPropertiesOperation(username, fullName, company, locale, didOptOutOfFeatureAndCommunityEmails));
     }
 
     @Override
     public Void internalUpdateUserProperties(String username, String fullName, String company, Locale locale,
-            Boolean didOptOutOfMarketingEmails) {
+            Boolean didOptOutOfFeatureAndCommunityEmails) {
         final User user = store.getUserByName(username);
         user.setFullName(fullName);
         user.setCompany(company);
         user.setLocale(locale);
-        if (didOptOutOfMarketingEmails != null) {
-            user.setDidOptOutOfMarketingEmails(didOptOutOfMarketingEmails);
+        if (didOptOutOfFeatureAndCommunityEmails != null) {
+            user.setDidOptOutOfFeatureAndCommunityEmails(didOptOutOfFeatureAndCommunityEmails);
         }
         store.updateUser(user);
         return null;

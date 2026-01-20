@@ -67,7 +67,7 @@ public class SecurityResource extends AbstractSecurityResource {
     public static final String COMPANY = "company";
     public static final String FULL_NAME = "fullName";
     public static final String EMAIL = "email";
-    public static final String OPT_OUT_OF_MARKETING_EMAILS = "opt_out_of_marketing_emails";
+    public static final String OPT_OUT_OF_FEATURE_AND_COMMUNITY_EMAILS = "opt_out_of_feature_and_community_emails";
     private static final String SECURITY_UI_URL_PATH = "/security/ui/";
     public static final String USERNAME = "username";
     public static final String PASSWORD = "password";
@@ -367,7 +367,7 @@ public class SecurityResource extends AbstractSecurityResource {
     @Path(USER_METHOD)
     @Produces("text/plain;charset=UTF-8")
     public Response updateUser(@Context UriInfo uriInfo, @QueryParam(USERNAME) String username,
-            @QueryParam(EMAIL) String email, @QueryParam(OPT_OUT_OF_MARKETING_EMAILS) boolean optOutOfMarketingEmails,
+            @QueryParam(EMAIL) String email, @QueryParam(OPT_OUT_OF_FEATURE_AND_COMMUNITY_EMAILS) boolean optOutOfFeatureAndCommunityEmails,
             @QueryParam(FULL_NAME) String fullName, @QueryParam(COMPANY) String company) {
         if (!getSecurityService().hasCurrentUserUpdatePermission(getSecurityService().getUserByName(username))) {
             return Response.status(Status.UNAUTHORIZED).build();
@@ -378,7 +378,7 @@ public class SecurityResource extends AbstractSecurityResource {
                     return Response.status(Status.PRECONDITION_FAILED).entity("User "+username+" not known").build();
                 } else {
                     getSecurityService().updateUserProperties(username, fullName, company, user.getLocale(),
-                            optOutOfMarketingEmails);
+                            optOutOfFeatureAndCommunityEmails);
                     if (!Util.equalsWithNull(user.getEmail(), email)) {
                         getSecurityService().updateSimpleUserEmail(username, email, getEmailValidationBaseURL(uriInfo));
                     }

@@ -247,12 +247,12 @@ public class UserProxy implements User {
     }
 
     @Override
-    public boolean getDidOptOutOfMarketingEmails() {
+    public boolean getDidOptOutOfFeatureAndCommunityEmails() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void setDidOptOutOfMarketingEmails(boolean didOptOutOfMarketingEmails) {
+    public void setDidOptOutOfFeatureAndCommunityEmails(boolean didOptOutOfFeatureAndCommunityEmails) {
         throw new UnsupportedOperationException();
     }
 }

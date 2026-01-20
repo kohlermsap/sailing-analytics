@@ -73,7 +73,7 @@ public class UserImpl extends SecurityUserImpl<RoleDefinition, Role, UserGroup, 
     
     private boolean emailValidated;
     
-    private boolean didOptOutOfMarketingEmails;
+    private boolean didOptOutOfFeatureAndCommunityEmails;
 
     private final Map<AccountType, Account> accounts;
 
@@ -118,7 +118,7 @@ public class UserImpl extends SecurityUserImpl<RoleDefinition, Role, UserGroup, 
     }
 
     public UserImpl(String name, String email, String fullName, String company, Locale locale, Boolean emailValidated,
-            Boolean didOptOutOfMarketingEmails, String passwordResetSecret, String validationSecret,
+            Boolean didOptOutOfFeatureAndCommunityEmails, String passwordResetSecret, String validationSecret,
             Map<String, UserGroup> defaultTenantForServer, Collection<Account> accounts,
             UserGroupProvider userGroupProvider, LockingAndBanning lockingAndBanning) {
         super(name);
@@ -131,7 +131,7 @@ public class UserImpl extends SecurityUserImpl<RoleDefinition, Role, UserGroup, 
         this.passwordResetSecret = passwordResetSecret;
         this.validationSecret = validationSecret;
         this.emailValidated = emailValidated;
-        this.didOptOutOfMarketingEmails = didOptOutOfMarketingEmails == null ? false : didOptOutOfMarketingEmails;
+        this.didOptOutOfFeatureAndCommunityEmails = didOptOutOfFeatureAndCommunityEmails == null ? false : didOptOutOfFeatureAndCommunityEmails;
         this.accounts = new HashMap<>();
         this.userGroupProvider = userGroupProvider;
         for (Account a : accounts) {
@@ -257,8 +257,8 @@ public class UserImpl extends SecurityUserImpl<RoleDefinition, Role, UserGroup, 
     }
 
     @Override
-    public void setDidOptOutOfMarketingEmails(boolean didOptOutOfMarketingEmails) {
-        this.didOptOutOfMarketingEmails = didOptOutOfMarketingEmails;
+    public void setDidOptOutOfFeatureAndCommunityEmails(boolean didOptOutOfFeatureAndCommunityEmails) {
+        this.didOptOutOfFeatureAndCommunityEmails = didOptOutOfFeatureAndCommunityEmails;
     }
 
     /**
@@ -379,8 +379,8 @@ public class UserImpl extends SecurityUserImpl<RoleDefinition, Role, UserGroup, 
         builder.append("isEmailValidated()=");
         builder.append(isEmailValidated());
         builder.append(", ");
-        builder.append("didOptOutOfMarketingEmails()=");
-        builder.append(getDidOptOutOfMarketingEmails());
+        builder.append("didOptOutOfFeatureAndCommunityEmails()=");
+        builder.append(getDidOptOutOfFeatureAndCommunityEmails());
         builder.append(", ");
         if (getPermissions() != null) {
             builder.append("getPermissions()=");
@@ -486,7 +486,7 @@ public class UserImpl extends SecurityUserImpl<RoleDefinition, Role, UserGroup, 
     }
 
     @Override
-    public boolean getDidOptOutOfMarketingEmails() {
-        return this.didOptOutOfMarketingEmails;
+    public boolean getDidOptOutOfFeatureAndCommunityEmails() {
+        return this.didOptOutOfFeatureAndCommunityEmails;
     }
 }

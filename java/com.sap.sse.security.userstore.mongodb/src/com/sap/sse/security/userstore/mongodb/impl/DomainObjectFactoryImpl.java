@@ -284,8 +284,8 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
         final String company = (String) userDBObject.get(FieldNames.User.COMPANY.name());
         final String localeRaw = (String) userDBObject.get(FieldNames.User.LOCALE.name());
         final Locale locale = localeRaw != null ? Locale.forLanguageTag(localeRaw) : null;
-        final Boolean didOptOutOfMarketingEmails = (boolean) userDBObject
-                .get(FieldNames.User.DID_OPT_OUT_OF_MARKETING_EMAILS.name());
+        final Boolean didOptOutOfFeatureAndCommunityEmails = (boolean) userDBObject
+                .get(FieldNames.User.DID_OPT_OUT_OF_FEATURE_AND_COMMUNITY_EMAILS.name());
         final Boolean emailValidated = (Boolean) userDBObject.get(FieldNames.User.EMAIL_VALIDATED.name());
         final String passwordResetSecret = (String) userDBObject.get(FieldNames.User.PASSWORD_RESET_SECRET.name());
         final String validationSecret = (String) userDBObject.get(FieldNames.User.VALIDATION_SECRET.name());
@@ -359,7 +359,7 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
         Document accountsMap = (Document) userDBObject.get(FieldNames.User.ACCOUNTS.name());
         Map<AccountType, Account> accounts = createAccountMapFromdDBObject(accountsMap);
         User result = new UserImpl(username, email, fullName, company, locale,
-                emailValidated == null ? false : emailValidated, didOptOutOfMarketingEmails, passwordResetSecret,
+                emailValidated == null ? false : emailValidated, didOptOutOfFeatureAndCommunityEmails, passwordResetSecret,
                 validationSecret, defaultTenant, accounts.values(), userGroupProvider, lockingAndBanning);
         for (final Role role : roles) {
             result.addRole(role);

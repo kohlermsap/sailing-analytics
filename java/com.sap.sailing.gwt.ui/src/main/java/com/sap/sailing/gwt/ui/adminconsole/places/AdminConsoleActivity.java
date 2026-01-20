@@ -311,7 +311,7 @@ public class AdminConsoleActivity extends AbstractActivity implements AdminConso
             private void changeDefaultTenantForCurrentUser(final StrippedUserGroupDTO serverTenant) {
                 final UserDTO user = clientFactory.getUserService().getCurrentUser();
                 clientFactory.getUserManagementWriteService().updateUserProperties(user.getName(), user.getFullName(),
-                        user.getCompany(), user.getLocale(), user.getDidOptOutOfMarketingEmails(),
+                        user.getCompany(), user.getLocale(), user.getDidOptOutOfFeatureAndCommunityEmails(),
                         serverTenant.getId().toString(), new AsyncCallback<UserDTO>() {
                             @Override
                             public void onFailure(Throwable caught) {

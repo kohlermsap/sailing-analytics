@@ -52,7 +52,7 @@ public interface UserManagementWriteServiceAsync extends UserManagementServiceAs
     void updateSimpleUserEmail(String username, String newEmail, String validationBaseURL, AsyncCallback<Void> callback);
 
     void updateUserProperties(String username, String fullName, String company, String localeName,
-            Boolean didOptOutOfMarketingEmails, String defaultTenantIdAsString, AsyncCallback<UserDTO> callback);
+            Boolean didOptOutOfFeatureAndCommunityEmails, String defaultTenantIdAsString, AsyncCallback<UserDTO> callback);
 
     void createRoleDefinition(String roleDefinitionIdAsString, String name, AsyncCallback<RoleDefinitionDTO> callback);
 
