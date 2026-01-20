@@ -107,7 +107,7 @@ public class SAPBrandingConfiguration implements BrandingConfiguration {
 
     @Override
     public String getFooterCopyright() {
-        return "@ 2011-2025 SAP Sailing Analytics";
+        return "\u00A9 2011-2026 SAP Sailing Analytics";
     }
 
     @Override

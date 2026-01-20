@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
   Configuration file for the test environment. This file is used for the configuration of the environment for the
@@ -19,7 +19,7 @@
   
   <!--
     In this section necessary system properties for the different web drivers can be provided if needed. For more
-    information about available properties see the following sides:
+    information about available properties see the following pages:
     
     - http://code.google.com/p/selenium/wiki/ChromeDriver
     - http://code.google.com/p/selenium/wiki/FirefoxDriver

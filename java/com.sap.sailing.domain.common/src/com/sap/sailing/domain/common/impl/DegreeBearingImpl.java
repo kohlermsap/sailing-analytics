@@ -23,11 +23,13 @@ public class DegreeBearingImpl extends AbstractBearing implements Bearing {
     private static final long serialVersionUID = -8045400378221073451L;
     private final double bearingDeg;
 
+    @Deprecated
     public DegreeBearingImpl(double bearingDeg) {
         super();
         this.bearingDeg = bearingDeg - 360 * (int) (bearingDeg / 360.);
     }
 
+    @Deprecated
     @Override
     public double getDegrees() {
         return bearingDeg;
