@@ -189,6 +189,8 @@ public interface LandscapeManagementWriteServiceAsync {
             Integer optionalMemoryInMegabytesOrNull, Integer optionalMemoryTotalSizeFactorOrNull, Integer optionalIgtimiRiotPort,
             AwsInstanceDTO optionalPreferredInstanceToDeployUnmanagedReplicaTo,
             AsyncCallback<SailingApplicationReplicaSetDTO<String>> callback);
+    
+    void startArchiveServer(SailingApplicationReplicaSetDTO<String> replicaSet, String replicaSetName, AsyncCallback<SailingApplicationReplicaSetDTO<String>> callback);
 
     /**
      * For the given replica set ensures there is at least one healthy replica, then stops replicating on all replicas and

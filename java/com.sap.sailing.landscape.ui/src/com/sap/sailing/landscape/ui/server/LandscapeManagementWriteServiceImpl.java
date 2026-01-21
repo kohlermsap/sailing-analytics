@@ -676,6 +676,12 @@ public class LandscapeManagementWriteServiceImpl extends ResultCachingProxiedRem
                 optionalMemoryTotalSizeFactorOrNull, optionalIgtimiRiotPort, optionalPreferredInstanceToDeployUnmanagedReplicaTo);
     }
     
+    @Override
+    public SailingApplicationReplicaSetDTO<String> startArchiveServer(SailingApplicationReplicaSetDTO<String> replicaSet, String replicaSetName) throws Exception {
+       logger.info(replicaSet.getName());
+        return null;
+    }
+    
     /**
      * Starts a first master process of a new replica set whose name is provided by the {@code replicaSetName}
      * parameter. The process is started on the host identified by the {@code hostToDeployTo} parameter. A set of

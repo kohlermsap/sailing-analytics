@@ -325,7 +325,8 @@ public class LandscapeManagementPanel extends SimplePanel {
         applicationReplicaSetsActionColumn.addAction(ApplicationReplicaSetsImagesBarCell.ACTION_UPGRADE,
                 applicationReplicaSetToUpgrade -> {
                     if (applicationReplicaSetToUpgrade.isArchive()) {
-                        GWT.log("Replica set: " + applicationReplicaSetToUpgrade.getName()); 
+                        upgradeArchiveReplicaSet(stringMessages,
+                            regionsTable.getSelectionModel().getSelectedObject(), Collections.singleton(applicationReplicaSetToUpgrade));
                     } else {
                         upgradeApplicationReplicaSet(stringMessages,
                             regionsTable.getSelectionModel().getSelectedObject(), Collections.singleton(applicationReplicaSetToUpgrade));
@@ -1413,7 +1414,7 @@ public class LandscapeManagementPanel extends SimplePanel {
                                     new Timer() {
                                         @Override
                                         public void run() {
-                                            landscapeManagementService.upgradeApplicationReplicaSet(regionId, replicaSet,
+                                            landscapeManagementService.upgradeApplicationReplicaSet(regionId, replicaSet, 
                                                     upgradeInstructions.getReleaseNameOrNullForLatestMaster(),
                                                     sshKeyManagementPanel.getSelectedKeyPair()==null?null:sshKeyManagementPanel.getSelectedKeyPair().getName(),
                                                             sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption() != null
@@ -1444,6 +1445,55 @@ public class LandscapeManagementPanel extends SimplePanel {
                                     }.schedule((int) timeToWaitUntilUpgradingNextReplicaSet.asMillis());
                                     timeToWaitUntilUpgradingNextReplicaSet = timeToWaitUntilUpgradingNextReplicaSet.plus(
                                             DURATION_TO_WAIT_BETWEEN_REPLICA_SET_UPGRADE_REQUESTS);
+                                }
+                            }
+
+                            @Override
+                            public void cancel() {
+                            }
+                }).show();
+            }
+        });
+    }
+    
+    private void upgradeArchiveReplicaSet(StringMessages stringMessages, String regionId,
+            Iterable<SailingApplicationReplicaSetDTO<String>> replicaSets) {
+        landscapeManagementService.getReleases(new AsyncCallback<ArrayList<ReleaseDTO>>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                errorReporter.reportError(caught.getMessage());
+            }
+            
+            @Override
+            public void onSuccess(ArrayList<ReleaseDTO> result) {
+                new UpgradeApplicationReplicaSetDialog(landscapeManagementService, result.stream().map(r->r.getName())::iterator,
+                        stringMessages, errorReporter, new DialogCallback<UpgradeApplicationReplicaSetDialog.UpgradeApplicationReplicaSetInstructions>() {
+                            @Override
+                            public void ok(UpgradeApplicationReplicaSetInstructions upgradeInstructions) {
+                                final int[] howManyMoreToGo = new int[] { Util.size(replicaSets) };
+                                for (final SailingApplicationReplicaSetDTO<String> replicaSet : replicaSets) {
+                                    landscapeManagementService.startArchiveServer(replicaSet, replicaSet.getName(),
+                                            new AsyncCallback<SailingApplicationReplicaSetDTO<String>>() {
+                                        @Override
+                                        public void onFailure(Throwable caught) {
+                                            decrementHowManyMoreToGoAndSetNonBusyIfDone(howManyMoreToGo);
+                                            errorReporter.reportError(caught.getMessage());
+                                        }
+
+                                        @Override
+                                        public void onSuccess(SailingApplicationReplicaSetDTO<String> result) {
+                                            decrementHowManyMoreToGoAndSetNonBusyIfDone(howManyMoreToGo);
+                                            if (result != null) {
+                                                Notification.notify(stringMessages.successfullyUpgradedApplicationReplicaSet(
+                                                                result.getName(), result.getVersion()), NotificationType.SUCCESS);
+                                                applicationReplicaSetsTable.replaceBasedOnEntityIdentityComparator(result);
+                                                applicationReplicaSetsTable.refresh();
+                                            } else {
+                                                Notification.notify(stringMessages.upgradingApplicationReplicaSetFailed(replicaSet.getName()),
+                                                        NotificationType.ERROR);
+                                            }
+                                        }
+                                    });
                                 }
                             }
 
