@@ -53,3 +53,4 @@ extends:
     # to determine which app is to be built/released/signed
     # Default: Race Manager App
     momaAssemblyId: 189
+    naasReleaseEnabled: true
