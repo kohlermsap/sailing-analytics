@@ -326,8 +326,8 @@ public class LandscapeManagementPanel extends SimplePanel {
         applicationReplicaSetsActionColumn.addAction(ApplicationReplicaSetsImagesBarCell.ACTION_UPGRADE,
                 applicationReplicaSetToUpgrade -> {
                     if (applicationReplicaSetToUpgrade.isArchive()) {
-                        upgradeArchiveReplicaSet(stringMessages,
-                            regionsTable.getSelectionModel().getSelectedObject(), Collections.singleton(applicationReplicaSetToUpgrade));
+                        upgradeArchiveServer(stringMessages,
+                            regionsTable.getSelectionModel().getSelectedObject(), applicationReplicaSetToUpgrade);
                     } else {
                         upgradeApplicationReplicaSet(stringMessages,
                             regionsTable.getSelectionModel().getSelectedObject(), Collections.singleton(applicationReplicaSetToUpgrade));
@@ -1457,8 +1457,8 @@ public class LandscapeManagementPanel extends SimplePanel {
         });
     }
     
-    private void upgradeArchiveReplicaSet(StringMessages stringMessages, String regionId,
-            Iterable<SailingApplicationReplicaSetDTO<String>> replicaSets) {
+    private void upgradeArchiveServer(StringMessages stringMessages, String regionId,
+            SailingApplicationReplicaSetDTO<String> replicaSet) {
         landscapeManagementService.getReleases(new AsyncCallback<ArrayList<ReleaseDTO>>() {
             @Override
             public void onFailure(Throwable caught) {
@@ -1471,36 +1471,31 @@ public class LandscapeManagementPanel extends SimplePanel {
                         stringMessages, errorReporter, new DialogCallback<UpgradeArchiveServerDialog.UpgradeArchiveServerInstructions>() {
                             @Override
                             public void ok(UpgradeArchiveServerInstructions upgradeInstructions) {
-                                final int[] howManyMoreToGo = new int[] { Util.size(replicaSets) };
-                                for (final SailingApplicationReplicaSetDTO<String> replicaSet : replicaSets) {
-                                    landscapeManagementService.startArchiveServer(regionId, replicaSet, 
-                                            upgradeInstructions.getReleaseNameOrNullForLatestMaster(),
-                                            sshKeyManagementPanel.getSelectedKeyPair()==null?null:sshKeyManagementPanel.getSelectedKeyPair().getName(),
-                                                    sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption() != null
-                                                    ? sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption().getBytes() : null,
-                                            upgradeInstructions.getReplicaReplicationBearerToken(),
-                                            new AsyncCallback<SailingApplicationReplicaSetDTO<String>>() {
-                                        @Override
-                                        public void onFailure(Throwable caught) {
-                                            decrementHowManyMoreToGoAndSetNonBusyIfDone(howManyMoreToGo);
-                                            errorReporter.reportError(caught.getMessage());
-                                        }
+                                landscapeManagementService.startArchiveServer(regionId, replicaSet, 
+                                        upgradeInstructions.getReleaseNameOrNullForLatestMaster(),
+                                        sshKeyManagementPanel.getSelectedKeyPair()==null?null:sshKeyManagementPanel.getSelectedKeyPair().getName(),
+                                                sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption() != null
+                                                ? sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption().getBytes() : null,
+                                        upgradeInstructions.getReplicaReplicationBearerToken(),
+                                        new AsyncCallback<SailingApplicationReplicaSetDTO<String>>() {
+                                    @Override
+                                    public void onFailure(Throwable caught) {
+                                        errorReporter.reportError(caught.getMessage());
+                                    }
 
-                                        @Override
-                                        public void onSuccess(SailingApplicationReplicaSetDTO<String> result) {
-                                            decrementHowManyMoreToGoAndSetNonBusyIfDone(howManyMoreToGo);
-                                            if (result != null) {
-                                                Notification.notify(stringMessages.successfullyUpgradedApplicationReplicaSet(
-                                                                result.getName(), result.getVersion()), NotificationType.SUCCESS);
-                                                applicationReplicaSetsTable.replaceBasedOnEntityIdentityComparator(result);
-                                                applicationReplicaSetsTable.refresh();
-                                            } else {
-                                                Notification.notify(stringMessages.upgradingApplicationReplicaSetFailed(replicaSet.getName()),
-                                                        NotificationType.ERROR);
-                                            }
+                                    @Override
+                                    public void onSuccess(SailingApplicationReplicaSetDTO<String> result) {
+                                        if (result != null) {
+                                            Notification.notify(stringMessages.successfullyUpgradedApplicationReplicaSet(
+                                                            result.getName(), result.getVersion()), NotificationType.SUCCESS);
+                                            applicationReplicaSetsTable.replaceBasedOnEntityIdentityComparator(result);
+                                            applicationReplicaSetsTable.refresh();
+                                        } else {
+                                            Notification.notify(stringMessages.upgradingApplicationReplicaSetFailed(replicaSet.getName()),
+                                                    NotificationType.ERROR);
                                         }
-                                    });
-                                }
+                                    }
+                                });
                             }
 
                             @Override
