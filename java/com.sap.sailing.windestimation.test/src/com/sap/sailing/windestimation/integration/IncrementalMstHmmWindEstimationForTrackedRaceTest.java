@@ -191,7 +191,6 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
         for (final WindWithConfidence<Pair<Position, TimePoint>> windFix : windFixes) {
             final Wind wind = windFix.getObject();
             targetWindFixes.add(wind);
-            System.out.println("" + wind.getTimePoint().asMillis() + "," + Math.round(wind.getFrom().getDegrees()));
         }
         final List<Wind> estimatedWindFixes = new ArrayList<>();
         assertMostFixesTWDAround(targetWindFixes, 233, /* range for 90% quantile */ 17, /* average tolerance */ 2);
