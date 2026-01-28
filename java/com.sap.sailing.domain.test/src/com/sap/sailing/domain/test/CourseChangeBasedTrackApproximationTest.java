@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Random;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,7 +77,8 @@ public class CourseChangeBasedTrackApproximationTest extends OnlineTracTracBased
      */
     @Test
     public void testNoDiffBetweenEarlyAndLateInitialization() {
-        final CompetitorWithBoat sampleCompetitor = (CompetitorWithBoat) getTrackedRace().getRace().getCompetitors().iterator().next();
+        final Iterable<Competitor> competitors = getTrackedRace().getRace().getCompetitors();
+        final CompetitorWithBoat sampleCompetitor = (CompetitorWithBoat) Util.get(competitors, new Random().nextInt(Util.size(competitors)));
         final DynamicGPSFixTrack<Competitor, GPSFixMoving> sampleTrack = getTrackedRace().getTrack(sampleCompetitor);
         final DynamicGPSFixTrack<Competitor, GPSFixMoving> trackCopy = new DynamicGPSFixMovingTrackImpl<Competitor>(sampleCompetitor, /* millisecondsOverWhichToAverage */ 15000);
         final CourseChangeBasedTrackApproximation earlyInitApproximation = new CourseChangeBasedTrackApproximation(trackCopy, sampleCompetitor.getBoat().getBoatClass());
@@ -93,7 +95,7 @@ public class CourseChangeBasedTrackApproximationTest extends OnlineTracTracBased
         final CourseChangeBasedTrackApproximation lateInitApproximation = new CourseChangeBasedTrackApproximation(trackCopy, sampleCompetitor.getBoat().getBoatClass());
         final Iterable<GPSFixMoving> earlyInitResult = earlyInitApproximation.approximate(from, to);
         final Iterable<GPSFixMoving> lateInitResult = lateInitApproximation.approximate(from, to);
-        assertEquals(Util.size(earlyInitResult), Util.size(lateInitResult));
+        assertEquals(Util.size(earlyInitResult), Util.size(lateInitResult), "Different numbers of approximation points for competitor "+sampleCompetitor.getName());
         assertEquals(Util.asSet(earlyInitResult), Util.asSet(lateInitResult));
     }
     
