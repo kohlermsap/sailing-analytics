@@ -216,7 +216,7 @@ public class PathGeneratorTracTrac extends PathGeneratorBase {
         Wind endWind = trackedRace.getWind(endPosition, endTime);
         this.raceCourse.addLast(new TimedPositionWithSpeedImpl(endTime, endPosition, endWind));
 
-        Iterable<GPSFixMoving> gpsFixes = trackedRace.approximate(competitor, maxDistance, startTime, endTime);
+        Iterable<GPSFixMoving> gpsFixes = trackedRace.approximate(competitor, startTime, endTime);
         Iterator<GPSFixMoving> gpsIter = gpsFixes.iterator();
 
         while (gpsIter.hasNext()) {

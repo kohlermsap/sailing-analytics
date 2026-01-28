@@ -343,8 +343,8 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
     private transient SmartFutureCache<Competitor, List<Maneuver>, EmptyUpdateInterval> maneuverCache;
 
     /**
-     * The values of this map are used by the {@link #approximate(Competitor, Distance, TimePoint, TimePoint)} method and
-     * maintain state to accelerate the {@link #approximate(Competitor, Distance, TimePoint, TimePoint)} method, also in
+     * The values of this map are used by the {@link #approximate(Competitor, TimePoint, TimePoint)} method and
+     * maintain state to accelerate the {@link #approximate(Competitor, TimePoint, TimePoint)} method, also in
      * live scenarios when the contents of the competitors' {@link #tracks} changes dynamically.
      */
     private final Map<Competitor, CourseChangeBasedTrackApproximation> maneuverApproximators;
@@ -2880,10 +2880,10 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
     }
 
     @Override
-    public Iterable<GPSFixMoving> approximate(Competitor competitor, Distance maxDistance, TimePoint from, TimePoint to) {
+    public Iterable<GPSFixMoving> approximate(Competitor competitor, TimePoint from, TimePoint to) {
         return maneuverApproximators.get(competitor).approximate(from, to);
     }
-
+    
     protected void triggerManeuverCacheRecalculationForAllCompetitors() {
         if (cachesSuspended) {
             triggerManeuverCacheInvalidationForAllCompetitors = true;
