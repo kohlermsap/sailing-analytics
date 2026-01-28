@@ -137,10 +137,10 @@ public class PolarDataMinerTest {
         }
         
         int millisLeft = 500000;
-        while (miner.isCurrentlyActiveAndOrHasQueue() && millisLeft > 0) {
+        while (miner.isCurrentlyActiveOrHasQueue() && millisLeft > 0) {
             Thread.sleep(100);
             millisLeft = millisLeft - 100;
-            if (miner.isCurrentlyActiveAndOrHasQueue() && millisLeft <= 0) {
+            if (miner.isCurrentlyActiveOrHasQueue() && millisLeft <= 0) {
                 throw new TimeoutException();
             }
         }

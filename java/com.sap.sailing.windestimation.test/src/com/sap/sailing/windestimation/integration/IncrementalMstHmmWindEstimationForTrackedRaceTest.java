@@ -140,7 +140,7 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
         final PolarDataServiceImpl polarDataService = new PolarDataServiceImpl();
         getTrackedRace().setPolarDataService(polarDataService);
         polarDataService.insertExistingFixes(getTrackedRace());
-        Wait.wait(()->!polarDataService.isCurrentlyActiveAndOrHasQueue(), /* timeout */ Optional.of(Duration.ONE_MINUTE),
+        Wait.wait(()->!polarDataService.isCurrentlyActiveOrHasQueue(), /* timeout */ Optional.of(Duration.ONE_MINUTE),
                 /* sleepBetweenAttempts */ Duration.ONE_SECOND.times(5), Level.INFO, "Waiting for polar data service to finish computing");
         OnlineTracTracBasedTest.fixApproximateMarkPositionsForWindReadOut(getTrackedRace(), timePointForFixes);
         final IncrementalWindEstimation windEstimation = windEstimationFactoryService.createIncrementalWindEstimationTrack(getTrackedRace());
