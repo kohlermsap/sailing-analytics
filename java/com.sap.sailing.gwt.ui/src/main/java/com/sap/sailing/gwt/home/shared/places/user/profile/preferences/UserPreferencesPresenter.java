@@ -9,12 +9,16 @@ import com.sap.sailing.gwt.home.communication.user.profile.FavoriteBoatClassesDT
 import com.sap.sailing.gwt.home.communication.user.profile.FavoriteCompetitorsDTO;
 import com.sap.sailing.gwt.home.communication.user.profile.FavoritesResult;
 import com.sap.sailing.gwt.home.communication.user.profile.GetFavoritesAction;
+import com.sap.sailing.gwt.home.communication.user.profile.GetMiscEmailPreferencesAction;
 import com.sap.sailing.gwt.home.communication.user.profile.SaveFavoriteBoatClassesAction;
 import com.sap.sailing.gwt.home.communication.user.profile.SaveFavoriteCompetitorsAction;
+import com.sap.sailing.gwt.home.communication.user.profile.SaveMiscEmailPreferences;
 import com.sap.sailing.gwt.home.shared.app.ClientFactoryWithDispatch;
+import com.sap.sailing.gwt.home.shared.partials.checkboxtile.CheckBoxTile;
 import com.sap.sailing.gwt.home.shared.partials.multiselection.AbstractSuggestedBoatClassMultiSelectionPresenter;
 import com.sap.sailing.gwt.home.shared.partials.multiselection.AbstractSuggestedCompetitorMultiSelectionPresenter;
 import com.sap.sailing.gwt.ui.client.refresh.ErrorAndBusyClientFactory;
+import com.sap.sse.gwt.dispatch.shared.commands.BooleanResult;
 import com.sap.sse.gwt.dispatch.shared.commands.VoidResult;
 
 /**
@@ -150,6 +154,28 @@ public class UserPreferencesPresenter<C extends ClientFactoryWithDispatch & Erro
         @Override
         public void onSuccess(VoidResult result) {
         }
+    }
+
+    @Override
+    public void setIsSubscribedToFeatureAndCommunityUpdates(final boolean b, final AsyncCallback<VoidResult> callback) {
+        clientFactory.getDispatch().execute(new SaveMiscEmailPreferences(b), callback);
+    }
+
+    /** get value via dispatch method, set first correct value onto checkbox */
+    @Override
+    public void initIsSubscribedToFeatureAndCommunityUpdates(final CheckBoxTile ui) {
+        final AsyncCallback<BooleanResult> callback = new AsyncCallback<BooleanResult>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                clientFactory.createErrorView("Error while loading miscellaneous email subscriptions!", caught);
+            }
+
+            @Override
+            public void onSuccess(BooleanResult result) {
+                ui.setValue(result.getValue());
+            }
+        };
+        clientFactory.getDispatch().execute(new GetMiscEmailPreferencesAction(), callback);
     }
 
 }

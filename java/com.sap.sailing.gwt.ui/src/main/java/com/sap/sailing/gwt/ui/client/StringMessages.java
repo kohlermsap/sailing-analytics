@@ -2551,4 +2551,6 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages,
     String miscellaneous();
     String securityUpdates();
     String featureAndCommunityUpdates();
+    String couldNotUpdateSubscription();
+    String subscriptionUpdatedSuccessfully();
 }

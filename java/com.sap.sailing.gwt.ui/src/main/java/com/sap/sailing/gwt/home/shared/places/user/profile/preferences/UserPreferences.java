@@ -1,10 +1,13 @@
 package com.sap.sailing.gwt.home.shared.places.user.profile.preferences;
 
+import java.util.function.BiConsumer;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasValue;
@@ -17,6 +20,9 @@ import com.sap.sailing.gwt.home.shared.partials.labeledbox.LabeledBox;
 import com.sap.sailing.gwt.home.shared.partials.multiselection.SuggestedMultiSelection;
 import com.sap.sailing.gwt.ui.client.FlagImageResolver;
 import com.sap.sailing.gwt.ui.client.StringMessages;
+import com.sap.sse.gwt.client.Notification;
+import com.sap.sse.gwt.client.Notification.NotificationType;
+import com.sap.sse.gwt.dispatch.shared.commands.VoidResult;
 
 /**
  * Implementation of {@link UserPreferencesView} where users can change their preferred selections and notifications.
@@ -50,21 +56,48 @@ public class UserPreferences extends Composite implements UserPreferencesView {
                 flagImageResolver).selectionUi;
         favoriteBoatClassesSelctionUi = new BoatClassDisplayImpl(
                 presenter.getFavoriteBoatClassesDataProvider()).selectionUi;
-        miscUi = composeMiscUi();
+        miscUi = (new MiscellaneousDisplayImpl(presenter)).selectionUi;
         initWidget(uiBinder.createAndBindUi(this));
         // TODO hide notificationsTextUi if the user's mail address is already verified
     }
+    
+    private class MiscellaneousDisplayImpl {
+        public final LabeledBox selectionUi;
 
-    private LabeledBox composeMiscUi() {
-        final FlowPanel tileList = new FlowPanel();
-        final CheckBoxTile securityUpdates = new CheckBoxTile(false, StringMessages.INSTANCE.securityUpdates(), true,
-                null, true);
-        final CheckBoxTile featureAndCommunityUpdates = new CheckBoxTile(true,
-                StringMessages.INSTANCE.featureAndCommunityUpdates(), true, newValue -> {
-                }, true);
-        tileList.add(securityUpdates);
-        tileList.add(featureAndCommunityUpdates);
-        return new LabeledBox(StringMessages.INSTANCE.miscellaneous(), tileList);
+        public MiscellaneousDisplayImpl(final UserPreferencesView.Presenter presenter) {
+            final FlowPanel tileList = new FlowPanel();
+            final CheckBoxTile securityUpdates = new CheckBoxTile(StringMessages.INSTANCE.securityUpdates(), true,
+                    null);
+            tileList.add(securityUpdates);
+            final CheckBoxTile featureAndCommunityUpdates = composeFeatureAndCommunityUpdatesTile(presenter);
+            tileList.add(featureAndCommunityUpdates);
+            selectionUi = new LabeledBox(StringMessages.INSTANCE.miscellaneous(), tileList);
+            presenter.initIsSubscribedToFeatureAndCommunityUpdates(featureAndCommunityUpdates);
+        }
+
+        private CheckBoxTile composeFeatureAndCommunityUpdatesTile(final UserPreferencesView.Presenter presenter) {
+            final BiConsumer<Boolean, AsyncCallback<VoidResult>> onToggle = (newlyToggledValue, callback) -> {
+                final AsyncCallback<VoidResult> wrapCallbackWithToastNotification = new AsyncCallback<VoidResult>() {
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        final String message = StringMessages.INSTANCE.featureAndCommunityUpdates() + ": "
+                                + StringMessages.INSTANCE.couldNotUpdateSubscription();
+                        Notification.notify(message, NotificationType.ERROR);
+                        callback.onFailure(caught);
+                    }
+
+                    @Override
+                    public void onSuccess(VoidResult result) {
+                        final String message = StringMessages.INSTANCE.featureAndCommunityUpdates() + ": "
+                                + StringMessages.INSTANCE.subscriptionUpdatedSuccessfully();
+                        Notification.notify(message, NotificationType.SUCCESS);
+                        callback.onSuccess(result);
+                    }
+                };
+                presenter.setIsSubscribedToFeatureAndCommunityUpdates(newlyToggledValue, wrapCallbackWithToastNotification);
+            };
+            return new CheckBoxTile(StringMessages.INSTANCE.featureAndCommunityUpdates(), false, onToggle);
+        }
     }
 
     public void setEdgeToEdge(boolean edgeToEdge) {

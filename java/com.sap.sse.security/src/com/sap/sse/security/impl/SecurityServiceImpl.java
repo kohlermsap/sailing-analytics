@@ -1269,9 +1269,15 @@ implements ReplicableSecurityService, ClearStateTestSupport {
     public Void internalUpdateUserProperties(String username, String fullName, String company, Locale locale,
             Boolean didOptOutOfFeatureAndCommunityEmails) {
         final User user = store.getUserByName(username);
-        user.setFullName(fullName);
-        user.setCompany(company);
-        user.setLocale(locale);
+        if (fullName != null) {
+            user.setFullName(fullName);
+        }
+        if (company != null) {
+            user.setCompany(company);
+        }
+        if (locale != null) {
+            user.setLocale(locale);
+        }
         if (didOptOutOfFeatureAndCommunityEmails != null) {
             user.setDidOptOutOfFeatureAndCommunityEmails(didOptOutOfFeatureAndCommunityEmails);
         }
