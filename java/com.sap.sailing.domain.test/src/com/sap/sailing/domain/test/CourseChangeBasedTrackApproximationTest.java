@@ -34,6 +34,9 @@ import com.sap.sse.common.impl.MillisecondsTimePoint;
 public class CourseChangeBasedTrackApproximationTest extends OnlineTracTracBasedTest {
     private DynamicGPSFixTrack<Competitor, GPSFixMoving> track;
     private CourseChangeBasedTrackApproximation approximation;
+    private Iterable<Competitor> competitors;
+    private CompetitorWithBoat sampleCompetitor;
+    private DynamicGPSFixTrack<Competitor, GPSFixMoving> sampleTrack;
 
     public CourseChangeBasedTrackApproximationTest() throws MalformedURLException, URISyntaxException {
         super();
@@ -49,14 +52,11 @@ public class CourseChangeBasedTrackApproximationTest extends OnlineTracTracBased
                 new ReceiverType[] { ReceiverType.RACECOURSE, ReceiverType.RAWPOSITIONS });
         getTrackedRace().waitUntilNotLoading();
         assertFalse(Util.isEmpty(getTrackedRace().getRace().getCompetitors()));
-        final Competitor sampleCompetitor = getTrackedRace().getRace().getCompetitors().iterator().next();
-        final DynamicGPSFixTrack<Competitor, GPSFixMoving> sampleTrack = getTrackedRace().getTrack(sampleCompetitor);
-        sampleTrack.lockForRead();
-        try {
-            assertFalse(Util.isEmpty(sampleTrack.getRawFixes()), "Track of competitor "+sampleCompetitor.getName()+" is empty");
-        } finally {
-            sampleTrack.unlockAfterRead();
-        }
+        do {
+            competitors = getTrackedRace().getRace().getCompetitors();
+            sampleCompetitor = (CompetitorWithBoat) Util.get(competitors, new Random().nextInt(Util.size(competitors)));
+            sampleTrack = getTrackedRace().getTrack(sampleCompetitor);
+        } while (sampleTrack.isEmpty());
         final CompetitorWithBoat competitor = TrackBasedTest.createCompetitorWithBoat("Someone");
         track = new DynamicGPSFixMovingTrackImpl<Competitor>(competitor,
                 /* millisecondsOverWhichToAverage */5000, /* lossless compaction */true);
@@ -79,9 +79,6 @@ public class CourseChangeBasedTrackApproximationTest extends OnlineTracTracBased
      */
     @Test
     public void testNoDiffBetweenEarlyAndLateInitialization() {
-        final Iterable<Competitor> competitors = getTrackedRace().getRace().getCompetitors();
-        final CompetitorWithBoat sampleCompetitor = (CompetitorWithBoat) Util.get(competitors, new Random().nextInt(Util.size(competitors)));
-        final DynamicGPSFixTrack<Competitor, GPSFixMoving> sampleTrack = getTrackedRace().getTrack(sampleCompetitor);
         final DynamicGPSFixTrack<Competitor, GPSFixMoving> trackCopy = new DynamicGPSFixMovingTrackImpl<Competitor>(sampleCompetitor, /* millisecondsOverWhichToAverage */ 15000);
         final CourseChangeBasedTrackApproximation earlyInitApproximation = new CourseChangeBasedTrackApproximation(trackCopy, sampleCompetitor.getBoat().getBoatClass());
         final TimePoint from = sampleTrack.getFirstRawFix().getTimePoint();
