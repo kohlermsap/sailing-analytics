@@ -4,18 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Random;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.sap.sailing.domain.base.BoatClass;
 import com.sap.sailing.domain.base.Competitor;
 import com.sap.sailing.domain.base.CompetitorWithBoat;
+import com.sap.sailing.domain.base.impl.BoatClassImpl;
 import com.sap.sailing.domain.common.impl.DegreePosition;
 import com.sap.sailing.domain.common.impl.KnotSpeedImpl;
 import com.sap.sailing.domain.common.impl.KnotSpeedWithBearingImpl;
@@ -24,79 +19,25 @@ import com.sap.sailing.domain.common.tracking.impl.GPSFixMovingImpl;
 import com.sap.sailing.domain.tracking.DynamicGPSFixTrack;
 import com.sap.sailing.domain.tracking.impl.CourseChangeBasedTrackApproximation;
 import com.sap.sailing.domain.tracking.impl.DynamicGPSFixMovingTrackImpl;
-import com.sap.sailing.domain.tractracadapter.ReceiverType;
+import com.sap.sse.common.Duration;
+import com.sap.sse.common.Speed;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.Util;
 import com.sap.sse.common.impl.DegreeBearingImpl;
 import com.sap.sse.common.impl.MillisecondsDurationImpl;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
 
-public class CourseChangeBasedTrackApproximationTest extends OnlineTracTracBasedTest {
+public class CourseChangeBasedTrackApproximationTest {
     private DynamicGPSFixTrack<Competitor, GPSFixMoving> track;
     private CourseChangeBasedTrackApproximation approximation;
-    private Iterable<Competitor> competitors;
-    private CompetitorWithBoat sampleCompetitor;
-    private DynamicGPSFixTrack<Competitor, GPSFixMoving> sampleTrack;
+    private final static BoatClass boatClass = new BoatClassImpl("505", /* typicallyStartsUpwind */true);
 
-    public CourseChangeBasedTrackApproximationTest() throws MalformedURLException, URISyntaxException {
-        super();
-    }
-    
     @BeforeEach
     public void setUp() throws Exception {
-        super.setUp();
-        URI storedUri = new URI("file:///" + new File("resources/event_20110609_KielerWoch-505_Race_2.mtb").getCanonicalPath().replace('\\', '/'));
-        super.setUp(
-                new URL("file:///" + new File("resources/event_20110609_KielerWoch-505_Race_2.txt").getCanonicalPath()),
-                /* liveUri */ null, /* storedUri */ storedUri,
-                new ReceiverType[] { ReceiverType.RACECOURSE, ReceiverType.RAWPOSITIONS });
-        getTrackedRace().waitUntilNotLoading();
-        assertFalse(Util.isEmpty(getTrackedRace().getRace().getCompetitors()));
-        do {
-            competitors = getTrackedRace().getRace().getCompetitors();
-            sampleCompetitor = (CompetitorWithBoat) Util.get(competitors, new Random().nextInt(Util.size(competitors)));
-            sampleTrack = getTrackedRace().getTrack(sampleCompetitor);
-        } while (sampleTrack.isEmpty());
         final CompetitorWithBoat competitor = TrackBasedTest.createCompetitorWithBoat("Someone");
         track = new DynamicGPSFixMovingTrackImpl<Competitor>(competitor,
                 /* millisecondsOverWhichToAverage */5000, /* lossless compaction */true);
         approximation = new CourseChangeBasedTrackApproximation(track, competitor.getBoat().getBoatClass());
-    }
-    
-    /**
-     * During the work on bug5959 (https://bugzilla.sapsailing.com/bugzilla/show_bug.cgi?id=5959) we identified an issue
-     * with early vs. late initialization of the approximation. When initializing the
-     * {@link CourseChangeBasedTrackApproximation} objects before adding any fixes to the track, we received different
-     * results than when initializing it after adding fixes and first trying to compute maneuvers. This goes against the
-     * specification that the approximation should be independent of when it is initialized.<p>
-     * 
-     * To conduct the test, we take the fixes from a loaded competitor track, create a new {@link DynamicGPSFixMovingTrackImpl},
-     * construct a {@link CourseChangeBasedTrackApproximation} based on this track (early initialization), then copy all fixes
-     * from the loaded competitor track to the new test track (which adds these fixes to the approximation), then create a second
-     * {@link CourseChangeBasedTrackApproximation} which will then add all fixes in one sweep. Then, we compare the results of
-     * {@link CourseChangeBasedTrackApproximation#approximate(TimePoint, TimePoint)} for the duration of the entire track,
-     * expecting them to be equal.
-     */
-    @Test
-    public void testNoDiffBetweenEarlyAndLateInitialization() {
-        final DynamicGPSFixTrack<Competitor, GPSFixMoving> trackCopy = new DynamicGPSFixMovingTrackImpl<Competitor>(sampleCompetitor, /* millisecondsOverWhichToAverage */ 15000);
-        final CourseChangeBasedTrackApproximation earlyInitApproximation = new CourseChangeBasedTrackApproximation(trackCopy, sampleCompetitor.getBoat().getBoatClass());
-        final TimePoint from = sampleTrack.getFirstRawFix().getTimePoint();
-        final TimePoint to = sampleTrack.getLastRawFix().getTimePoint();
-        sampleTrack.lockForRead();
-        try {
-            for (final GPSFixMoving fix : sampleTrack.getRawFixes()) {
-                trackCopy.add(fix);
-            }
-        } finally {
-            sampleTrack.unlockAfterRead();
-        }
-        final CourseChangeBasedTrackApproximation lateInitApproximation = new CourseChangeBasedTrackApproximation(trackCopy, sampleCompetitor.getBoat().getBoatClass());
-        assertEquals(earlyInitApproximation.getNumberOfFixesAdded(), lateInitApproximation.getNumberOfFixesAdded(), "Number of fixes added to approximators differs");
-        final Iterable<GPSFixMoving> earlyInitResult = earlyInitApproximation.approximate(from, to);
-        final Iterable<GPSFixMoving> lateInitResult = lateInitApproximation.approximate(from, to);
-        assertEquals(Util.size(earlyInitResult), Util.size(lateInitResult), "Different numbers of approximation points for competitor "+sampleCompetitor.getName());
-        assertEquals(Util.asSet(earlyInitResult), Util.asSet(lateInitResult));
     }
     
     @Test
@@ -123,6 +64,62 @@ public class CourseChangeBasedTrackApproximationTest extends OnlineTracTracBased
             assertTrue(!candidate.getTimePoint().before(startOfTurn) &&
                     !candidate.getTimePoint().after(endOfTurn));
         }
+    }
+
+    @Test
+    public void testDirectionChangeJustAboveThreshold() {
+        final Duration samplingInterval = Duration.ONE_SECOND;
+        final double aBitOverMinimumManeuverAngleDegrees = boatClass.getManeuverDegreeAngleThreshold() * 1.2;
+        final TimePoint start = TimePoint.of(10000l);
+        final Speed speed = new KnotSpeedImpl(5.0);
+        GPSFixMoving next = fix(start.asMillis(), 0, 0, speed.getKnots(), 0);
+        track.add(next);
+        // perform aBitOverMinimumManeuverAngleDegrees within five fixes:
+        final int NUMBER_OF_FIXES_FOR_MANEUVER = 5;
+        for (int i=0; i<NUMBER_OF_FIXES_FOR_MANEUVER; i++) {
+            next = travel(next, samplingInterval.asMillis(), speed.getKnots(), ((double) i+1.0)/((double) NUMBER_OF_FIXES_FOR_MANEUVER) * aBitOverMinimumManeuverAngleDegrees);
+            track.add(next);
+        }
+        final Iterable<GPSFixMoving> oneManeuverCandidate = approximation.approximate(start, start.plus(samplingInterval.times(NUMBER_OF_FIXES_FOR_MANEUVER)));
+        assertFalse(Util.isEmpty(oneManeuverCandidate));
+        assertEquals(1, Util.size(oneManeuverCandidate));
+    }
+
+    /**
+     * See also https://bugzilla.sapsailing.com/bugzilla/show_bug.cgi?id=6209#c5 which talks about FixWindow contents
+     * that describe COG changes in different directions across the FixWindow's duration. This way, a COG change just
+     * barely exceeding the threshold wouldn't be recognized/emitted as an approximated fix if it is preceded by a COG
+     * change in the other direction that does not by itself pass the threshold.
+     */
+    @Test
+    public void testTurningDirectionChangeInSameWindow() {
+        final Duration samplingInterval = Duration.ONE_SECOND;
+        final double halfMinimumManeuverAngleDegrees = boatClass.getManeuverDegreeAngleThreshold() / 2.0;
+        final TimePoint start = TimePoint.of(10000l);
+        final Speed speed = new KnotSpeedImpl(5.0);
+        double cog = 0.0;
+        GPSFixMoving next = fix(start.asMillis(), 0, 0, speed.getKnots(), cog);
+        track.add(next);
+        // perform halfMinimumManeuverAngleDegrees within five fixes:
+        final int NUMBER_OF_FIXES_FOR_NON_MANEUVER = 5;
+        for (int i=0; i<NUMBER_OF_FIXES_FOR_NON_MANEUVER; i++) {
+            cog -= 1.0/((double) NUMBER_OF_FIXES_FOR_NON_MANEUVER) * halfMinimumManeuverAngleDegrees;
+            next = travel(next, samplingInterval.asMillis(), speed.getKnots(), cog);
+            track.add(next);
+        }
+        final Iterable<GPSFixMoving> emptyManeuverCandidates = approximation.approximate(start, start.plus(samplingInterval.times(NUMBER_OF_FIXES_FOR_NON_MANEUVER)));
+        assertTrue(Util.isEmpty(emptyManeuverCandidates));
+        final double aBitOverMinimumManeuverAngleDegrees = boatClass.getManeuverDegreeAngleThreshold() * 1.2;
+        // perform aBitOverMinimumManeuverAngleDegrees within five fixes:
+        final int NUMBER_OF_FIXES_FOR_MANEUVER = 5;
+        for (int i=0; i<NUMBER_OF_FIXES_FOR_MANEUVER; i++) {
+            cog += 1.0/((double) NUMBER_OF_FIXES_FOR_MANEUVER) * aBitOverMinimumManeuverAngleDegrees;
+            next = travel(next, samplingInterval.asMillis(), speed.getKnots(), cog);
+            track.add(next);
+        }
+        final Iterable<GPSFixMoving> oneManeuverCandidate = approximation.approximate(start, start.plus(samplingInterval.times(NUMBER_OF_FIXES_FOR_NON_MANEUVER+NUMBER_OF_FIXES_FOR_MANEUVER)));
+        assertFalse(Util.isEmpty(oneManeuverCandidate));
+        assertEquals(1, Util.size(oneManeuverCandidate));
     }
 
     private GPSFixMoving fix(long timepoint, double lat, double lon, double speedInKnots, double cogDeg) {

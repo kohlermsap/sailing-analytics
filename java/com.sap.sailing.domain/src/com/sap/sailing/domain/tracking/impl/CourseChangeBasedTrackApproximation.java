@@ -14,6 +14,7 @@ import java.util.TreeSet;
 
 import com.sap.sailing.domain.base.BoatClass;
 import com.sap.sailing.domain.base.Competitor;
+import com.sap.sailing.domain.common.NauticalSide;
 import com.sap.sailing.domain.common.SpeedWithBearing;
 import com.sap.sailing.domain.common.tracking.GPSFixMoving;
 import com.sap.sailing.domain.common.tracking.impl.GPSFixMovingImpl;
@@ -28,8 +29,25 @@ import com.sap.sse.common.impl.TimeRangeImpl;
 
 /**
  * Given a {@link GPSFixTrack} containing {@link GPSFixMoving}, an instance of this class finds areas on the track where
- * the course changes sufficiently quickly to indicate a relevant maneuver. The basis for this is the
- * {@link BoatClass}'s {@link BoatClass#getApproximateManeuverDuration() maneuver duration}.
+ * the course changes sufficiently quickly and far to indicate a relevant maneuver. The basis for the duration to
+ * consider is the {@link BoatClass}'s {@link BoatClass#getApproximateManeuverDuration() maneuver duration}. The basis
+ * for the angular threshold is {@link BoatClass#getManeuverDegreeAngleThreshold()}.
+ * <p>
+ * 
+ * Analyzing the track works with a {@link FixWindow analysis window} that contains up to a certain duration worth of
+ * GPS fixes, keeping track of their respective {@link SpeedWithBearing} COG/SOG vectors as well as the cumulative
+ * course change counted from the beginning of the window up to each of the fixes stored in the window. Course changes
+ * within the window are all in the same {@link NauticalSide direction} (so either all to {@link NauticalSide#PORT PORT}
+ * or all to {@link NauticalSide#STARBOARD STARBOARD}). When a fix addition leads to a maximum cumulative course change
+ * exceeding the threshold, a maneuver candidate is added to {@link #maneuverCandidates}, and the fixes from the start
+ * of the window up to the fix where the
+ * <p>
+ * 
+ * When a fix is added to the window that at the insertion point leads to a change in COG change direction, all fixes
+ * from the beginning of the window up to the fix preceding the one added are removed, so the window now starts with a
+ * course change in the other direction. If the fix insert position was not at the end of the window, the course change
+ * direction from the fix added to the next fix is also checked for consistency with the first course change direction
+ * of the window.
  * <p>
  * 
  * Upon construction, all maneuver candidates for all fixes already contained by the {@link GPSFixTrack} are determined.
@@ -197,6 +215,7 @@ public class CourseChangeBasedTrackApproximation implements Serializable, GPSTra
                             absoluteMaximumTotalCourseChangeFromBeginningOfWindowInDegrees = Math.abs(totalCourseChangeFromBeginningOfWindowForCurrentFix);
                             indexOfMaximumTotalCourseChange = insertPosition-1;
                         }
+                        // TODO bug6209: now check if the course change direction has changed (from "to port" to "to starboard" or vice versa); if so, remove fixes from beginning of window up to the change point
                     }
                     if (windowDuration.compareTo(getMaximumWindowLength()) > 0) {
                         result = tryToExtractManeuverCandidate();
