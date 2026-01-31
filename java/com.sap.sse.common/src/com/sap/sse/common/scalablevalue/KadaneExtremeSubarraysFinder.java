@@ -90,6 +90,16 @@ implements Serializable, Iterable<T> {
 
     public synchronized void add(int index, T t) {
         sequence.add(index, t);
+        if (index == 0) {
+            maxSumEndingAt.add(index, t.divide(1));
+            // TODO update subsequent elements based on the change
+        } else {
+            if (t.compareTo(maxSumEndingAt.get(index-1)) >= 0) {
+                maxSumEndingAt.add(index, t.divide(1));
+            } else {
+                // TODO
+            }
+        }
         // TODO update all structures, sums, indices, and invariants
     }
     
