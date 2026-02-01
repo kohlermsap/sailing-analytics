@@ -42,12 +42,12 @@ implements Serializable, Iterable<T> {
      * includes prior elements; or the single element {@code sequence.get(i)} is greater than the sum of it and the maximum
      * sum ending at the previous element {@code i-1}.
      */
-    private final List<AveragesTo> maxSumEndingAt;
+    private final List<ScalableValueWithDistance<ValueType, AveragesTo>> maxSumEndingAt;
     
     /**
      * The maximum of the sums of any contiguous sub-sequence
      */
-    private AveragesTo maxSum;
+    private ScalableValueWithDistance<ValueType, AveragesTo> maxSum;
     
     /**
      * Index of the first element in {@link #sequence} of the contiguous sub-sequence having the maximum sum
@@ -62,9 +62,9 @@ implements Serializable, Iterable<T> {
     /**
      * See {@code #maxSumEndingAt}, only for the minimum.
      */
-    private final List<AveragesTo> minSumEndingAt;
+    private final List<ScalableValueWithDistance<ValueType, AveragesTo>> minSumEndingAt;
     
-    private AveragesTo minSum;
+    private ScalableValueWithDistance<ValueType, AveragesTo> minSum;
     
     /**
      * Index of the first element in {@link #sequence} of the contiguous sub-sequence having the minium sum
@@ -91,12 +91,13 @@ implements Serializable, Iterable<T> {
     public synchronized void add(int index, T t) {
         sequence.add(index, t);
         if (index == 0) {
-            maxSumEndingAt.add(index, t.divide(1));
+            maxSumEndingAt.add(index, t);
             // TODO update subsequent elements based on the change
         } else {
-            if (t.compareTo(maxSumEndingAt.get(index-1)) >= 0) {
-                maxSumEndingAt.add(index, t.divide(1));
+            if (t.divide(1).compareTo(maxSumEndingAt.get(index-1).divide(1)) >= 0) {
+                maxSumEndingAt.add(index, t); // one-element sum consisting of element at "index" is the maximum
             } else {
+                maxSumEndingAt.add(index, t.add(maxSumEndingAt.get(index-1)));
                 // TODO
             }
         }
@@ -116,11 +117,11 @@ implements Serializable, Iterable<T> {
         remove(sequence.indexOf(t));
     }
     
-    public AveragesTo getMaxSum() {
+    public ScalableValueWithDistance<ValueType, AveragesTo> getMaxSum() {
         return maxSum;
     }
     
-    public AveragesTo getMinSum() {
+    public ScalableValueWithDistance<ValueType, AveragesTo> getMinSum() {
         return minSum;
     }
     
