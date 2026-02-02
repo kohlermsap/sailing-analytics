@@ -28,7 +28,7 @@ resources:
       # For available versions, please have a look here (use the tag, not the release name):
       # https://github.tools.sap/SAPMobile/sap-mobile-pipeline/releases
       # ----------
-      ref: 'refs/tags/3.13.3'
+      #ref: 'refs/tags/3.13.3'
 
 #################################################################
 ######################### Pipeline Start ########################
@@ -53,3 +53,4 @@ extends:
     # to determine which app is to be built/released/signed
     # Default: Race Manager App
     momaAssemblyId: 189
+    naasReleaseEnabled: true

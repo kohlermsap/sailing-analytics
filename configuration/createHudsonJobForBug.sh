@@ -5,8 +5,7 @@ if [ $# -eq 0 ]; then
     echo
     echo "Constructs a Hudson job for the given bugid"
     echo "Example: $0 4221 [ {Bugzilla-API-Key} ]"
-    echo "Builds a Hudson job for bug branch bug4221, linking to the Bugzilla bug and copying a release"
-    echo "from Github to https://releases.sapsailing.com if the Github Actions Workflow built one."
+    echo "Builds a Hudson job for bug branch bug4221, and linking to the Bugzilla bug."
     echo "If a Bugzilla API Key is provided (may also be specified in the BUGZILLA_API_KEY environment"
     echo "variable), it is used to add the bug summary to the build job's description."
     echo "Get a Bugzilla API Key for your user account at https://bugzilla.sapsailing.com/bugzilla/userprefs.cgi?tab=apikey"

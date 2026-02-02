@@ -228,7 +228,7 @@ public class PolarDataMiner {
         }
     }
 
-    public boolean isCurrentlyActiveAndOrHasQueue() {
+    public boolean isCurrentlyActiveOrHasQueue() {
         boolean isActive = executor.getActiveCount() > 0;
         boolean hasQueue = executor.getQueue().size() > 0;
         return isActive || hasQueue;
