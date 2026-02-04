@@ -73,6 +73,7 @@ import com.sap.sse.common.Util;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.Util.Triple;
 import com.sap.sse.gwt.server.ResultCachingProxiedRemoteServiceServlet;
+import com.sap.sse.landscape.DefaultProcessConfigurationVariables;
 import com.sap.sse.landscape.Host;
 import com.sap.sse.landscape.Landscape;
 import com.sap.sse.landscape.Release;
@@ -680,20 +681,27 @@ public class LandscapeManagementWriteServiceImpl extends ResultCachingProxiedRem
     @Override
     public SailingApplicationReplicaSetDTO<String> createArchiveReplicaSet(String regionId, SailingApplicationReplicaSetDTO<String> archiveReplicaSetToUpgrade,
             String instanceType, String releaseNameOrNullForLatestMaster, String optionalKeyName,
-            byte[] privateKeyEncryptionPassphrase, String replicationBearerToken) throws Exception {
+            byte[] privateKeyEncryptionPassphrase, String optionalReplicationBearerToken) throws Exception {
         checkLandscapeManageAwsPermission();
+        final String bearerToken;
         final AwsRegion region = new AwsRegion(regionId, getLandscape());
         final AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> awsReplicaSet =
                 convertFromApplicationReplicaSetDTO(region, archiveReplicaSetToUpgrade, optionalKeyName, privateKeyEncryptionPassphrase);
+        final SailingAnalyticsProcess<String> master = awsReplicaSet.getMaster();
+        if(Util.hasLength(optionalReplicationBearerToken)) {
+            bearerToken = optionalReplicationBearerToken;
+        } else {
+            bearerToken = master.getEnvShValueFor(DefaultProcessConfigurationVariables.REPLICATE_MASTER_BEARER_TOKEN, Landscape.WAIT_FOR_PROCESS_TIMEOUT, Optional.of(optionalKeyName), privateKeyEncryptionPassphrase);
+        }
         final String replicaSetName = SharedLandscapeConstants.ARCHIVE_SERVER_APPLICATION_REPLICA_SET_NAME;
         final String archiveCandidateSubDomain = SharedLandscapeConstants.ARCHIVE_CANDIDATE_SUBDOMAIN; 
         final String domainName = AwsLandscape.getHostedZoneName(archiveReplicaSetToUpgrade.getHostname());
         final Release release = getLandscapeService().getRelease(releaseNameOrNullForLatestMaster);
-        final Database databaseConfiguration = awsReplicaSet.getMaster().getDatabaseConfiguration(region,
+        final Database databaseConfiguration = master.getDatabaseConfiguration(region,
                 Landscape.WAIT_FOR_PROCESS_TIMEOUT, Optional.ofNullable(optionalKeyName),
                 privateKeyEncryptionPassphrase);
         final AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> result = getLandscapeService().createArchiveReplicaSet(regionId, replicaSetName,
-                instanceType, releaseNameOrNullForLatestMaster, databaseConfiguration, optionalKeyName, privateKeyEncryptionPassphrase, replicationBearerToken, domainName,
+                instanceType, releaseNameOrNullForLatestMaster, databaseConfiguration, optionalKeyName, privateKeyEncryptionPassphrase, bearerToken, domainName,
                 /* optionalMemoryInMegabytesOrNull */ null, /* optionalMemoryTotalSizeFactorOrNull */ null, /* optionalIgtimiRiotPort */ null);
         return new SailingApplicationReplicaSetDTO<String>(result.getName(), convertToSailingAnalyticsProcessDTO(result
                 .getMaster(), Optional.ofNullable(optionalKeyName), privateKeyEncryptionPassphrase), /* replicas */ Collections.emptySet(),

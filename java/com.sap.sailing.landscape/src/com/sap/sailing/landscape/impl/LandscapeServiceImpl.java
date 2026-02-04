@@ -272,6 +272,12 @@ public class LandscapeServiceImpl implements LandscapeService {
         final AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> replicaSet =
                 landscape.getApplicationReplicaSet(region, replicaSetName, master, Collections.emptySet(),
                         Landscape.WAIT_FOR_PROCESS_TIMEOUT, Optional.ofNullable(optionalKeyName), privateKeyEncryptionPassphrase);
+        final ReverseProxy<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>, RotatingFileBasedLog> reverseProxyCluster =
+                getLandscape().getCentralReverseProxy(region);
+        // TODO bug5311: when refactoring this for general scope migration, moving to a dedicated replica set will not require this
+        // TODO bug5311: when refactoring this for general scope migration, moving into a cold storage server other than ARCHIVE will require ALBToReverseProxyRedirectMapper instead
+        logger.info("Adding reverse proxy rule for archive candidate with hostname "+ hostname + " and private ip address");
+        reverseProxyCluster.setPlainRedirect(hostname, master, Optional.of(optionalKeyName), privateKeyEncryptionPassphrase);
         return replicaSet;
     }
     
