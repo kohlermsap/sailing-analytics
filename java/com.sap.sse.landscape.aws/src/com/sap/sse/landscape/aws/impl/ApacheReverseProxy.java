@@ -69,10 +69,10 @@ implements com.sap.sse.landscape.Process<RotatingFileBasedLog, MetricsT> {
      * the proxy's configuration.
      */
     private static final String CONFIG_FILE_EXTENSION = ".conf";
-    private static final String HOME_REDIRECT_MACRO = "Home-SSL";
-    private static final String PLAIN_REDIRECT_MACRO = "Plain-SSL";
-    private static final String EVENT_REDIRECT_MACRO = "Event-SSL";
-    private static final String SERIES_REDIRECT_MACRO = "Series-SSL";
+    private static final String HOME_REDIRECT_MACRO = "Home";
+    private static final String PLAIN_REDIRECT_MACRO = "Plain";
+    private static final String EVENT_REDIRECT_MACRO = "Event";
+    private static final String SERIES_REDIRECT_MACRO = "Series";
     private static final String HOME_ARCHIVE_REDIRECT_MACRO = "Home-ARCHIVE";
     private static final String EVENT_ARCHIVE_REDIRECT_MACRO = "Event-ARCHIVE";
     private static final String SERIES_ARCHIVE_REDIRECT_MACRO = "Series-ARCHIVE";
