@@ -1,11 +1,15 @@
 package com.sap.sse.common.scalablevalue;
 
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class KadaneExtremeSubsequenceFinderImpl<ValueType, AveragesTo extends Comparable<AveragesTo>, T extends ComparableScalableValueWithDistance<ValueType, AveragesTo>>
+import com.sap.sse.common.Util;
+
+public class KadaneExtremeSubsequenceFinderLinkedNodesImpl<ValueType, AveragesTo extends Comparable<AveragesTo>, T extends ComparableScalableValueWithDistance<ValueType, AveragesTo>>
         implements KadaneExtremeSubsequenceFinder<ValueType, AveragesTo, T> {
 
     private static final long serialVersionUID = -8986609116472739636L;
@@ -15,7 +19,17 @@ public class KadaneExtremeSubsequenceFinderImpl<ValueType, AveragesTo extends Co
     private Node<ValueType, AveragesTo, T> last;
 
     private int size;
+    
+    private final TreeSet<Node<ValueType, AveragesTo, T>> nodesOrderedByMinSum;
+    
+    private final TreeSet<Node<ValueType, AveragesTo, T>> nodesOrderedByMaxSum;
 
+    private static <ValueType, AveragesTo extends Comparable<AveragesTo>, T extends ComparableScalableValueWithDistance<ValueType, AveragesTo>> Integer compare(
+            final ScalableValueWithDistance<ValueType, AveragesTo> a,
+            final ScalableValueWithDistance<ValueType, AveragesTo> b) {
+        return a.divide(1).compareTo(b.divide(1));
+    }
+    
     /**
      * Nodes of this type are used to construct a doubly-linked list, with each node holding a reference to the node
      * forming the start of the sequence with the maximum sum.
@@ -23,7 +37,9 @@ public class KadaneExtremeSubsequenceFinderImpl<ValueType, AveragesTo extends Co
      * @author Axel Uhl (d043530)
      */
     private static class Node<ValueType, AveragesTo extends Comparable<AveragesTo>, T extends ComparableScalableValueWithDistance<ValueType, AveragesTo>> {
+        private static int idCounter = 0;
         private final T value;
+        private final int id;
         private Node<ValueType, AveragesTo, T> previous;
         private Node<ValueType, AveragesTo, T> next;
         private ScalableValueWithDistance<ValueType, AveragesTo> minSumEndingHere;
@@ -33,6 +49,7 @@ public class KadaneExtremeSubsequenceFinderImpl<ValueType, AveragesTo extends Co
 
         private Node(Node<ValueType, AveragesTo, T> previous, Node<ValueType, AveragesTo, T> next, T value) {
             super();
+            id = idCounter++;
             this.previous = previous;
             this.next = next;
             this.value = value;
@@ -42,6 +59,14 @@ public class KadaneExtremeSubsequenceFinderImpl<ValueType, AveragesTo extends Co
             this.startOfMaxSumSubSequenceEndingHere = null;
         }
 
+        /**
+         * A unique ID that can be used, e.g., for disambiguation during sorting, so as to keep two nodes with
+         * {@link #getValue} values comparing equal apart.
+         */
+        private int getId() {
+            return id;
+        }
+        
         private Node<ValueType, AveragesTo, T> getPrevious() {
             return previous;
         }
@@ -138,7 +163,7 @@ public class KadaneExtremeSubsequenceFinderImpl<ValueType, AveragesTo extends Co
         private boolean updateMaxFromPrevious() {
             return updateThisFromPrevious(Node::getMaxSumEndingHere,
                     Node::getStartOfMaxSumSubSequenceEndingHere, this::setMaxSumEndingHere,
-                    this::setStartOfMaxSumSubSequenceEndingHere, this::compare);
+                    this::setStartOfMaxSumSubSequenceEndingHere, KadaneExtremeSubsequenceFinderLinkedNodesImpl::compare);
         }
 
         private boolean updateThisFromPrevious(Function<Node<ValueType, AveragesTo, T>, ScalableValueWithDistance<ValueType, AveragesTo>> getExtremeSumEndingHere,
@@ -167,16 +192,21 @@ public class KadaneExtremeSubsequenceFinderImpl<ValueType, AveragesTo extends Co
             }
             return changed;
         }
-
-        private Integer compare(final ScalableValueWithDistance<ValueType, AveragesTo> a, final ScalableValueWithDistance<ValueType, AveragesTo> b) {
-            return a.divide(1).compareTo(b.divide(1));
+        
+        @Override
+        public String toString() {
+            return "["+getValue()+", "+"max: "+getMaxSumEndingHere()+", min: "+getMinSumEndingHere()+"]";
         }
     }
 
-    public KadaneExtremeSubsequenceFinderImpl() {
+    public KadaneExtremeSubsequenceFinderLinkedNodesImpl() {
         this.size = 0;
         this.first = null;
         this.last = null;
+        final Comparator<Node<ValueType, AveragesTo, T>> minSumComparator = (n1, n2)->compare(n1.getMinSumEndingHere(), n2.getMinSumEndingHere());
+        final Comparator<Node<ValueType, AveragesTo, T>> maxSumComparator = (n1, n2)->compare(n1.getMaxSumEndingHere(), n2.getMaxSumEndingHere());
+        this.nodesOrderedByMinSum = new TreeSet<>(minSumComparator.thenComparing((n1, n2)->Integer.compare(n1.getId(), n2.getId())));
+        this.nodesOrderedByMaxSum = new TreeSet<>(maxSumComparator.thenComparing((n1, n2)->Integer.compare(n1.getId(), n2.getId())));
     }
     
     @Override
@@ -189,22 +219,35 @@ public class KadaneExtremeSubsequenceFinderImpl<ValueType, AveragesTo extends Co
         return first == null;
     }
     
-    @Override
-    public Iterator<T> iterator() {
-        return new Iterator<T>() {
-            private Node<ValueType, AveragesTo, T> current = first;
+    private Iterable<Node<ValueType, AveragesTo, T>> getNodeIterable() {
+        return this::nodeIterator;
+    }
+    
+    private Iterator<Node<ValueType, AveragesTo, T>> nodeIterator() {
+        return nodeIterator(first, last);
+    }
+    
+    private Iterator<Node<ValueType, AveragesTo, T>> nodeIterator(final Node<ValueType, AveragesTo, T> firstNode, final Node<ValueType, AveragesTo, T> lastNode) {
+        return new Iterator<Node<ValueType, AveragesTo, T>>() {
+            private Node<ValueType, AveragesTo, T> current = firstNode;
+            
             @Override
             public boolean hasNext() {
-                return current != null;
+                return current != (lastNode==null ? null : lastNode.getNext());
             }
 
             @Override
-            public T next() {
-                final T result = current.getValue();
+            public Node<ValueType, AveragesTo, T> next() {
+                final Node<ValueType, AveragesTo, T> result = current;
                 current = current.getNext();
                 return result;
             }
         };
+    }
+    
+    @Override
+    public Iterator<T> iterator() {
+        return Util.map(getNodeIterable(), node->node.getValue()).iterator();
     }
 
     @Override
@@ -212,8 +255,9 @@ public class KadaneExtremeSubsequenceFinderImpl<ValueType, AveragesTo extends Co
         if (index < 0 || index > size()) {
             throw new IndexOutOfBoundsException("Trying to add at index "+index+" to a sequence of size "+size());
         }
+        final Node<ValueType, AveragesTo, T> node;
         if (isEmpty()) {
-            final Node<ValueType, AveragesTo, T> node = new Node<>(/* previous */ null, /* next */ null, t);
+            node = new Node<>(/* previous */ null, /* next */ null, t);
             first = node;
             last = node;
             node.updateThisFromPrevious(); // no need to consider changes; it's the only element
@@ -229,12 +273,16 @@ public class KadaneExtremeSubsequenceFinderImpl<ValueType, AveragesTo extends Co
             } else {
                 throw new InternalError("This shouldn't have happened as it means the sequence is empty, and we shouldn't have arrived in this branch");
             }
-            final Node<ValueType, AveragesTo, T> node = new Node<>(nodeBeforeIndex, nodeAfterIndex, t);
+            node = new Node<>(nodeBeforeIndex, nodeAfterIndex, t);
             if (nodeBeforeIndex != null) {
                 nodeBeforeIndex.setNext(node);
+            } else {
+                first = node;
             }
             if (nodeAfterIndex != null) {
                 nodeAfterIndex.setPrevious(node);
+            } else {
+                last = node;
             }
             node.updateThisFromPrevious();
             if (nodeBeforeIndex == null
@@ -247,24 +295,53 @@ public class KadaneExtremeSubsequenceFinderImpl<ValueType, AveragesTo extends Co
                 propagateChanges(node);
             }
         }
+        nodesOrderedByMinSum.add(node);
+        nodesOrderedByMaxSum.add(node);
+        size++;
     }
 
+    /**
+     * Propagates changes to the {@link Node#getNext() next} node that follows {@code node}, and all further ones up to
+     * the end of the collection or until no more changes occur that need propagating. The {@link #nodesOrderedByMinSum}
+     * and {@link #nodesOrderedByMaxSum} collections are updated accordingly.
+     */
     private void propagateChanges(Node<ValueType, AveragesTo, T> node) {
-        Node<ValueType, AveragesTo, T> current = node.getNext();
         boolean changedMin = true;
         boolean changedMax = true;
+        propagateChanges(node, changedMin, changedMax);
+    }
+
+    /**
+     * Propagates changes to the {@link Node#getNext() next} node that follows {@code node}, and all further ones up to
+     * the end of the collection or until no more changes occur that need propagating. The {@link #nodesOrderedByMinSum}
+     * and {@link #nodesOrderedByMaxSum} collections are updated accordingly.
+     * 
+     * @param changedMin
+     *            tells if changes to {@code node}'s minimum sum sub-sequences need propagation
+     * @param changedMax
+     *            tells if changes to {@code node}'s maximum sum sub-sequences need propagation
+     */
+    private void propagateChanges(Node<ValueType, AveragesTo, T> node, boolean changedMin, boolean changedMax) {
+        Node<ValueType, AveragesTo, T> current = node.getNext();
         while ((changedMin || changedMax) && current != null) {
             if (changedMin) {
+                nodesOrderedByMinSum.remove(current);
                 changedMin = current.updateMinFromPrevious();
+                nodesOrderedByMinSum.add(current);
             }
             if (changedMax) {
+                nodesOrderedByMaxSum.remove(current);
                 changedMax = current.updateMaxFromPrevious();
+                nodesOrderedByMaxSum.add(current);
             }
             current = current.getNext();
         }
     }
 
-    Node<ValueType, AveragesTo, T> getNode(int index) {
+    private Node<ValueType, AveragesTo, T> getNode(int index) {
+        if (index < 0 || index >= size()) {
+            throw new IndexOutOfBoundsException("Trying to find node at index "+index+" in a sequence of size "+size());
+        }
         final Node<ValueType, AveragesTo, T> result;
         if (isEmpty()) {
             result = null;
@@ -289,61 +366,95 @@ public class KadaneExtremeSubsequenceFinderImpl<ValueType, AveragesTo extends Co
     
     @Override
     public void remove(int index) {
-        // TODO Auto-generated method stub
-
+        final Node<ValueType, AveragesTo, T> node = getNode(index);
+        assert node != null; // otherwise, an IndexOutOfBoundsException should have been thrown
+        remove(node);
+    }
+    
+    private void remove(Node<ValueType, AveragesTo, T> node) {
+        if (node.getPrevious() != null) {
+            node.getPrevious().setNext(node.getNext());
+        } else {
+            assert first == node;
+            first = node.getNext();
+        }
+        if (node.getNext() != null) {
+            node.getNext().setPrevious(node.getPrevious());
+            final boolean changedMin = node.getPrevious() == null
+                    || !node.getMinSumEndingHere().equals(node.getPrevious().getMinSumEndingHere())
+                    || node.getStartOfMinSumSubSequenceEndingHere() != node.getPrevious()
+                            .getStartOfMinSumSubSequenceEndingHere();
+            final boolean changedMax = node.getPrevious() == null
+                    || !node.getMaxSumEndingHere().equals(node.getPrevious().getMaxSumEndingHere())
+                    || node.getStartOfMaxSumSubSequenceEndingHere() != node.getPrevious()
+                            .getStartOfMaxSumSubSequenceEndingHere();
+            propagateChanges(node, changedMin, changedMax);
+        } else {
+            assert last == node;
+            last = node.getPrevious();
+        }
+        size--;
     }
 
     @Override
     public void remove(T t) {
-        // TODO Auto-generated method stub
-
+        Node<ValueType, AveragesTo, T> node = first;
+        while (node != null && !node.getValue().equals(t)) {
+            node = node.getNext();
+        }
+        if (node != null) {
+            assert node.getValue().equals(t);
+            remove(node);
+        }
     }
 
     @Override
     public ScalableValueWithDistance<ValueType, AveragesTo> getMinSum() {
-        // TODO Auto-generated method stub
-        return null;
+        final Node<ValueType, AveragesTo, T> first = nodesOrderedByMinSum.first();
+        return first == null ? null : first.getMinSumEndingHere();
     }
 
     @Override
     public ScalableValueWithDistance<ValueType, AveragesTo> getMaxSum() {
-        // TODO Auto-generated method stub
-        return null;
+        final Node<ValueType, AveragesTo, T> last = nodesOrderedByMaxSum.last();
+        return last == null ? null : last.getMaxSumEndingHere();
     }
 
     @Override
     public int getStartIndexOfMaxSumSequence() {
-        // TODO Auto-generated method stub
-        return 0;
+        final Node<ValueType, AveragesTo, T> nodeWhereBestMaxSumSubSequenceEnds = nodesOrderedByMaxSum.last();
+        return nodeWhereBestMaxSumSubSequenceEnds == null ? -1 : Util.indexOf(getNodeIterable(), nodeWhereBestMaxSumSubSequenceEnds.getStartOfMaxSumSubSequenceEndingHere());
     }
 
     @Override
     public int getEndIndexOfMaxSumSequence() {
-        // TODO Auto-generated method stub
-        return 0;
+        final Node<ValueType, AveragesTo, T> nodeWhereBestMaxSumSubSequenceEnds = nodesOrderedByMaxSum.last();
+        return nodeWhereBestMaxSumSubSequenceEnds == null ? -1 : Util.indexOf(getNodeIterable(), nodeWhereBestMaxSumSubSequenceEnds);
     }
 
     @Override
     public int getStartIndexOfMinSumSequence() {
-        // TODO Auto-generated method stub
-        return 0;
+        final Node<ValueType, AveragesTo, T> nodeWhereBestMinSumSubSequenceEnds = nodesOrderedByMinSum.first();
+        return nodeWhereBestMinSumSubSequenceEnds == null ? -1 : Util.indexOf(getNodeIterable(), nodeWhereBestMinSumSubSequenceEnds.getStartOfMinSumSubSequenceEndingHere());
     }
 
     @Override
     public int getEndIndexOfMinSumSequence() {
-        // TODO Auto-generated method stub
-        return 0;
+        final Node<ValueType, AveragesTo, T> nodeWhereBestMinSumSubSequenceEnds = nodesOrderedByMinSum.first();
+        return nodeWhereBestMinSumSubSequenceEnds == null ? -1 : Util.indexOf(getNodeIterable(), nodeWhereBestMinSumSubSequenceEnds);
     }
 
     @Override
     public Iterator<T> getSubSequenceWithMaxSum() {
-        // TODO Auto-generated method stub
-        return null;
+        final Node<ValueType, AveragesTo, T> nodeWhereBestMaxSumSubSequenceEnds = nodesOrderedByMaxSum.last();
+        final Iterable<Node<ValueType, AveragesTo, T>> nodeIterable = ()->nodeIterator(nodeWhereBestMaxSumSubSequenceEnds.getStartOfMaxSumSubSequenceEndingHere(), nodeWhereBestMaxSumSubSequenceEnds);
+        return Util.map(nodeIterable, node->node.getValue()).iterator();
     }
 
     @Override
     public Iterator<T> getSubSequenceWithMinSum() {
-        // TODO Auto-generated method stub
-        return null;
+        final Node<ValueType, AveragesTo, T> nodeWhereBestMinSumSubSequenceEnds = nodesOrderedByMinSum.first();
+        final Iterable<Node<ValueType, AveragesTo, T>> nodeIterable = ()->nodeIterator(nodeWhereBestMinSumSubSequenceEnds.getStartOfMinSumSubSequenceEndingHere(), nodeWhereBestMinSumSubSequenceEnds);
+        return Util.map(nodeIterable, node->node.getValue()).iterator();
     }
 }
