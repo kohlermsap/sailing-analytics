@@ -41,7 +41,7 @@ public interface KadaneExtremeSubsequenceFinder<ValueType, AveragesTo extends Co
 
     void remove(T t);
     
-    // TODO bug6209: introduce remove(...) methods that allow "trimming" / "pruning" by removing elements from the first up to some specified element in one go
+    void removeFirst(int i);
 
     ScalableValueWithDistance<ValueType, AveragesTo> getMinSum();
 

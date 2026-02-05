@@ -137,14 +137,42 @@ public abstract class KadaneExtremeSubsequenceFinderTest {
     }
     
     @Test
-    public void performanceTest() {
+    public void performanceTestWithRandomRemove() {
         final Random random = new Random();
         final int NODES = 10000;
         for (int i=0; i<NODES; i++) {
             finder.add(new ScalableDouble(random.nextDouble()-0.5));
         }
+        assertEquals(NODES, finder.size());
         for (int i=0; i<NODES/2; i++) {
             finder.remove(random.nextInt(finder.size()));
         }
+        assertEquals(NODES-NODES/2, finder.size());
+    }
+
+    @Test
+    public void performanceTestWithRemoveFromBeginning() {
+        final Random random = new Random();
+        final int NODES = 10000;
+        for (int i=0; i<NODES; i++) {
+            finder.add(new ScalableDouble(random.nextDouble()-0.5));
+        }
+        assertEquals(NODES, finder.size());
+        for (int i=0; i<NODES/2; i++) {
+            finder.remove(0);
+        }
+        assertEquals(NODES-NODES/2, finder.size());
+    }
+
+    @Test
+    public void performanceTestWithPruneFromBeginning() {
+        final Random random = new Random();
+        final int NODES = 10000;
+        for (int i=0; i<NODES; i++) {
+            finder.add(new ScalableDouble(random.nextDouble()-0.5));
+        }
+        assertEquals(NODES, finder.size());
+        finder.removeFirst(NODES/2);
+        assertEquals(NODES-NODES/2, finder.size());
     }
 }

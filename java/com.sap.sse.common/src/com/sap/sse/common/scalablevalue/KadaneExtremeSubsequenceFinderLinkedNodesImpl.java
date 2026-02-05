@@ -34,6 +34,14 @@ public class KadaneExtremeSubsequenceFinderLinkedNodesImpl<ValueType, AveragesTo
     private final TreeSet<Node<ValueType, AveragesTo, T>> nodesOrderedByMinSum;
     
     private final TreeSet<Node<ValueType, AveragesTo, T>> nodesOrderedByMaxSum;
+    
+    private int minChangePropagationStepsSum; // for internal stats
+    
+    private int minChangePropagationsCount; // for internal stats
+    
+    private int maxChangePropagationStepsSum; // for internal stats
+    
+    private int maxChangePropagationsCount; // for internal stats
 
     private static <ValueType, AveragesTo extends Comparable<AveragesTo>, T extends ComparableScalableValueWithDistance<ValueType, AveragesTo>> Integer compare(
             final ScalableValueWithDistance<ValueType, AveragesTo> a,
@@ -334,20 +342,28 @@ public class KadaneExtremeSubsequenceFinderLinkedNodesImpl<ValueType, AveragesTo
      *            tells if changes to {@code node}'s maximum sum sub-sequences need propagation
      */
     private void propagateChanges(Node<ValueType, AveragesTo, T> node, boolean changedMin, boolean changedMax) {
+        int minChangeCount = 0;
+        int maxChangeCount = 0;
         Node<ValueType, AveragesTo, T> current = node.getNext();
         while ((changedMin || changedMax) && current != null) {
             if (changedMin) {
+                minChangeCount++;
                 nodesOrderedByMinSum.remove(current);
                 changedMin = current.updateMinFromPrevious();
                 nodesOrderedByMinSum.add(current);
             }
             if (changedMax) {
+                maxChangeCount++;
                 nodesOrderedByMaxSum.remove(current);
                 changedMax = current.updateMaxFromPrevious();
                 nodesOrderedByMaxSum.add(current);
             }
             current = current.getNext();
         }
+        minChangePropagationStepsSum += minChangeCount;
+        minChangePropagationsCount++;
+        maxChangePropagationStepsSum += maxChangeCount;
+        maxChangePropagationsCount++;
     }
 
     private Node<ValueType, AveragesTo, T> getNode(int index) {
@@ -417,6 +433,30 @@ public class KadaneExtremeSubsequenceFinderLinkedNodesImpl<ValueType, AveragesTo
         if (node != null) {
             assert node.getValue().equals(t);
             remove(node);
+        }
+    }
+    
+    @Override
+    public void removeFirst(int howManyNodesToRemove) {
+        if (howManyNodesToRemove < 0) {
+            throw new IllegalArgumentException("Cannot remove a negative number of nodes: "+howManyNodesToRemove);
+        }
+        if (howManyNodesToRemove > size()) {
+            throw new IllegalArgumentException("Cannot remove more nodes than the sequence currently holds: "+howManyNodesToRemove+">"+size());
+        }
+        if (howManyNodesToRemove > 0) { // otherwise this is a no-op
+            final Node<ValueType, AveragesTo, T> lastNodeToRemove = getNode(howManyNodesToRemove-1);
+            first = lastNodeToRemove.getNext();
+            if (first != null) {
+                first.setPrevious(null);
+                if (first.updateThisFromPrevious()) {
+                    propagateChanges(first);
+                }
+            } else {
+                assert howManyNodesToRemove == size();
+                last = null;
+            }
+            size -= howManyNodesToRemove;
         }
     }
 
