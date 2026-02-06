@@ -1475,7 +1475,7 @@ public class LandscapeManagementPanel extends SimplePanel {
                                         upgradeInstructions.getReleaseNameOrNullForLatestMaster(), sshKeyManagementPanel.getSelectedKeyPair()==null?null:sshKeyManagementPanel.getSelectedKeyPair().getName(),
                                         sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption() != null
                                         ? sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption().getBytes() : null,
-                                                upgradeInstructions.getReplicaReplicationBearerToken(),
+                                                upgradeInstructions.getMasterReplicationBearerToken(), upgradeInstructions.getReplicaReplicationBearerToken(),
                                         new AsyncCallback<SailingApplicationReplicaSetDTO<String>>() {
                                     @Override
                                     public void onFailure(Throwable caught) {

@@ -681,17 +681,18 @@ public class LandscapeManagementWriteServiceImpl extends ResultCachingProxiedRem
     @Override
     public SailingApplicationReplicaSetDTO<String> createArchiveReplicaSet(String regionId, SailingApplicationReplicaSetDTO<String> archiveReplicaSetToUpgrade,
             String instanceType, String releaseNameOrNullForLatestMaster, String optionalKeyName,
-            byte[] privateKeyEncryptionPassphrase, String optionalReplicationBearerToken) throws Exception {
+            byte[] privateKeyEncryptionPassphrase, String securityReplicationBearerToken,
+            String replicaReplicationBearerToken) throws Exception {
         checkLandscapeManageAwsPermission();
-        final String bearerToken;
+        final String userSetOrArchiveServerSecurityReplicationBearerToken;
         final AwsRegion region = new AwsRegion(regionId, getLandscape());
         final AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> awsReplicaSet =
                 convertFromApplicationReplicaSetDTO(region, archiveReplicaSetToUpgrade, optionalKeyName, privateKeyEncryptionPassphrase);
         final SailingAnalyticsProcess<String> master = awsReplicaSet.getMaster();
-        if(Util.hasLength(optionalReplicationBearerToken)) {
-            bearerToken = optionalReplicationBearerToken;
+        if(Util.hasLength(securityReplicationBearerToken)) {
+            userSetOrArchiveServerSecurityReplicationBearerToken = securityReplicationBearerToken;
         } else {
-            bearerToken = master.getEnvShValueFor(DefaultProcessConfigurationVariables.REPLICATE_MASTER_BEARER_TOKEN, Landscape.WAIT_FOR_PROCESS_TIMEOUT, Optional.of(optionalKeyName), privateKeyEncryptionPassphrase);
+            userSetOrArchiveServerSecurityReplicationBearerToken = master.getEnvShValueFor(DefaultProcessConfigurationVariables.REPLICATE_MASTER_BEARER_TOKEN, Landscape.WAIT_FOR_PROCESS_TIMEOUT, Optional.of(optionalKeyName), privateKeyEncryptionPassphrase);
         }
         final String replicaSetName = SharedLandscapeConstants.ARCHIVE_SERVER_APPLICATION_REPLICA_SET_NAME;
         final String archiveCandidateSubDomain = SharedLandscapeConstants.ARCHIVE_CANDIDATE_SUBDOMAIN; 
@@ -701,7 +702,7 @@ public class LandscapeManagementWriteServiceImpl extends ResultCachingProxiedRem
                 Landscape.WAIT_FOR_PROCESS_TIMEOUT, Optional.ofNullable(optionalKeyName),
                 privateKeyEncryptionPassphrase);
         final AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> result = getLandscapeService().createArchiveReplicaSet(regionId, replicaSetName,
-                instanceType, releaseNameOrNullForLatestMaster, databaseConfiguration, optionalKeyName, privateKeyEncryptionPassphrase, bearerToken, domainName,
+                instanceType, releaseNameOrNullForLatestMaster, databaseConfiguration, optionalKeyName, privateKeyEncryptionPassphrase, userSetOrArchiveServerSecurityReplicationBearerToken, replicaReplicationBearerToken, domainName,
                 /* optionalMemoryInMegabytesOrNull */ null, /* optionalMemoryTotalSizeFactorOrNull */ null, /* optionalIgtimiRiotPort */ null);
         return new SailingApplicationReplicaSetDTO<String>(result.getName(), convertToSailingAnalyticsProcessDTO(result
                 .getMaster(), Optional.ofNullable(optionalKeyName), privateKeyEncryptionPassphrase), /* replicas */ Collections.emptySet(),

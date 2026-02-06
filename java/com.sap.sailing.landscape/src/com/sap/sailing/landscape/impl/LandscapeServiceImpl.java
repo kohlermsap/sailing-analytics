@@ -238,7 +238,7 @@ public class LandscapeServiceImpl implements LandscapeService {
     @Override
     public AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> createArchiveReplicaSet(
             String regionId, String replicaSetName, String instanceType, String releaseNameOrNullForLatestMaster, Database databaseConfiguration, 
-            String optionalKeyName, byte[] privateKeyEncryptionPassphrase, String securityServiceReplicationBearerToken,
+            String optionalKeyName, byte[] privateKeyEncryptionPassphrase, String securityServiceReplicationBearerToken, String replicaReplicationBearerToken,
             String optionalDomainName, Integer optionalMemoryInMegabytesOrNull,
             Integer optionalMemoryTotalSizeFactorOrNull, Integer optionalIgtimiRiotPort) throws Exception {
         final AwsLandscape<String> landscape = getLandscape();
@@ -253,6 +253,10 @@ public class LandscapeServiceImpl implements LandscapeService {
         final com.sap.sailing.landscape.procedures.SailingAnalyticsMasterConfiguration.Builder<?, String> masterConfigurationBuilder =
                 createArchiveConfigurationBuilder(replicaSetName, databaseConfiguration, securityServiceReplicationBearerToken, optionalMemoryInMegabytesOrNull,
                          null, optionalIgtimiRiotPort, region, release);
+        final String bearerTokenUsedByReplicas = getEffectiveBearerToken(replicaReplicationBearerToken);
+        final InboundReplicationConfiguration inboundMasterReplicationConfiguration = masterConfigurationBuilder.getInboundReplicationConfiguration().get();
+        establishServerGroupAndTryToMakeCurrentUserItsOwnerAndMember(replicaSetName, bearerTokenUsedByReplicas,
+                inboundMasterReplicationConfiguration.getMasterHostname(), inboundMasterReplicationConfiguration.getMasterHttpPort());
         final com.sap.sailing.landscape.procedures.StartSailingAnalyticsMasterHost.Builder<?, String> masterHostBuilder = StartSailingAnalyticsMasterHost.masterHostBuilder(masterConfigurationBuilder);
         masterHostBuilder
             .setInstanceName(SharedLandscapeConstants.ARCHIVE_SERVER_NEW_CANDIDATE_INSTANCE_NAME)
@@ -276,7 +280,8 @@ public class LandscapeServiceImpl implements LandscapeService {
                 getLandscape().getCentralReverseProxy(region);
         // TODO bug5311: when refactoring this for general scope migration, moving to a dedicated replica set will not require this
         // TODO bug5311: when refactoring this for general scope migration, moving into a cold storage server other than ARCHIVE will require ALBToReverseProxyRedirectMapper instead
-        logger.info("Adding reverse proxy rule for archive candidate with hostname "+ hostname + " and private ip address");
+        final String privateIpAdress = master.getHost().getPrivateAddress().getHostAddress();
+        logger.info("Adding reverse proxy rule for archive candidate with hostname "+ hostname + " and private ip address " + privateIpAdress);
         reverseProxyCluster.setPlainRedirect(hostname, master, Optional.of(optionalKeyName), privateKeyEncryptionPassphrase);
         sendMailAboutNewArchiveCandidate(replicaSet);
         return replicaSet;
@@ -1722,7 +1727,7 @@ public class LandscapeServiceImpl implements LandscapeService {
     
     private void sendMailAboutNewArchiveCandidate(
             AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> replicaSet) throws MailException {
-        sendMailToReplicaSetOwner(replicaSet, "StartingNewArchiveCandidateSubject", "StartingNewArchiveCandidateBody", Optional.of(ServerActions.CONFIGURE_REMOTE_INSTANCES));
+        sendMailToReplicaSetOwner(replicaSet, "StartingNewArchiveCandidateSubject", "StartingNewArchiveCandidateBody", Optional.empty());
     }
 
     private void sendMailAboutMasterUnavailable(

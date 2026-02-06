@@ -156,7 +156,7 @@ public interface LandscapeService {
     AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> createArchiveReplicaSet(
             String regionId, String name, String instanceType, String releaseNameOrNullForLatestMaster, Database databaseConfiguration,
             String optionalKeyName, byte[] privateKeyEncryptionPassphrase, String securityServiceReplicationBearerToken,
-            String optionalDomainName, Integer optionalMemoryInMegabytesOrNull,
+            String replicaReplicationBearerToken, String optionalDomainName, Integer optionalMemoryInMegabytesOrNull,
             Integer optionalMemoryTotalSizeFactorOrNull, Integer optionalIgtimiRiotPort) throws Exception;
 
     /**

@@ -40,13 +40,15 @@ public class UpgradeArchiveServerDialog extends AbstractApplicationReplicaSetDia
     
     @Override
     protected Widget getAdditionalWidget() {
-        final Grid result = new Grid(3, 2);
+        final Grid result = new Grid(4, 2);
         int row=0;
         result.setWidget(row, 0, new Label(stringMessages.release()));
         result.setWidget(row++, 1, getReleaseNameBox());
         result.setWidget(row, 0, new Label(stringMessages.instanceType()));
         result.setWidget(row++, 1, getSharedInstanceTypeListBox());
         result.setWidget(row, 0, new Label(stringMessages.bearerTokenForSecurityReplication()));
+        result.setWidget(row++, 1, getMasterReplicationBearerTokenBox());
+        result.setWidget(row, 0, new Label(stringMessages.bearerTokenOrNullForArchive()));
         result.setWidget(row++, 1, getReplicaReplicationBearerTokenBox());
         return result;
     }
