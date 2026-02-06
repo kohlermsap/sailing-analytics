@@ -278,6 +278,7 @@ public class LandscapeServiceImpl implements LandscapeService {
         // TODO bug5311: when refactoring this for general scope migration, moving into a cold storage server other than ARCHIVE will require ALBToReverseProxyRedirectMapper instead
         logger.info("Adding reverse proxy rule for archive candidate with hostname "+ hostname + " and private ip address");
         reverseProxyCluster.setPlainRedirect(hostname, master, Optional.of(optionalKeyName), privateKeyEncryptionPassphrase);
+        sendMailAboutNewArchiveCandidate(replicaSet);
         return replicaSet;
     }
     
@@ -1719,10 +1720,10 @@ public class LandscapeServiceImpl implements LandscapeService {
                 Landscape.WAIT_FOR_PROCESS_TIMEOUT, Optional.ofNullable(optionalKeyName), privateKeyEncryptionPassphrase);
     }
     
-//    private void sendMailAboutNewArchiveCandidate(
-//            AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> replicaSet) throws MailException {
-//        sendMailToReplicaSetOwner(replicaSet, "StartingNewArchiveCandidateSubject", "StartingNewArchiveCandidateBody", Optional.of(ServerActions.CONFIGURE_REMOTE_INSTANCES));
-//    }
+    private void sendMailAboutNewArchiveCandidate(
+            AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> replicaSet) throws MailException {
+        sendMailToReplicaSetOwner(replicaSet, "StartingNewArchiveCandidateSubject", "StartingNewArchiveCandidateBody", Optional.of(ServerActions.CONFIGURE_REMOTE_INSTANCES));
+    }
 
     private void sendMailAboutMasterUnavailable(
             AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> replicaSet) throws MailException {
