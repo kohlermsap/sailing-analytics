@@ -998,7 +998,6 @@ public class AwsLandscapeImpl<ShardingKey> implements AwsLandscape<ShardingKey> 
         }
         final Ec2Client ec2Client = getEc2Client(getRegion(az.getRegion()));
         final Builder runInstancesRequestBuilder = RunInstancesRequest.builder()
-            .additionalInfo("Test " + getClass().getName())
             .imageId(fromImage.getId().toString())
             .minCount(numberOfHostsToLaunch)
             .maxCount(numberOfHostsToLaunch)
