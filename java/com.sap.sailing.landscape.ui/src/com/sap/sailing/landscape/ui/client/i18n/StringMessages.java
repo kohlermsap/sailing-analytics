@@ -172,7 +172,7 @@ com.sap.sse.gwt.adminconsole.StringMessages {
     String successfullyRotatedHttpdLogsOnInstance(String instance);
     String invalidOperationForThisProxy();
     String pleaseProvideNonEmptyNameAndAZ();
-    String unlockedSuccessfully();
+    String success();
     String availabilityZone();
     String runOnExisting();
     String publicIp();
