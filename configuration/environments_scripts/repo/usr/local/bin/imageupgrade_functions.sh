@@ -456,6 +456,12 @@ EOF
     if ! grep "logRotate: reopen" /etc/mongod.conf; then
       sudo sed -i -e 's/^  logAppend: true/  logAppend: true\n  logRotate: reopen/' /etc/mongod.conf
     fi
+sudo su - -c "cat >>/etc/mongod.conf << EOF
+# Disable FTDC to avoid crashes
+setParameter:
+  diagnosticDataCollectionEnabled: false
+EOF
+"
 }
 
 # Copies the /root/secrets and /root/mail.properties file to the local instance, ensuring only root can read it

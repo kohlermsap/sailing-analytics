@@ -27,6 +27,13 @@
           <ul class="bulletList">
                 <li>Extended RabbitMQ channel heartbeat interval to 1h. This will suffice even for
                     longer garbage collection cycles that may happen during replica set start-up.</li>
+                <li>Using explicit ("manual") RabbitMQ message delivery acknowledgements for initial
+                    load when starting up a replica, combined with a "prefetch" (basicQos) value of 1.
+                    This way, when the replica is processing data
+                    and doesn't read fast enough, the RabbitMQ server will wait for the next message
+                    confirmation before sending more messages. This avoids socket buffer overflows
+                    which previously could lead to the RabbitMQ server timing out trying to send
+                    messages to the replica's channel.</li>
           </ul>
           <h2 class="articleSubheadline">December 2025</h2>
           <ul class="bulletList">

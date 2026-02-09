@@ -1,6 +1,6 @@
 package com.sap.sailing.domain.common.confidence.impl;
 
-import com.sap.sailing.domain.common.confidence.HasConfidence;
+import com.sap.sse.common.scalablevalue.HasConfidence;
 
 public class HasConfidenceImpl<ValueType, BaseType, RelativeTo> implements HasConfidence<ValueType, BaseType, RelativeTo> {
     private static final long serialVersionUID = -1635823148449693024L;

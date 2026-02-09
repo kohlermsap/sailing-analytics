@@ -659,7 +659,7 @@ public interface TrackedRace
      * If the precondition that the {@code competitor} must be {@link RaceDefinition#getCompetitors() part of} the
      * {@link #getRace() race} isn't met, a {@code NullPointerException} will result.
      */
-    Iterable<GPSFixMoving> approximate(Competitor competitor, Distance maxDistance, TimePoint from, TimePoint to);
+    Iterable<GPSFixMoving> approximate(Competitor competitor, TimePoint from, TimePoint to);
 
     /**
      * @return a non-<code>null</code> but perhaps empty list of the maneuvers that <code>competitor</code> performed in

@@ -16,7 +16,7 @@ First of all, make sure you've looked at [http://www.amazon.de/Patterns-Elements
    - Announcements relevant for developers are posted on [GitHub](https://github.com/SAP/sailing-analytics) in the Discussions tab. In order to get notifications you can subscribe to discussions by clicking on "Watch" in the Repository, then "Custom". In the new Popup select "Discussions" and confirm by clicking "Apply".
 
    <img src="/wiki/images/github/GitHubWatch.jpg" style="width: 50%"/>
-   <img src="/wiki/images/github/GitHubSubscribe.jpg" style="width: 50%"/>
+   <img src="/wiki/images/github/GitHubSubscribe.jpg" style="width: 45%"/>
 
    - In case you'd like to get access to the external git at `ssh://trac@sapsailing.com/home/trac/git` please send your SSH public key to one of the project maintainers, requesting git access. Make sure to NOT generate the key using Putty. Putty keys don't work reliably under Linux and on Windows/Cygwin environments. Use ssh-keygen in a Cygwin or Linux or MacOS/X environment instead. For further instructions for generating an ssh-key see [GitHub](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).  
    Note: If you want to use the ssh-key in the context of our solution, it can be an RSA or ED25519 format. Example for creating a key: `ssh-keygen -t ed25519 -b 512 -C "test@test.com"`. Make sure to set a non-empty password for your key.

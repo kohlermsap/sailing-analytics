@@ -3,9 +3,9 @@ package com.sap.sailing.domain.common.confidence.impl;
 import java.util.Iterator;
 
 import com.sap.sailing.domain.common.confidence.ConfidenceBasedAverager;
-import com.sap.sailing.domain.common.confidence.HasConfidence;
-import com.sap.sailing.domain.common.confidence.HasConfidenceAndIsScalable;
 import com.sap.sailing.domain.common.confidence.Weigher;
+import com.sap.sse.common.scalablevalue.HasConfidence;
+import com.sap.sse.common.scalablevalue.HasConfidenceAndIsScalable;
 import com.sap.sse.common.scalablevalue.ScalableValue;
 
 

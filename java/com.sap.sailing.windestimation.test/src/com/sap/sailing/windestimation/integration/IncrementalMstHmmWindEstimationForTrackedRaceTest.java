@@ -124,19 +124,23 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
                 new URL("file:///" + new File("resources/event_20110609_KielerWoch-505_Race_2.txt").getCanonicalPath()),
                 /* liveUri */ null, /* storedUri */ storedUri,
                 new ReceiverType[] { ReceiverType.MARKPASSINGS, ReceiverType.RACECOURSE, ReceiverType.RAWPOSITIONS, ReceiverType.MARKPOSITIONS });
-        final MillisecondsTimePoint timePointForFixes = new MillisecondsTimePoint(new GregorianCalendar(2011, 05, 23, 10, 00).getTime());
+        final GregorianCalendar cal = new GregorianCalendar(2011, 05, 23, 13, 40);
+        cal.setTimeZone(TimeZone.getTimeZone("UTC"));
+        final MillisecondsTimePoint timePointForFixes = new MillisecondsTimePoint(cal.getTime());
         final WindSourceWithAdditionalID testWindSource = new WindSourceWithAdditionalID(WindSourceType.EXPEDITION, "Test");
         getTrackedRace().getOrCreateWindTrack(testWindSource).add(
                 new WindImpl(new DegreePosition(54.48448470246412, 10.185846456327479),
-                        timePointForFixes, new KnotSpeedWithBearingImpl(12.5, /* to */ new DegreeBearingImpl(60))));
-        final MillisecondsTimePoint timePointForFixes2 = new MillisecondsTimePoint(new GregorianCalendar(2011, 05, 23, 10, 30).getTime());
+                        timePointForFixes, new KnotSpeedWithBearingImpl(9, /* to */ new DegreeBearingImpl(51))));
+        cal.set(2011, 05, 23, 14, 6);
+        final MillisecondsTimePoint timePointForFixes2 = new MillisecondsTimePoint(cal.getTime());
         getTrackedRace().getOrCreateWindTrack(testWindSource).add(
                 new WindImpl(new DegreePosition(54.48448470246412, 10.185846456327479),
-                        timePointForFixes2, new KnotSpeedWithBearingImpl(11.5, /* to */ new DegreeBearingImpl(58))));
-        final MillisecondsTimePoint timePointForFixes3 = new MillisecondsTimePoint(new GregorianCalendar(2011, 05, 23, 10, 45).getTime());
+                        timePointForFixes2, new KnotSpeedWithBearingImpl(11, /* to */ new DegreeBearingImpl(60))));
+        cal.set(2011, 05, 23, 14, 35);
+        final MillisecondsTimePoint timePointForFixes3 = new MillisecondsTimePoint(cal.getTime());
         getTrackedRace().getOrCreateWindTrack(testWindSource).add(
                 new WindImpl(new DegreePosition(54.4844847, 10.1858464),
-                        timePointForFixes3, new KnotSpeedWithBearingImpl(12.1, /* to */ new DegreeBearingImpl(59))));
+                        timePointForFixes3, new KnotSpeedWithBearingImpl(14, /* to */ new DegreeBearingImpl(58))));
         final PolarDataServiceImpl polarDataService = new PolarDataServiceImpl();
         getTrackedRace().setPolarDataService(polarDataService);
         polarDataService.insertExistingFixes(getTrackedRace());

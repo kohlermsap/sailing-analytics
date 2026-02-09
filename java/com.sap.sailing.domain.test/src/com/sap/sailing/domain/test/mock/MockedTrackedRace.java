@@ -745,7 +745,7 @@ public class MockedTrackedRace implements DynamicTrackedRace {
     }
 
     @Override
-    public List<GPSFixMoving> approximate(Competitor competitor, Distance maxDistance, TimePoint from, TimePoint to) {
+    public List<GPSFixMoving> approximate(Competitor competitor, TimePoint from, TimePoint to) {
         return null;
     }
 

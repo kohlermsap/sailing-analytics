@@ -2,6 +2,9 @@ package com.sap.sailing.domain.common.confidence;
 
 import java.util.Iterator;
 
+import com.sap.sse.common.scalablevalue.HasConfidence;
+import com.sap.sse.common.scalablevalue.HasConfidenceAndIsScalable;
+
 public interface ConfidenceBasedAverager<ValueType, BaseType, RelativeTo> {
     /**
      * If a non-<code>null</code> weigher has been set for this averager, <code>at</code> must be a valid reference
