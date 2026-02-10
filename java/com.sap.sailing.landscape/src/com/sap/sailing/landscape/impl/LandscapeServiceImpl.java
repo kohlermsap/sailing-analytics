@@ -183,7 +183,7 @@ public class LandscapeServiceImpl implements LandscapeService {
                         newSharedMasterInstance ? optionalMemoryTotalSizeFactorOrNull : null, optionalIgtimiRiotPort, region, release);
         final String bearerTokenUsedByReplicas = getEffectiveBearerToken(replicaReplicationBearerToken);
         final InboundReplicationConfiguration inboundMasterReplicationConfiguration = masterConfigurationBuilder.getInboundReplicationConfiguration().get();
-        establishServerGroupAndTryToMakeCurrentUserItsOwnerAndMember(name, bearerTokenUsedByReplicas,
+        establishServerAndServerGroupAndTryToMakeCurrentUserItsOwnerAndMember(name, bearerTokenUsedByReplicas,
                 inboundMasterReplicationConfiguration.getMasterHostname(), inboundMasterReplicationConfiguration.getMasterHttpPort());
         final com.sap.sailing.landscape.procedures.StartSailingAnalyticsMasterHost.Builder<?, String> masterHostBuilder = StartSailingAnalyticsMasterHost.masterHostBuilder(masterConfigurationBuilder);
         masterHostBuilder
@@ -255,7 +255,7 @@ public class LandscapeServiceImpl implements LandscapeService {
                          null, optionalIgtimiRiotPort, region, release);
         final String bearerTokenUsedByReplicas = getEffectiveBearerToken(replicaReplicationBearerToken);
         final InboundReplicationConfiguration inboundMasterReplicationConfiguration = masterConfigurationBuilder.getInboundReplicationConfiguration().get();
-        establishServerGroupAndTryToMakeCurrentUserItsOwnerAndMember(replicaSetName, bearerTokenUsedByReplicas,
+        establishServerAndServerGroupAndTryToMakeCurrentUserItsOwnerAndMember(replicaSetName, bearerTokenUsedByReplicas,
                 inboundMasterReplicationConfiguration.getMasterHostname(), inboundMasterReplicationConfiguration.getMasterHttpPort());
         final com.sap.sailing.landscape.procedures.StartSailingAnalyticsMasterHost.Builder<?, String> masterHostBuilder = StartSailingAnalyticsMasterHost.masterHostBuilder(masterConfigurationBuilder);
         masterHostBuilder
@@ -404,7 +404,7 @@ public class LandscapeServiceImpl implements LandscapeService {
                 optionalIgtimiRiotPort, region, release);
         final InboundReplicationConfiguration inboundMasterReplicationConfiguration = masterConfigurationBuilder.getInboundReplicationConfiguration().get();
         final String bearerTokenUsedByReplicas = getEffectiveBearerToken(replicaReplicationBearerToken);
-        establishServerGroupAndTryToMakeCurrentUserItsOwnerAndMember(replicaSetName, bearerTokenUsedByReplicas,
+        establishServerAndServerGroupAndTryToMakeCurrentUserItsOwnerAndMember(replicaSetName, bearerTokenUsedByReplicas,
                 inboundMasterReplicationConfiguration.getMasterHostname(), inboundMasterReplicationConfiguration.getMasterHttpPort());
         final SailingAnalyticsProcess<String> master = deployProcessToSharedInstance(hostToDeployTo,
                 masterConfigurationBuilder, optionalKeyName, privateKeyEncryptionPassphrase);
@@ -857,7 +857,7 @@ public class LandscapeServiceImpl implements LandscapeService {
                 : SailingReleaseRepository.INSTANCE.getRelease(releaseNameOrNullForLatestMaster);
     }
 
-    private void establishServerGroupAndTryToMakeCurrentUserItsOwnerAndMember(String serverName,
+    private void establishServerAndServerGroupAndTryToMakeCurrentUserItsOwnerAndMember(String serverName,
             String bearerTokenUsedByReplicas, String securityServiceHostname,
             Integer securityServicePort)
             throws MalformedURLException, ClientProtocolException, IOException, ParseException, IllegalAccessException {
@@ -867,6 +867,7 @@ public class LandscapeServiceImpl implements LandscapeService {
                 RemoteServerUtil.getBaseServerUrl(securityServiceHostname, securityServicePort==null?443:securityServicePort), bearerTokenUsedByReplicas);
         final UUID userGroupId = securityServiceServer.getUserGroupIdByName(serverGroupName);
         final UUID groupId;
+        final String securityServiceServerUsername = securityServiceServer.getUsername();
         if (userGroupId != null) {
             groupId = userGroupId;
             final TypeRelativeObjectIdentifier serverGroupTypeRelativeObjectId = new TypeRelativeObjectIdentifier(userGroupId.toString());
@@ -881,7 +882,7 @@ public class LandscapeServiceImpl implements LandscapeService {
                     SecuredSecurityTypes.SERVER.getPermissionForTypeRelativeIdentifier(DefaultActions.DELETE, serverGroupTypeRelativeObjectId)));
             for (final Pair<WildcardPermission, Boolean> permission : permissions) {
                 if (!permission.getB()) {
-                    final String msg = "Subject "+securityServiceServer.getUsername()+" on server "+securityServiceHostname+
+                    final String msg = "Subject "+securityServiceServerUsername+" on server "+securityServiceHostname+
                             " is not allowed "+permission.getA()+". Not allowing to create application replica set for "+serverName;
                     logger.warning(msg);
                     throw new AuthorizationException(msg);
@@ -893,12 +894,12 @@ public class LandscapeServiceImpl implements LandscapeService {
         } else {
             groupId = securityServiceServer.createUserGroupAndAddCurrentUser(serverGroupName);
             try {
-                securityServiceServer.addRoleToUser(ServerAdminRole.getInstance().getId(), securityServiceServer.getUsername(),
+                securityServiceServer.addRoleToUser(ServerAdminRole.getInstance().getId(), securityServiceServerUsername,
                         /* qualified for server group: */ groupId, null, /* transitive */ true);
             } catch (Exception e) {
                 // this didn't work, but it's not the end of the world if we cannot grant the requesting user the
                 // event_manager:{group-name} role; the user may end up not having SERVER:CREATE_OBJECT...
-                logger.warning("Couldn't grant role "+ServerAdminRole.getInstance().getName()+" to user "+securityServiceServer.getUsername()+": "+e.getMessage());
+                logger.warning("Couldn't grant role "+ServerAdminRole.getInstance().getName()+" to user "+securityServiceServerUsername+": "+e.getMessage());
             }
             try {
                 // try to set the group owner of the new group to the group itself, allowing all users with role user:{group-name} to
@@ -913,6 +914,14 @@ public class LandscapeServiceImpl implements LandscapeService {
             }
         }
         ensureGroupMembersCanReadGroup(securityServiceServer, groupId);
+        final TypeRelativeObjectIdentifier serverTypeRelativeObjectId = new TypeRelativeObjectIdentifier(serverName);
+        final Pair<UUID, String> serverOwningGroupIdAndUsername = securityServiceServer.getGroupAndUserOwner(SecuredSecurityTypes.SERVER, serverTypeRelativeObjectId);
+        if (serverOwningGroupIdAndUsername == null || serverOwningGroupIdAndUsername.getA() == null && serverOwningGroupIdAndUsername.getB() == null) {
+            logger.info("Setting ownership for SERVER object "+serverName+" to group "+serverGroupName+" and user "+securityServiceServerUsername);
+            securityServiceServer.setGroupAndUserOwner(SecuredSecurityTypes.SERVER, serverTypeRelativeObjectId,
+                    Optional.of(SecuredSecurityTypes.SERVER.getName()+"/"+serverName),
+                    Optional.of(groupId), Optional.of(securityServiceServerUsername));
+        }
     }
 
     private void ensureGroupMembersCanReadGroup(SailingServer securityServiceServer, UUID groupId) throws ClientProtocolException, IOException, ParseException {
