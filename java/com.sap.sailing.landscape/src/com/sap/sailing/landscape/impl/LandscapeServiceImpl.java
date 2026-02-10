@@ -18,12 +18,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.http.client.ClientProtocolException;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
 import org.json.simple.parser.ParseException;
 import org.osgi.framework.BundleContext;
@@ -282,6 +284,11 @@ public class LandscapeServiceImpl implements LandscapeService {
         logger.info("Adding reverse proxy rule for archive candidate with hostname "+ hostname + " and private ip address " + privateIpAdress);
         reverseProxyCluster.setPlainRedirect(hostname, master, Optional.ofNullable(optionalKeyName), privateKeyEncryptionPassphrase);
         sendMailAboutNewArchiveCandidate(replicaSet);
+        final ScheduledExecutorService monitorTaskExecutor = ThreadPoolUtil.INSTANCE.getDefaultBackgroundTaskThreadPoolExecutor();
+        final ArchiveCandidateMonitoringBackgroundTask monitoringTask = new ArchiveCandidateMonitoringBackgroundTask(
+                SecurityUtils.getSubject(), getLandscape(), replicaSet, hostname, reverseProxyCluster, optionalKeyName,
+                privateKeyEncryptionPassphrase, monitorTaskExecutor);
+        monitorTaskExecutor.execute(monitoringTask);
         return replicaSet;
     }
     
