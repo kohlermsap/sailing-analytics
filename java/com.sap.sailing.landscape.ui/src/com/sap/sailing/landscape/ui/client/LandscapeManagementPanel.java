@@ -1618,7 +1618,7 @@ public class LandscapeManagementPanel extends SimplePanel {
                                 new AsyncCallback<Void>() {
                                     @Override
                                     public void onSuccess(Void result) {
-                                        Notification.notify(stringMessages.unlockedSuccessfully(), NotificationType.SUCCESS);
+                                        Notification.notify(stringMessages.success(), NotificationType.SUCCESS);
                                         proxiesTableBusy.setBusy(false);
                                         refreshProxiesTable();
                                     }
