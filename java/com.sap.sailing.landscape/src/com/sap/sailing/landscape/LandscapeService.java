@@ -519,4 +519,7 @@ public interface LandscapeService {
             throws MailException;
     
     SailingServerFactory getSailingServerFactory();
+
+    void makeCandidateArchiveServerGoLive(String regionId, String optionalKeyName,
+            byte[] privateKeyEncryptionPassphrase, String optionalDomainName) throws Exception;
 }

@@ -126,7 +126,6 @@ import software.amazon.awssdk.services.ec2.model.LaunchTemplate;
 import software.amazon.awssdk.services.ec2.model.LaunchTemplateVersion;
 import software.amazon.awssdk.services.elasticloadbalancingv2.model.Listener;
 import software.amazon.awssdk.services.elasticloadbalancingv2.model.Rule;
-import software.amazon.awssdk.services.elasticloadbalancingv2.model.TagDescription;
 import software.amazon.awssdk.services.elasticloadbalancingv2.model.TargetHealthDescription;
 import software.amazon.awssdk.services.route53.model.RRType;
 import software.amazon.awssdk.services.route53.model.ResourceRecordSet;
@@ -310,16 +309,15 @@ public class LandscapeServiceImpl implements LandscapeService {
                 Landscape.WAIT_FOR_PROCESS_TIMEOUT.map(Duration::asMillis).orElse(null),
                 optionalKeyName, privateKeyEncryptionPassphrase);
         if (archiveReplicaSet == null) {
-            throw new IllegalArgumentException("Couldn't find candidate replica set with name "+replicaSetName+" in region "+regionId);
+            throw new IllegalArgumentException("Couldn't find candidate replica set with name "+SharedLandscapeConstants.ARCHIVE_SERVER_APPLICATION_REPLICA_SET_NAME+" in region "+regionId);
         }
+        // TODO bug6203: update 000-macros.conf so that internal IP of candidate becomes ARCHIVE_IP, and ARCHIVE_IP becomes ARCHIVE_FAILOVER_IP, and maybe a backup copy of ARCHIVE_FAILOVER_COPY is kept as a comment
+        // TODO bug6203: then refresh the configuration...
+        int TODO;
         final ReverseProxy<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>, RotatingFileBasedLog> reverseProxyCluster =
                 getLandscape().getCentralReverseProxy(region);
-        final String candidateHostname = archiveReplicaSet.getHostname();
         logger.info("Removing reverse proxy rule for archive candidate with hostname "+ candidateHostname);
-        reverseProxyCluster.removePlainRedirect(candidateHostname);
-        final String archiveHostname = getHostname(SharedLandscapeConstants.ARCHIVE_SUBDOMAIN, Optional.empty());
-        logger.info("Adding reverse proxy rule for new archive server with hostname "+ archiveHostname);
-        reverseProxyCluster.setPlainRedirect(archiveHostname, archiveReplicaSet.getMaster(), Optional.ofNullable(optionalKeyName), privateKeyEncryptionPassphrase);
+        reverseProxyCluster.removeRedirect(candidateHostname, Optional.ofNullable(optionalKeyName), privateKeyEncryptionPassphrase);
     }
     
     @Override

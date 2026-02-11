@@ -264,7 +264,6 @@ implements com.sap.sse.landscape.Process<RotatingFileBasedLog, MetricsT> {
         removeRedirect(configFileName, hostname, optionalKeyName, privateKeyEncryptionPassphrase);
     }
     
-    
     /**
      * @param configFileName The name of the file to remove.
      * @param hostname The hostname which was removed.
