@@ -181,4 +181,6 @@ com.sap.sse.gwt.adminconsole.StringMessages {
     String igtimiRiotPort();
     String examplePort(int examplePort);
     String successfullyLaunchedNewArchiveCandidate(String replicaSetName, String releaseName);
+    String successfullySwitchedToNewArchiveCandidate(String replicaSetName);
+    String activateArchiveCandidate();
 }

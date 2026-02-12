@@ -288,6 +288,8 @@ public interface AwsLandscape<ShardingKey> extends Landscape<ShardingKey> {
      */
     SSHKeyPair importKeyPair(Region region, byte[] publicKey, byte[] encryptedPrivateKey, String keyName) throws JSchException;
 
+    void setTerminationProtection(AwsInstance<ShardingKey> host, boolean terminationProtection);
+    
     void terminate(AwsInstance<ShardingKey> host);
 
     /**

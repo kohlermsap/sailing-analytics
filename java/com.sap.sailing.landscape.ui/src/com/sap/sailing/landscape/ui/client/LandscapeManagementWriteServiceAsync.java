@@ -195,6 +195,9 @@ public interface LandscapeManagementWriteServiceAsync {
             byte[] privateKeyEncryptionPassphrase, String securityReplicationBearerToken, String replicaReplicationBearerToken,
             Integer optionalMemoryInMegabytesOrNull, Integer optionalMemoryTotalSizeFactorOrNull, AsyncCallback<Void> callback);
 
+    void makeCandidateArchiveServerGoLive(String regionId,
+            SailingApplicationReplicaSetDTO<String> archiveReplicaSetToUpgrade, String optionalKeyName,
+            byte[] privateKeyEncryptionPassphrase, AsyncCallback<Void> callback);
     /**
      * For the given replica set ensures there is at least one healthy replica, then stops replicating on all replicas and
      * removes the master from the public and master target groups. This can be used as a preparatory action for upgrading

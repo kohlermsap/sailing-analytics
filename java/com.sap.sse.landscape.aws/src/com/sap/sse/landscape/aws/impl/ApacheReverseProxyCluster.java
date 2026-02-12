@@ -259,4 +259,13 @@ public class ApacheReverseProxyCluster<ShardingKey, MetricsT extends Application
             byte[] privateKeyEncryptionPassphrase) throws Exception {
         return getReverseProxies().iterator().next().getArchiveAndFailoverIPs(optionalKeyName, privateKeyEncryptionPassphrase);
     }
+
+    @Override
+    public void setArchiveAndFailoverIPs(String hostAddress, String b, Optional<String> optionalKeyName,
+            byte[] privateKeyEncryptionPassphrase) throws Exception {
+        if (getReverseProxies().iterator().hasNext()) {
+            final ApacheReverseProxy<ShardingKey, MetricsT, ProcessT> proxy = getReverseProxies().iterator().next();
+            proxy.getArchiveAndFailoverIPs(optionalKeyName, privateKeyEncryptionPassphrase);
+        }
+    }
 }

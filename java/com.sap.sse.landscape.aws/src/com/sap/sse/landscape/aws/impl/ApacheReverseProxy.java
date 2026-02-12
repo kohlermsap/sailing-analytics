@@ -123,8 +123,9 @@ implements com.sap.sse.landscape.Process<RotatingFileBasedLog, MetricsT> {
     
     @Override
     public Pair<String, String> getArchiveAndFailoverIPs(Optional<String> optionalKeyName, byte[] privateKeyEncryptionPassphrase) throws Exception {
-        final String command = "cat "+CONFIG_REPO_PATH+"/"+RELATIVE_CONFIG_PATH+"/"+CONFIG_FILE_FOR_ARCHIVE_AND_FAILOVER_DEFINITION+" | grep \"^Define "+ARCHIVE_IP+"\" | sed -e 's/^Define "+ARCHIVE_IP+" //'; "
-                             + "cat "+CONFIG_REPO_PATH+"/"+RELATIVE_CONFIG_PATH+"/"+CONFIG_FILE_FOR_ARCHIVE_AND_FAILOVER_DEFINITION+" | grep \"^Define "+ARCHIVE_FAILOVER_IP+"\" | sed -e 's/^Define "+ARCHIVE_FAILOVER_IP+" //'";
+        final String absolute000MacrosConfigFilePath = getAbsoluteConfigFilePath(CONFIG_FILE_FOR_ARCHIVE_AND_FAILOVER_DEFINITION);
+        final String command = "cat "+absolute000MacrosConfigFilePath+" | grep \"^Define "+ARCHIVE_IP+"\" | sed -e 's/^Define "+ARCHIVE_IP+" //'; "
+                             + "cat "+absolute000MacrosConfigFilePath+" | grep \"^Define "+ARCHIVE_FAILOVER_IP+"\" | sed -e 's/^Define "+ARCHIVE_FAILOVER_IP+" //'";
         final String[] archiveAndFailoverIPs = runCommandAndReturnStdoutAndLogStderr(command,
                 "Standard error from getting "+ARCHIVE_IP+" and "+ARCHIVE_FAILOVER_IP+": ",
                 Level.INFO, optionalKeyName, privateKeyEncryptionPassphrase).split("\n");
@@ -132,10 +133,17 @@ implements com.sap.sse.landscape.Process<RotatingFileBasedLog, MetricsT> {
     }
 
     @Override
-    public void setArchiveAndFailoverIPs(String hostAddress, String b, Optional<String> ofNullable,
-            byte[] privateKeyEncryptionPassphrase) {
-        // TODO Auto-generated method stub
-        
+    public void setArchiveAndFailoverIPs(String productionArchiveIP, String failoverArchiveIP, Optional<String> optionalKeyName,
+            byte[] privateKeyEncryptionPassphrase) throws Exception {
+        final String absolute000MacrosConfigFilePath = getAbsoluteConfigFilePath(CONFIG_FILE_FOR_ARCHIVE_AND_FAILOVER_DEFINITION);
+        final SshCommandChannel sshChannel = getHost().createRootSshChannel(TIMEOUT, optionalKeyName, privateKeyEncryptionPassphrase);
+        String patch000MacrosCommand = "su - " + CONFIG_USER + " -c 'cd " + CONFIG_REPO_PATH + " && git checkout "
+                + CONFIG_REPO_MAIN_BRANCH_NAME
+                + " && sed -i -e \"s/^Define "+ARCHIVE_IP+" .*$/Define "+ARCHIVE_IP+" "+productionArchiveIP+"/\" -e \"s/^Define "+ARCHIVE_FAILOVER_IP+" .*$/Define "+ARCHIVE_FAILOVER_IP+" "+failoverArchiveIP+"/\" "+absolute000MacrosConfigFilePath
+                + " && " + createCommitAndPushString(CONFIG_FILE_FOR_ARCHIVE_AND_FAILOVER_DEFINITION, "Switching to new ARCHIVE server", /* performPush */ true)
+                + "'"; // concludes the "su"; re-loading is expected to happen through the post-receive hook triggered by the push
+        final String stdout = sshChannel.runCommandAndReturnStdoutAndLogStderr(patch000MacrosCommand, "Standard error from switching to new ARCHIVE server", Level.WARNING);
+        logger.info("Stdout from upgrading to new ARCHIVE: "+stdout);
     }
 
     /**
@@ -165,7 +173,7 @@ implements com.sap.sse.landscape.Process<RotatingFileBasedLog, MetricsT> {
                 + CONFIG_REPO_MAIN_BRANCH_NAME + " && echo \"Use " + macroName + " " + hostname + " "
                 + String.join(" ", macroArguments) + "\" > " + getAbsoluteConfigFilePath(configFileNameForHostname);
         if (doCommit) {
-           command = command + "  && cd "
+           command = command + " && cd "
             + CONFIG_REPO_PATH + " && " + createCommitAndPushString(configFileNameForHostname,
                     "Set " + configFileNameForHostname + " redirect", doPush);
         }
@@ -199,10 +207,16 @@ implements com.sap.sse.landscape.Process<RotatingFileBasedLog, MetricsT> {
     }
     
     /**
-     *  Creates a command, that can be ran on an instance to commit, and optionally push, changes to a file (within a git repository). ASSUMES the command is ran from within the repository.
-     * @param editedFileName The file name edited, created or deleted to commit. This includes the {@link #CONFIG_FILE_EXTENSION}, but not a path. The method appends the relative path.
-     * @param commitMsg The commit message, without escaped speech marks.
-     * @param performPush Boolean indicating whether to push changes or not. True for performing a push.
+     * Creates a command, that can be ran on an instance to commit, and optionally push, changes to a file (within a git
+     * repository). ASSUMES the command is ran from within the repository.
+     * 
+     * @param editedFileName
+     *            The file name edited, created or deleted to commit. This includes the {@link #CONFIG_FILE_EXTENSION},
+     *            but not a path. The method appends the relative path.
+     * @param commitMsg
+     *            The commit message, without escaped speech marks.
+     * @param performPush
+     *            Boolean indicating whether to push changes or not. True for performing a push.
      * @return Returns the created command (in String form) to perform a commit and optional push.
      */
     private String createCommitAndPushString(String editedFileName, String commitMsg, boolean performPush) {

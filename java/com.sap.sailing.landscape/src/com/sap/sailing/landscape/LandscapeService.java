@@ -157,11 +157,30 @@ public interface LandscapeService {
             Integer optionalIgtimiRiotPort, Optional<Integer> minimumAutoScalingGroupSize, Optional<Integer> maximumAutoScalingGroupSize)
             throws Exception;
     
+    /**
+     * Runs phase 1 of an ARCHIVE server upgrade. This includes launching the new instance in a favorable availability
+     * zone where ideally we have a reverse proxy and that ideally is different from the AZ in which the current
+     * production ARCHIVE server runs. It then installs a {@link ArchiveCandidateMonitoringBackgroundTask background
+     * task} that keeps applying a sequence of checks. When any of the checks keeps failing beyond a timeout, the
+     * activity is aborted, and the user who triggered it receives an e-mail about this. If all checks pass, the user
+     * receives an e-mail that asks for manual spot checks and a confirmation about the rotation. A link embedded in the
+     * e-mail grants the user easy access to the
+     * {@link #makeCandidateArchiveServerGoLive(String, String, byte[], String)} method which then performs phase 2.
+     */
     void createArchiveReplicaSet(
             String regionId, String name, String instanceType, String releaseNameOrNullForLatestMaster, Database databaseConfiguration,
             String optionalKeyName, byte[] privateKeyEncryptionPassphrase, String securityServiceReplicationBearerToken,
             String replicaReplicationBearerToken, String optionalDomainName, Integer optionalMemoryInMegabytesOrNull,
             Integer optionalMemoryTotalSizeFactorOrNull, Integer optionalIgtimiRiotPort) throws Exception;
+
+    /**
+     * Phase 2 of an ARCHIVE server upgrade. This is to be triggered ideally after a "human in the loop" step
+     * where a user makes some spot checks and then confirms that the archive candidate can be installed as the
+     * new production server, with the previous production server then becoming the failover, and the old failover
+     * instance being terminated.
+     */
+    void makeCandidateArchiveServerGoLive(String regionId, String optionalKeyName,
+            byte[] privateKeyEncryptionPassphrase, String optionalDomainName) throws Exception;
 
     /**
      * Starts a first master process of a new replica set whose name is provided by the {@code replicaSetName}
@@ -519,7 +538,4 @@ public interface LandscapeService {
             throws MailException;
     
     SailingServerFactory getSailingServerFactory();
-
-    void makeCandidateArchiveServerGoLive(String regionId, String optionalKeyName,
-            byte[] privateKeyEncryptionPassphrase, String optionalDomainName) throws Exception;
 }

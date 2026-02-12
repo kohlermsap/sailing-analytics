@@ -41,6 +41,7 @@ import com.sap.sse.security.shared.impl.User;
  * <li>the one-minute system load average must be below 2 (per cent)</li>
  * <li>the default foreground thread pool queue must contain less than 10 tasks</li>
  * <li>the default background thread pool queue must contain less than 10 tasks</li>
+ * <li>the old and new ARCHIVE must compare equal with the {@link SailingServer#compareServers(Optional, SailingServer, Optional)} method</li>
  * </ol>
  * 
  * When any of these conditions is not fulfilled, the task will re-schedule itself after some delay to check again until

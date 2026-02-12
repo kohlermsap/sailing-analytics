@@ -253,8 +253,15 @@ public class LandscapeServiceImpl implements LandscapeService {
         }
         final AwsRegion region = new AwsRegion(regionId, landscape);
         final Release release = getRelease(releaseNameOrNullForLatestMaster);
+        final AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> oldArchiveReplicaSet = getApplicationReplicaSet(
+                region, SharedLandscapeConstants.ARCHIVE_SERVER_APPLICATION_REPLICA_SET_NAME,
+                Landscape.WAIT_FOR_PROCESS_TIMEOUT.map(Duration::asMillis).orElse(null),
+                optionalKeyName, privateKeyEncryptionPassphrase);
+        final Integer oldArchiveMemoryInMB = getMemoryInMegabytes(optionalKeyName, privateKeyEncryptionPassphrase, oldArchiveReplicaSet.getMaster());
         final com.sap.sailing.landscape.procedures.SailingAnalyticsMasterConfiguration.Builder<?, String> masterConfigurationBuilder =
-                createArchiveConfigurationBuilder(replicaSetName, databaseConfiguration, securityServiceReplicationBearerToken, optionalMemoryInMegabytesOrNull,
+                createArchiveConfigurationBuilder(replicaSetName, databaseConfiguration, securityServiceReplicationBearerToken,
+                        // if no memory size is specified, use that of existing production ARCHIVE server
+                        optionalMemoryInMegabytesOrNull == null && optionalMemoryTotalSizeFactorOrNull == null ? oldArchiveMemoryInMB : optionalMemoryInMegabytesOrNull,
                         optionalMemoryTotalSizeFactorOrNull, optionalIgtimiRiotPort, region, release);
         final String bearerTokenUsedByReplicas = getEffectiveBearerToken(replicaReplicationBearerToken);
         final InboundReplicationConfiguration inboundMasterReplicationConfiguration = masterConfigurationBuilder.getInboundReplicationConfiguration().get();
@@ -277,6 +284,7 @@ public class LandscapeServiceImpl implements LandscapeService {
         final StartSailingAnalyticsMasterHost<String> masterHostStartProcedure = masterHostBuilder.build();
         masterHostStartProcedure.run();
         final SailingAnalyticsProcess<String> master = masterHostStartProcedure.getSailingAnalyticsProcess();
+        master.getHost().setTerminationProtection(true);
         final AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> replicaSet =
                 landscape.getApplicationReplicaSet(region, replicaSetName, master, /* replicas */ Collections.emptySet(),
                         Landscape.WAIT_FOR_PROCESS_TIMEOUT, Optional.ofNullable(optionalKeyName), privateKeyEncryptionPassphrase);
@@ -358,6 +366,7 @@ public class LandscapeServiceImpl implements LandscapeService {
                 archiveAndFailoverIPs.getB(), new SailingAnalyticsHostSupplier<>());
         logger.info("Terminating old failover host " + oldFailover.getInstanceId() + " with internal IP "
                 + oldFailover.getPrivateAddress());
+        oldFailover.setTerminationProtection(false);
         oldFailover.terminate();
         logger.info("Removing reverse proxy rule for archive candidate with hostname "+ candidateHostname);
         reverseProxyCluster.removeRedirect(candidateHostname, Optional.ofNullable(optionalKeyName), privateKeyEncryptionPassphrase);

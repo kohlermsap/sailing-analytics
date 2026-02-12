@@ -188,4 +188,8 @@ public interface LandscapeManagementWriteService extends RemoteService {
             String optionalKeyName, byte[] privateKeyEncryptionPassphrase) throws Exception;
 
     boolean hasDNSResourceRecordsForReplicaSet(String replicaSetName, String optionalDomainName);
+
+    void makeCandidateArchiveServerGoLive(String regionId,
+            SailingApplicationReplicaSetDTO<String> archiveReplicaSetToUpgrade, String optionalKeyName,
+            byte[] privateKeyEncryptionPassphrase) throws Exception;
 }

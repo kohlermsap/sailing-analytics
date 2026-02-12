@@ -1069,6 +1069,12 @@ public class AwsLandscapeImpl<ShardingKey> implements AwsLandscape<ShardingKey> 
     }
 
     @Override
+    public void setTerminationProtection(AwsInstance<ShardingKey> host, boolean terminationProtection) {
+        logger.info("Setting termination protection for instance "+host+" to "+terminationProtection);
+        getEc2Client(getRegion(host.getAvailabilityZone().getRegion())).modifyInstanceAttribute(b->b.disableApiTermination(a->a.value(terminationProtection)));
+    }
+
+    @Override
     public void terminate(AwsInstance<ShardingKey> host) {
         logger.info("Terminating instance "+host);
         getEc2Client(getRegion(host.getAvailabilityZone().getRegion())).terminateInstances(

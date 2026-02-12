@@ -334,6 +334,9 @@ public class LandscapeManagementPanel extends SimplePanel {
                     }
                 }
         );
+        applicationReplicaSetsActionColumn.addAction(ApplicationReplicaSetsImagesBarCell.ACTION_ACTIVATE_ARCHIVE_CANDIDATE,
+                applicationReplicaSetToActivateAsNewArchive -> makeCandidateArchiveServerGoLive(stringMessages,
+                        regionsTable.getSelectionModel().getSelectedObject(), applicationReplicaSetToActivateAsNewArchive));
         applicationReplicaSetsActionColumn.addAction(ApplicationReplicaSetsImagesBarCell.ACTION_DEFINE_LANDING_PAGE,
                 applicationReplicaSetForWhichToDefineLandingPage -> defineLandingPage(stringMessages,
                         regionsTable.getSelectionModel().getSelectedObject(), applicationReplicaSetForWhichToDefineLandingPage));
@@ -1458,7 +1461,7 @@ public class LandscapeManagementPanel extends SimplePanel {
     }
     
     private void upgradeArchiveServer(StringMessages stringMessages, String regionId,
-            SailingApplicationReplicaSetDTO<String> replicaSet) {
+            SailingApplicationReplicaSetDTO<String> archiveReplicaSet) {
         landscapeManagementService.getReleases(new AsyncCallback<ArrayList<ReleaseDTO>>() {
             @Override
             public void onFailure(Throwable caught) {
@@ -1471,7 +1474,7 @@ public class LandscapeManagementPanel extends SimplePanel {
                         stringMessages, errorReporter, new DialogCallback<UpgradeArchiveServerDialog.UpgradeArchiveServerInstructions>() {
                             @Override
                             public void ok(UpgradeArchiveServerInstructions upgradeInstructions) {
-                                landscapeManagementService.createArchiveReplicaSet(regionId, replicaSet, upgradeInstructions.getInstanceTypeOrNull(), 
+                                landscapeManagementService.createArchiveReplicaSet(regionId, archiveReplicaSet, upgradeInstructions.getInstanceTypeOrNull(), 
                                         upgradeInstructions.getReleaseNameOrNullForLatestMaster(), sshKeyManagementPanel.getSelectedKeyPair()==null?null:sshKeyManagementPanel.getSelectedKeyPair().getName(),
                                         sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption() != null
                                         ? sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption().getBytes() : null,
@@ -1486,7 +1489,7 @@ public class LandscapeManagementPanel extends SimplePanel {
                                     @Override
                                     public void onSuccess(Void result) {
                                         Notification.notify(stringMessages.successfullyLaunchedNewArchiveCandidate(
-                                                replicaSet.getName(), upgradeInstructions.getReleaseNameOrNullForLatestMaster()),
+                                                archiveReplicaSet.getName(), upgradeInstructions.getReleaseNameOrNullForLatestMaster()),
                                                 NotificationType.SUCCESS);
                                     }
                                 });
@@ -1496,6 +1499,26 @@ public class LandscapeManagementPanel extends SimplePanel {
                             public void cancel() {
                             }
                 }).show();
+            }
+        });
+    }
+
+    private void makeCandidateArchiveServerGoLive(StringMessages stringMessages, String regionId, SailingApplicationReplicaSetDTO<String> archiveReplicaSetToUpgrade) {
+        landscapeManagementService.makeCandidateArchiveServerGoLive(regionId, archiveReplicaSetToUpgrade,
+                sshKeyManagementPanel.getSelectedKeyPair() == null ? null
+                        : sshKeyManagementPanel.getSelectedKeyPair().getName(),
+                sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption() != null
+                        ? sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption().getBytes()
+                        : null,
+                new AsyncCallback<Void>() {
+                    @Override
+            public void onFailure(Throwable caught) {
+                errorReporter.reportError(caught.getMessage());
+            }
+
+            @Override
+            public void onSuccess(Void result) {
+                Notification.notify(stringMessages.successfullySwitchedToNewArchiveCandidate(archiveReplicaSetToUpgrade.getName()), NotificationType.SUCCESS);
             }
         });
     }

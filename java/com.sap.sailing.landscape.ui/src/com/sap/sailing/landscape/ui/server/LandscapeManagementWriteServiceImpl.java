@@ -683,7 +683,6 @@ public class LandscapeManagementWriteServiceImpl extends ResultCachingProxiedRem
             String instanceType, String releaseNameOrNullForLatestMaster, String optionalKeyName,
             byte[] privateKeyEncryptionPassphrase, String securityReplicationBearerToken,
             String replicaReplicationBearerToken, Integer optionalMemoryInMegabytesOrNull, Integer optionalMemoryTotalSizeFactorOrNull) throws Exception {
-        // TODO bug6203: we also should provide a possibility to specify memory size; if not provided, we should clone the current archive's settings
         checkLandscapeManageAwsPermission();
         final String userSetOrArchiveServerSecurityReplicationBearerToken;
         final AwsRegion region = new AwsRegion(regionId, getLandscape());
@@ -706,8 +705,15 @@ public class LandscapeManagementWriteServiceImpl extends ResultCachingProxiedRem
                 .createArchiveReplicaSet(regionId, replicaSetName, instanceType, releaseNameOrNullForLatestMaster,
                         databaseConfiguration, optionalKeyName, privateKeyEncryptionPassphrase,
                         userSetOrArchiveServerSecurityReplicationBearerToken, replicaReplicationBearerToken, domainName,
-                        /* optionalMemoryInMegabytesOrNull TODO bug6203 */ null, /* optionalMemoryTotalSizeFactorOrNull TODO bug6203 */ null,
+                        optionalMemoryInMegabytesOrNull, optionalMemoryTotalSizeFactorOrNull,
                         /* optionalIgtimiRiotPort */ null);
+    }
+    
+    @Override
+    public void makeCandidateArchiveServerGoLive(String regionId, SailingApplicationReplicaSetDTO<String> archiveReplicaSetToUpgrade,
+            String optionalKeyName, byte[] privateKeyEncryptionPassphrase) throws Exception {
+        final String domainName = AwsLandscape.getHostedZoneName(archiveReplicaSetToUpgrade.getHostname());
+        getLandscapeService().makeCandidateArchiveServerGoLive(regionId, optionalKeyName, privateKeyEncryptionPassphrase, domainName);
     }
     
     /**
