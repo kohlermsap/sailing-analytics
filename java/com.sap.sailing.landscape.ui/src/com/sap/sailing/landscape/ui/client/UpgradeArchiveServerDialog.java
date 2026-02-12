@@ -26,19 +26,11 @@ public class UpgradeArchiveServerDialog extends AbstractNewProcessDialog<Upgrade
     
     private final SuggestBox releaseNameBox;
 
-    public UpgradeArchiveServerDialog(LandscapeManagementWriteServiceAsync landscapeManagementService, String defaultInstanceType,
+    public UpgradeArchiveServerDialog(LandscapeManagementWriteServiceAsync landscapeManagementService, String defaultInstanceTypeName,
             Iterable<String> releaseNames,
             StringMessages stringMessages, ErrorReporter errorReporter, DialogCallback<UpgradeArchiveServerInstructions> callback) {
-        super(stringMessages.upgradeArchiveServer(), landscapeManagementService, stringMessages, errorReporter, callback);
+        super(stringMessages.upgradeArchiveServer(), defaultInstanceTypeName, landscapeManagementService, stringMessages, errorReporter, callback);
         releaseNameBox = LandscapeDialogUtil.createReleaseNameBox(stringMessages, releaseNames, this);
-        if (defaultInstanceType != null) {
-            for (int i=0; i<getInstanceTypeListBox().getItemCount(); i++) {
-                if (getInstanceTypeListBox().getItemText(i).equals(defaultInstanceType)) {
-                    getInstanceTypeListBox().setSelectedIndex(i);
-                    break;
-                }
-            }
-        }
     }
     
     @Override

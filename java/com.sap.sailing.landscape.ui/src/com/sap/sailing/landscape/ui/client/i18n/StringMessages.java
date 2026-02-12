@@ -183,4 +183,5 @@ com.sap.sse.gwt.adminconsole.StringMessages {
     String successfullyLaunchedNewArchiveCandidate(String replicaSetName, String releaseName);
     String successfullySwitchedToNewArchiveCandidate(String replicaSetName);
     String activateArchiveCandidate();
+    String reallySwitchToNewArchiveCandidate();
 }

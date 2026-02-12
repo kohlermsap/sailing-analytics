@@ -1462,9 +1462,11 @@ public class LandscapeManagementPanel extends SimplePanel {
     
     private void upgradeArchiveServer(StringMessages stringMessages, String regionId,
             SailingApplicationReplicaSetDTO<String> archiveReplicaSet) {
+        applicationReplicaSetsBusy.setBusy(true);
         landscapeManagementService.getReleases(new AsyncCallback<ArrayList<ReleaseDTO>>() {
             @Override
             public void onFailure(Throwable caught) {
+                applicationReplicaSetsBusy.setBusy(false);
                 errorReporter.reportError(caught.getMessage());
             }
             
@@ -1484,11 +1486,13 @@ public class LandscapeManagementPanel extends SimplePanel {
                                         new AsyncCallback<Void>() {
                                     @Override
                                     public void onFailure(Throwable caught) {
+                                        applicationReplicaSetsBusy.setBusy(false);
                                         errorReporter.reportError(caught.getMessage());
                                     }
 
                                     @Override
                                     public void onSuccess(Void result) {
+                                        applicationReplicaSetsBusy.setBusy(false);
                                         Notification.notify(stringMessages.successfullyLaunchedNewArchiveCandidate(
                                                 archiveReplicaSet.getName(), upgradeInstructions.getReleaseNameOrNullForLatestMaster()),
                                                 NotificationType.SUCCESS);
@@ -1498,6 +1502,7 @@ public class LandscapeManagementPanel extends SimplePanel {
 
                             @Override
                             public void cancel() {
+                                applicationReplicaSetsBusy.setBusy(false);
                             }
                 }).show();
             }
@@ -1505,23 +1510,28 @@ public class LandscapeManagementPanel extends SimplePanel {
     }
 
     private void makeCandidateArchiveServerGoLive(StringMessages stringMessages, String regionId, SailingApplicationReplicaSetDTO<String> archiveReplicaSetToUpgrade) {
-        landscapeManagementService.makeCandidateArchiveServerGoLive(regionId, archiveReplicaSetToUpgrade,
-                sshKeyManagementPanel.getSelectedKeyPair() == null ? null
-                        : sshKeyManagementPanel.getSelectedKeyPair().getName(),
-                sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption() != null
-                        ? sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption().getBytes()
-                        : null,
-                new AsyncCallback<Void>() {
-                    @Override
-            public void onFailure(Throwable caught) {
-                errorReporter.reportError(caught.getMessage());
-            }
-
-            @Override
-            public void onSuccess(Void result) {
-                Notification.notify(stringMessages.successfullySwitchedToNewArchiveCandidate(archiveReplicaSetToUpgrade.getName()), NotificationType.SUCCESS);
-            }
-        });
+        if (Window.confirm(stringMessages.reallySwitchToNewArchiveCandidate())) {
+            applicationReplicaSetsBusy.setBusy(true);
+            landscapeManagementService.makeCandidateArchiveServerGoLive(regionId, archiveReplicaSetToUpgrade,
+                    sshKeyManagementPanel.getSelectedKeyPair() == null ? null
+                            : sshKeyManagementPanel.getSelectedKeyPair().getName(),
+                    sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption() != null
+                            ? sshKeyManagementPanel.getPassphraseForPrivateKeyDecryption().getBytes()
+                            : null,
+                    new AsyncCallback<Void>() {
+                        @Override
+                public void onFailure(Throwable caught) {
+                    applicationReplicaSetsBusy.setBusy(true);
+                    errorReporter.reportError(caught.getMessage());
+                }
+    
+                @Override
+                public void onSuccess(Void result) {
+                    applicationReplicaSetsBusy.setBusy(true);
+                    Notification.notify(stringMessages.successfullySwitchedToNewArchiveCandidate(archiveReplicaSetToUpgrade.getName()), NotificationType.SUCCESS);
+                }
+            });
+        }
     }
 
     private void refreshRegionsTable(UserService userService) {

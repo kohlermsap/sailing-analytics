@@ -36,8 +36,10 @@ public class MoveMasterProcessDialog extends AbstractNewProcessDialog<MoveMaster
     private boolean memoryAsFactorToTotalMemoryAdjusted;
 
     public MoveMasterProcessDialog(LandscapeManagementWriteServiceAsync landscapeManagementService,
-            StringMessages stringMessages, ErrorReporter errorReporter, DialogCallback<MoveMasterToOtherInstanceInstructions> callback) {
-        super(stringMessages.moveMasterToOtherInstance(), landscapeManagementService, stringMessages, errorReporter, callback);
+            StringMessages stringMessages, ErrorReporter errorReporter,
+            DialogCallback<MoveMasterToOtherInstanceInstructions> callback) {
+        super(stringMessages.moveMasterToOtherInstance(), SharedLandscapeConstants.DEFAULT_DEDICATED_INSTANCE_TYPE_NAME,
+                landscapeManagementService, stringMessages, errorReporter, callback);
         getMemoryTotalSizeFactorBox().addValueChangeHandler(e->memoryAsFactorToTotalMemoryAdjusted=true);
         sharedMasterInstanceBox = createCheckbox(stringMessages.sharedMasterInstance());
         sharedMasterInstanceBox.addValueChangeHandler(e->updateInstanceTypeBasedOnSharedMasterInstanceBox());

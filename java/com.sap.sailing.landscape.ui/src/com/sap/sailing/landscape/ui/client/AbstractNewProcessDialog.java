@@ -4,7 +4,6 @@ import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
-import com.sap.sailing.landscape.common.SharedLandscapeConstants;
 import com.sap.sailing.landscape.ui.client.i18n.StringMessages;
 import com.sap.sse.gwt.client.ErrorReporter;
 import com.sap.sse.gwt.client.controls.IntegerBox;
@@ -63,12 +62,13 @@ public abstract class AbstractNewProcessDialog<T> extends DataEntryDialog<T> {
     private final IntegerBox memoryInMegabytesBox;
     private final IntegerBox memoryTotalSizeFactorBox;
 
-    public AbstractNewProcessDialog(String title, LandscapeManagementWriteServiceAsync landscapeManagementService,
-            StringMessages stringMessages, ErrorReporter errorReporter, DialogCallback<T> callback) {
+    public AbstractNewProcessDialog(String title, String defaultInstanceTypeName,
+            LandscapeManagementWriteServiceAsync landscapeManagementService, StringMessages stringMessages,
+            ErrorReporter errorReporter, DialogCallback<T> callback) {
         super(title, /* message */ null, stringMessages.ok(), stringMessages.cancel(), /* validator */ null, callback);
         this.stringMessages = stringMessages;
         instanceTypeListBox = LandscapeDialogUtil.createInstanceTypeListBox(this, landscapeManagementService,
-                stringMessages, SharedLandscapeConstants.DEFAULT_DEDICATED_INSTANCE_TYPE_NAME, errorReporter, /* canBeDeployedInNlbInstanceBasedTargetGroup */ false);
+                stringMessages, defaultInstanceTypeName, errorReporter, /* canBeDeployedInNlbInstanceBasedTargetGroup */ false);
         instanceTypeLabel = new Label();
         masterReplicationBearerTokenBox = createTextBox("", 40);
         replicaReplicationBearerTokenBox = createTextBox("", 40);
