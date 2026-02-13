@@ -359,8 +359,12 @@ public class LandscapeServiceImpl implements LandscapeService {
                 + archiveAndFailoverIPs.getA() + ". Turning production into failover and candidate into production.");
         reverseProxyCluster.setArchiveAndFailoverIPs(candidate.getHost().getPrivateAddress().getHostAddress(),
                 archiveAndFailoverIPs.getA(), Optional.ofNullable(optionalKeyName), privateKeyEncryptionPassphrase);
-        final SailingAnalyticsHost<String> oldProductionArchive = getLandscape().getHostByPrivateDnsNameOrIpAddress(region, archiveAndFailoverIPs.getA(), new SailingAnalyticsHostSupplier<>());
-        getLandscape().setInstanceName(oldProductionArchive, SharedLandscapeConstants.ARCHIVE_SERVER_FAILOVER_INSTANCE_NAME);
+        try {
+            final SailingAnalyticsHost<String> oldProductionArchive = getLandscape().getHostByPrivateDnsNameOrIpAddress(region, archiveAndFailoverIPs.getA(), new SailingAnalyticsHostSupplier<>());
+            getLandscape().setInstanceName(oldProductionArchive, SharedLandscapeConstants.ARCHIVE_SERVER_FAILOVER_INSTANCE_NAME);
+        } catch (Exception e) {
+            logger.warning("Couldn't find old production ARCHIVE with IP "+archiveAndFailoverIPs.getA()+", so couldn't update its Name tag");
+        }
         getLandscape().setInstanceName(candidate.getHost(), SharedLandscapeConstants.ARCHIVE_SERVER_INSTANCE_NAME);
         logger.info("Removing reverse proxy rule for archive candidate with hostname "+ candidateHostname);
         reverseProxyCluster.removeRedirect(candidateHostname, Optional.ofNullable(optionalKeyName), privateKeyEncryptionPassphrase);

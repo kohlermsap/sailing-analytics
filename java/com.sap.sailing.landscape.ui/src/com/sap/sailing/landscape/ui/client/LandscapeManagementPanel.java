@@ -1527,13 +1527,13 @@ public class LandscapeManagementPanel extends SimplePanel {
                     new AsyncCallback<Void>() {
                         @Override
                 public void onFailure(Throwable caught) {
-                    applicationReplicaSetsBusy.setBusy(true);
+                    applicationReplicaSetsBusy.setBusy(false);
                     errorReporter.reportError(caught.getMessage());
                 }
     
                 @Override
                 public void onSuccess(Void result) {
-                    applicationReplicaSetsBusy.setBusy(true);
+                    applicationReplicaSetsBusy.setBusy(false);
                     Notification.notify(stringMessages.successfullySwitchedToNewArchiveCandidate(archiveReplicaSetToUpgrade.getName()), NotificationType.SUCCESS);
                 }
             });

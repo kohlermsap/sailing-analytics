@@ -151,11 +151,11 @@ public class ArchiveCandidateMonitoringBackgroundTask implements Runnable {
     public void run() {
         try {
             if (currentCheck.runCheck()) {
-                logger.info("Check "+currentCheck+" passed.");
+                logger.info("Check \""+currentCheck+"\" passed.");
                 // the check passed; proceed to next check, if any
                 currentCheck = checksIterator.hasNext() ? checksIterator.next() : null;
                 if (currentCheck != null) {
-                    logger.info("More checks to do; re-scheduling to run next check "+currentCheck);
+                    logger.info("More checks to do; re-scheduling to run next check \""+currentCheck+"\"");
                     // re-schedule this task to run next check immediately
                     executor.submit(this);
                 } else {
@@ -167,8 +167,13 @@ public class ArchiveCandidateMonitoringBackgroundTask implements Runnable {
                 rescheduleCurrentCheckAfterFailureOrTimeout();
             }
         } catch (Exception e) {
-            logger.warning("Exception while running check " + currentCheck + " for candidate " + replicaSet.getMaster().getHost().getHostname() + ": " + e.getMessage());
+            logger.warning("Exception while running check \"" + currentCheck + "\" for candidate " + replicaSet.getMaster().getHost().getHostname() + ": " + e.getMessage());
             currentCheck.setLastFailureMessage(e.getMessage());
+            try {
+                rescheduleCurrentCheckAfterFailureOrTimeout();
+            } catch (MailException e1) {
+                logger.severe("Issue while trying to send mail: "+e.getMessage()+"; user may not know what to do next!");
+            }
         }
     }
 

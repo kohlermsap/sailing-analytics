@@ -51,7 +51,7 @@ public class SshCommandChannelImpl implements SshCommandChannel {
     public InputStream sendCommandLineSynchronously(String commandLine, OutputStream stderr) throws IOException, InterruptedException, JSchException {
         stdout = channel.getInputStream();
         channel.setCommand(commandLine);
-        channel.setExtOutputStream(stderr);
+        channel.setErrStream(stderr);
         channel.connect(/* timeout in milliseconds */ 5000);
         return stdout;
     }
