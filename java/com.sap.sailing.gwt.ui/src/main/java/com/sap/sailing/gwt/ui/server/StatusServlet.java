@@ -23,6 +23,8 @@ import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ServerDescription;
 import com.sap.sailing.server.interfaces.RacingEventService;
 import com.sap.sse.ServerInfo;
+import com.sap.sse.common.Duration;
+import com.sap.sse.common.Util;
 import com.sap.sse.mongodb.MongoDBService;
 import com.sap.sse.replication.ReplicationService;
 import com.sap.sse.replication.ReplicationStatus;
@@ -66,11 +68,15 @@ public class StatusServlet extends HttpServlet {
             if (defaultBackgroundTaskThreadPoolExecutor instanceof ThreadPoolExecutor) {
                 final long queueLengthDefaultBackgroundThreadPoolExecutor = ((ThreadPoolExecutor) defaultBackgroundTaskThreadPoolExecutor).getQueue().size();
                 result.put("defaultbackgroundthreadpoolexecutorqueuelength", queueLengthDefaultBackgroundThreadPoolExecutor);
+                final long nonDelayedQueueLengthDefaultBackgroundThreadPoolExecutor = Util.size(ThreadPoolUtil.INSTANCE.getTasksDelayedByLessThan((ThreadPoolExecutor) defaultBackgroundTaskThreadPoolExecutor, Duration.ONE_SECOND));
+                result.put("defaultbackgroundthreadpoolexecutorqueuelengthnondelayed", nonDelayedQueueLengthDefaultBackgroundThreadPoolExecutor);
             }
             final ScheduledExecutorService defaultForegroundTaskThreadPoolExecutor = ThreadPoolUtil.INSTANCE.getDefaultForegroundTaskThreadPoolExecutor();
             if (defaultForegroundTaskThreadPoolExecutor instanceof ThreadPoolExecutor) {
                 final long queueLengthDefaultForegroundThreadPoolExecutor = ((ThreadPoolExecutor) defaultForegroundTaskThreadPoolExecutor).getQueue().size();
                 result.put("defaultforegroundthreadpoolexecutorqueuelength", queueLengthDefaultForegroundThreadPoolExecutor);
+                final long nonDelayedQueueLengthDefaultForegroundThreadPoolExecutor = Util.size(ThreadPoolUtil.INSTANCE.getTasksDelayedByLessThan((ThreadPoolExecutor) defaultForegroundTaskThreadPoolExecutor, Duration.ONE_SECOND));
+                result.put("defaultforegroundthreadpoolexecutorqueuelengthnondelayed", nonDelayedQueueLengthDefaultForegroundThreadPoolExecutor);
             }
             final double systemLoadAverageLastMinute = ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage();
             result.put("systemloadaveragelastminute", systemLoadAverageLastMinute);

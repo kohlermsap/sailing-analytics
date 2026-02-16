@@ -54,6 +54,8 @@ implements SailingAnalyticsProcess<ShardingKey> {
     private static final String SYSTEM_LOAD_AVERAGE_LAST_MINUTE_NAME = "systemloadaveragelastminute";
     private static final String DEFAULT_BACKGROUND_THREAD_POOL_EXECUTOR_QUEUE_LENGTH_NAME = "defaultbackgroundthreadpoolexecutorqueuelength";
     private static final String DEFAULT_FOREGROUND_THREAD_POOL_EXECUTOR_QUEUE_LENGTH_NAME = "defaultforegroundthreadpoolexecutorqueuelength";
+    private static final String DEFAULT_BACKGROUND_THREAD_POOL_EXECUTOR_QUEUE_LENGTH_NONDELAYED_NAME = "defaultbackgroundthreadpoolexecutorqueuelengthnondelayed";
+    private static final String DEFAULT_FOREGROUND_THREAD_POOL_EXECUTOR_QUEUE_LENGTH_NONDELAYED_NAME = "defaultforegroundthreadpoolexecutorqueuelengthnondelayed";
     private Integer expeditionUdpPort;
     private Integer igtimiRiotPort;
     private Release release;
@@ -145,6 +147,18 @@ implements SailingAnalyticsProcess<ShardingKey> {
     public int getDefaultForegroundThreadPoolExecutorQueueSize(Optional<Duration> optionalTimeout) throws TimeoutException, Exception {
         final JSONObject status = getStatus(optionalTimeout);
         return ((Number) status.get(DEFAULT_FOREGROUND_THREAD_POOL_EXECUTOR_QUEUE_LENGTH_NAME)).intValue();
+    }
+    
+    @Override
+    public int getDefaultBackgroundThreadPoolExecutorQueueSizeNondelayed(Optional<Duration> optionalTimeout) throws TimeoutException, Exception {
+        final JSONObject status = getStatus(optionalTimeout);
+        return ((Number) status.get(DEFAULT_BACKGROUND_THREAD_POOL_EXECUTOR_QUEUE_LENGTH_NONDELAYED_NAME)).intValue();
+    }
+    
+    @Override
+    public int getDefaultForegroundThreadPoolExecutorQueueSizeNondelayed(Optional<Duration> optionalTimeout) throws TimeoutException, Exception {
+        final JSONObject status = getStatus(optionalTimeout);
+        return ((Number) status.get(DEFAULT_FOREGROUND_THREAD_POOL_EXECUTOR_QUEUE_LENGTH_NONDELAYED_NAME)).intValue();
     }
     
     @Override
