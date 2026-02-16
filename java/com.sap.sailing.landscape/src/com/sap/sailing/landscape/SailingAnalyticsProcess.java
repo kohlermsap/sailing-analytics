@@ -2,6 +2,7 @@ package com.sap.sailing.landscape;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import com.jcraft.jsch.JSchException;
@@ -36,4 +37,10 @@ public interface SailingAnalyticsProcess<ShardingKey> extends AwsApplicationProc
      */
     void refreshToRelease(Release release, Optional<String> optionalKeyName, byte[] privateKeyEncryptionPassphrase)
             throws IOException, InterruptedException, JSchException, Exception;
+
+    double getLastMinuteSystemLoadAverage(Optional<Duration> optionalTimeout) throws TimeoutException, Exception;
+
+    int getDefaultBackgroundThreadPoolExecutorQueueSize(Optional<Duration> optionalTimeout) throws TimeoutException, Exception;
+
+    int getDefaultForegroundThreadPoolExecutorQueueSize(Optional<Duration> optionalTimeout) throws TimeoutException, Exception;
 }
