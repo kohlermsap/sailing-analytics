@@ -5,9 +5,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 
+import com.sap.sse.common.Duration;
 import com.sap.sse.util.impl.ThreadPoolUtilImpl;
 
 public interface ThreadPoolUtil {
@@ -118,4 +121,11 @@ public interface ThreadPoolUtil {
     Runnable associateWithSubjectIfAny(Runnable runnable);
 
     <T> Callable<T> associateWithSubjectIfAny(Callable<T> callable);
+    
+    /**
+     * In the {@code executor}'s queue filters tasks for those with a delay less than {@code delayLessThan} and
+     * returns the corresponding tasks. This can be used, e.g., to judge an executor's immediate workload or
+     * give an estimate of the future workload mapped over time.
+     */
+    Iterable<ScheduledFuture<?>> getTasksDelayedByLessThan(ThreadPoolExecutor executor, Duration delayLessThan);
 }

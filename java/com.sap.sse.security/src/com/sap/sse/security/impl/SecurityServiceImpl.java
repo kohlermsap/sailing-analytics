@@ -1411,17 +1411,18 @@ implements ReplicableSecurityService, ClearStateTestSupport {
     }
 
     /**
-     * Schedule a clean-up task to avoid leaking memory for the TimedLock objects; schedule it in two times the
-     * locking expiry of {@code timedLock}, but at least one hour, because if no authentication failure occurs
-     * for that IP/user agent combination, we will entirely remove the {@link TimedLock} from the map,
-     * effectively resetting that IP to a short default locking duration again; this way, if during the double
-     * expiration time another failed attempt is registered, we can still grow the locking duration because we have kept
-     * the {@link TimedLock} object available for a bit longer. Furthermore, for authentication requests, the
-     * responsible {@link Realm} will let authentication requests get to here only if not locked, so if we were to
-     * expunge entries immediately as they unlock, the locking duration could never grow.<p>
+     * Schedule a clean-up task to avoid leaking memory for the {@link TimedLock} objects; schedule it in two times the
+     * locking expiry of {@code timedLock}, but at least one hour, because if no authentication failure occurs for that
+     * IP/user agent combination, we will entirely remove the {@link TimedLock} from the map, effectively resetting that
+     * IP to a short default locking duration again; this way, if during the double expiration time another failed
+     * attempt is registered, we can still grow the locking duration because we have kept the {@link TimedLock} object
+     * available for a bit longer. Furthermore, for authentication requests, the responsible {@link Realm} will let
+     * authentication requests get to here only if not locked, so if we were to expunge entries immediately as they
+     * unlock, the locking duration could never grow.
+     * <p>
      * 
-     * With the minimum of one hour, we ensure that failing requests done at a slower rate still grow the locking
-     * expiry duration.
+     * With the minimum of one hour, we ensure that failing requests done at a slower rate still grow the locking expiry
+     * duration.
      */
     private void scheduleCleanUpTask(final String clientIPOrNull,
             final TimedLock timedLock,
