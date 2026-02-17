@@ -182,10 +182,10 @@ public class ArchiveCandidateMonitoringBackgroundTask implements Runnable {
 
     private void rescheduleCurrentCheckAfterFailureOrTimeout() throws MailException {
         if (currentCheck.hasTimedOut()) {
-            logger.severe("Check "+currentCheck+" failed and has timed out; giving up on candidate "+replicaSet.getMaster().getHost().getHostname());
+            logger.severe("Check \""+currentCheck+"\" failed and has timed out; giving up on candidate "+replicaSet.getMaster().getHost().getHostname());
             notifyProcessOwnerCandidateFailedToBecomeReadyForProduction(); // this ends the re-scheduling loop
         } else {
-            logger.info("Check " + currentCheck + " failed with message \"" + currentCheck.getLastFailureMessage()
+            logger.info("Check \"" + currentCheck + "\" failed with message \"" + currentCheck.getLastFailureMessage()
                     + "\" but has not yet timed out; re-scheduling to check again after "
                     + currentCheck.getDelayAfterFailure());
             executor.schedule(this, currentCheck.getDelayAfterFailure().asMillis(), TimeUnit.MILLISECONDS);
