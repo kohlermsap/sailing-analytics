@@ -190,7 +190,7 @@ public class ManeuverDetectorImpl extends AbstractManeuverDetectorImpl {
      * Checks whether {@code currentFix} can be grouped together with the previous fixes in order to be regarded as a
      * single maneuver spot. For this, the {@code newCourseChangeDirection must match the direction of provided {@code
      * lastCourseChangeDirection}. Additionally, the distance from {@code previousFix} to {@code currentFix} must be <=
-     * 3 hull lengths, or the time difference <= getApproximatedManeuverDuration().
+     * 5 hull lengths, or the time difference <= 2*getApproximatedManeuverDuration().
      * 
      * @param lastCourseChangeDirection The last course within previous three fixes counting from {@code currentFix}
      * 
@@ -205,17 +205,20 @@ public class ManeuverDetectorImpl extends AbstractManeuverDetectorImpl {
      */
     protected boolean checkDouglasPeuckerFixesGroupable(NauticalSide lastCourseChangeDirection,
             NauticalSide newCourseChangeDirection, GPSFixMoving previousFix, GPSFixMoving currentFix) {
+        final boolean result;
         if (lastCourseChangeDirection != newCourseChangeDirection) {
-            return false;
+            result = false;
+        } else {
+            Distance threeHullLengths = trackedRace.getRace().getBoatOfCompetitor(competitor).getBoatClass().getHullLength().scale(5);
+            if (currentFix.getTimePoint().asMillis()
+                    - previousFix.getTimePoint().asMillis() > getApproximateManeuverDuration().asMillis()*2
+                    && currentFix.getPosition().getDistance(previousFix.getPosition()).compareTo(threeHullLengths) > 0) {
+                result = false;
+            } else {
+                result = true;
+            }
         }
-        Distance threeHullLengths = trackedRace.getRace().getBoatOfCompetitor(competitor).getBoatClass().getHullLength()
-                .scale(3);
-        if (currentFix.getTimePoint().asMillis()
-                - previousFix.getTimePoint().asMillis() > getApproximateManeuverDuration().asMillis()
-                && currentFix.getPosition().getDistance(previousFix.getPosition()).compareTo(threeHullLengths) > 0) {
-            return false;
-        }
-        return true;
+        return result;
     }
 
     private List<Maneuver> getAllManeuversFromManeuverSpots(List<? extends ManeuverSpot> maneuverSpots) {
