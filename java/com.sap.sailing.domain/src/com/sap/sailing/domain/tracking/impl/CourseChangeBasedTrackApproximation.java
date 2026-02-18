@@ -6,12 +6,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NavigableSet;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import com.sap.sailing.domain.base.BoatClass;
 import com.sap.sailing.domain.base.Competitor;
@@ -80,6 +80,8 @@ import com.sap.sse.common.scalablevalue.ScalableValueWithDistance;
  */
 public class CourseChangeBasedTrackApproximation implements Serializable, GPSTrackListener<Competitor, GPSFixMoving> {
     private static final long serialVersionUID = -258129016229111573L;
+    private static final Logger logger = Logger.getLogger(CourseChangeBasedTrackApproximation.class.getName());
+
     private final GPSFixTrack<Competitor, GPSFixMoving> track;
     private final BoatClass boatClass;
     private final FixWindow fixWindow;
@@ -114,15 +116,13 @@ public class CourseChangeBasedTrackApproximation implements Serializable, GPSTra
          * 
          * See also bug 6209.
          */
-        private final Deque<GPSFixMoving> queueOfNewFixes;
+        private final LinkedList<GPSFixMoving> queueOfNewFixes;
         
         /**
          * We need to remember the speed / bearing as we saw them when we inserted the fixes into the {@link #window}
          * collection. Based on more fixes getting added to the track, things may change. In particular, fixes that may have
          * had a valid speed when inserted may later have their cached speed/bearing invalidated, and computing it again
          * from the track may then yield {@code null}.<p>
-         * 
-         * TODO bug6209: the above observation regarding changes when later fixes get added is exactly what is causing the bug6209 issues!
          */
         private final LinkedList<SpeedWithBearing> speedForFixesInWindow;
         
@@ -161,29 +161,83 @@ public class CourseChangeBasedTrackApproximation implements Serializable, GPSTra
         }
         
         /**
-         * Adds a fix to this fix window, sorted by time point. If this produces an interesting candidate within this window,
-         * the candidate is returned, and the window is reset in such a way that the same candidate will not be returned
-         * a second time.
+         * Adds a fix to this fix window, sorted by time point. If this produces an interesting candidate within this
+         * window, the candidate is returned, and the window is reset in such a way that the same candidate will not be
+         * returned a second time.
          * <p>
          * 
          * The window will have established its invariants when this method returns.
+         * <p>
          * 
-         * @param next a fix that, in case this window is not empty, is not before the first fix in this window
+         * This method queues the new fix and only adds it to the window when it is "old enough" to not be influenced
+         * anymore by newer fixes that may still arrive. The influence is measured by half the
+         * {@link GPSFixTrack#getMillisecondsOverWhichToAverageSpeed()} interval. This way, approximation results
+         * are more stable but have a delay with regards to the newest fixes known by the track.<p>
+         * 
+         * Fixes may arrive out of order. However, the method assumes that most fixes will have to get added to the
+         * end of the queue. Adding out of order fixes may therefore be a bit slower than simply adding to the end.
+         * 
+         * @param next
+         *            a fix that, in case this window is not empty, is not before the first fix in this window
          * @return a maneuver candidate from the {@link #window} if one became available by adding the {@code next} fix,
          *         or {@code null} if no maneuver candidate became available
          */
         GPSFixMoving add(GPSFixMoving next) {
-            final GPSFixMoving result;
-            queueOfNewFixes.add(next); // FIXME bug6209: the queueOfNewFixes needs to remain ordered by fix TimePoint!
+            insertIntoQueueSortedByTime(next);
             final GPSFixMoving first = queueOfNewFixes.getFirst();
-            if (first.getTimePoint().until(next.getTimePoint()).asMillis() > track.getMillisecondsOverWhichToAverageSpeed()/2) {
-                result = addOldEnoughFix(queueOfNewFixes.removeFirst());
-            } else {
-                result = null;
-            }
+            final GPSFixMoving result = first.getTimePoint().until(next.getTimePoint()).asMillis() > track.getMillisecondsOverWhichToAverageSpeed()/2
+                    ? addOldEnoughFix(queueOfNewFixes.removeFirst())
+                    : null;
             return result;
         }
         
+        /**
+         * Inserts {@code fix} into {@link #queueOfNewFixes}, maintaining sorted order by time point.
+         * If a fix with an equal time point already exists, it is replaced.
+         */
+        private void insertIntoQueueSortedByTime(GPSFixMoving fix) {
+            if (queueOfNewFixes.isEmpty() || queueOfNewFixes.getLast().getTimePoint().before(fix.getTimePoint())) {
+                queueOfNewFixes.add(fix);
+            } else {
+                final ListIterator<GPSFixMoving> iter = queueOfNewFixes.listIterator(queueOfNewFixes.size());
+                boolean added = false;
+                while (!added && iter.hasPrevious()) {
+                    final GPSFixMoving previous = iter.previous();
+                    if (previous.getTimePoint().equals(fix.getTimePoint())) {
+                        logger.fine(()->{
+                            return
+                                "Replacing fix " + previous
+                                + " in queue of new fixes; previous fix was " + previous
+                                + ", new fix is " + fix;
+                        });
+                        iter.set(fix); // replace existing fix
+                        added = true;
+                    } else if (previous.getTimePoint().before(fix.getTimePoint())) {
+                        iter.next(); // move back to the position after previous
+                        iter.add(fix);
+                        added = true;
+                    }
+                }
+                if (!added) {
+                    queueOfNewFixes.addFirst(fix);
+                }
+            }
+            assert inIncreasingTimePointOrder(queueOfNewFixes);
+        }
+        
+        private boolean inIncreasingTimePointOrder(LinkedList<GPSFixMoving> fixes) {
+            boolean result = true;
+            TimePoint previousTimePoint = null;
+            for (final GPSFixMoving fix : fixes) {
+                if (previousTimePoint != null && !fix.getTimePoint().after(previousTimePoint)) {
+                    result = false;
+                    break;
+                }
+                previousTimePoint = fix.getTimePoint();
+            }
+            return result;
+        }
+
         private GPSFixMoving addOldEnoughFix(GPSFixMoving next) {
             assert window.isEmpty() || !next.getTimePoint().before(window.peekFirst().getTimePoint());
             final GPSFixMoving result;
@@ -487,5 +541,4 @@ public class CourseChangeBasedTrackApproximation implements Serializable, GPSTra
         }
         return result;
     }
-
 }
