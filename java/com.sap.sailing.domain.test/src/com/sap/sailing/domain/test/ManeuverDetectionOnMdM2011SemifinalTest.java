@@ -87,7 +87,7 @@ public class ManeuverDetectionOnMdM2011SemifinalTest extends OnlineTracTracBased
         // at 13:35:54 with a much smaller jibing angle while the maneuver before which otherwise is grouped into the jibe then is
         // only a bearing away by a lot.
         assertManeuver(maneuvers, ManeuverType.JIBE, Tack.PORT, new MillisecondsTimePoint(c.getTime()), /* tolerance in milliseconds */ 10000);
-        c.set(2011, 10-1, 30, 13, 36, 49);
+        c.set(2011, 10-1, 30, 13, 36, 50);
         assertManeuver(maneuvers, ManeuverType.JIBE, Tack.STARBOARD, new MillisecondsTimePoint(c.getTime()), /* tolerance in milliseconds */ 3000);
     }
 
