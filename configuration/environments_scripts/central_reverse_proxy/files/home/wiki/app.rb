@@ -15,7 +15,6 @@ class App < Precious::App
         }
         end
   end
-  end
 
   helpers do
     def public_path?(path)
