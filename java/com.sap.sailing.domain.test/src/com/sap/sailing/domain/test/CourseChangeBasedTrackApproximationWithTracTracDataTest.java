@@ -8,7 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Random;
+import java.util.Iterator;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,7 +44,9 @@ public class CourseChangeBasedTrackApproximationWithTracTracDataTest extends Onl
         assertFalse(Util.isEmpty(getTrackedRace().getRace().getCompetitors()));
         do {
             competitors = getTrackedRace().getRace().getCompetitors();
-            sampleCompetitor = (CompetitorWithBoat) Util.get(competitors, new Random().nextInt(Util.size(competitors)));
+            sampleCompetitor = (CompetitorWithBoat) Util.first(Util.filter(competitors, c->c.getName().equals("Anton"))); // TODO "Anton" was offending for fixes indexed 71-73 (0-based)
+            short TODO;
+//            sampleCompetitor = (CompetitorWithBoat) Util.get(competitors, new Random().nextInt(Util.size(competitors)));
             sampleTrack = getTrackedRace().getTrack(sampleCompetitor);
         } while (sampleTrack.isEmpty());
     }
@@ -68,9 +70,10 @@ public class CourseChangeBasedTrackApproximationWithTracTracDataTest extends Onl
         final DynamicGPSFixTrack<Competitor, GPSFixMoving> trackCopy = new DynamicGPSFixMovingTrackImpl<Competitor>(
                 sampleCompetitor,
                 /* millisecondsOverWhichToAverage */ boatClass.getApproximateManeuverDurationInMilliseconds());
-        final CourseChangeBasedTrackApproximation earlyInitApproximation = new CourseChangeBasedTrackApproximation(trackCopy, sampleCompetitor.getBoat().getBoatClass());
+        final CourseChangeBasedTrackApproximation earlyInitApproximation = new CourseChangeBasedTrackApproximation(trackCopy, sampleCompetitor.getBoat().getBoatClass(), /* logFixes */ true);
         final TimePoint from = sampleTrack.getFirstRawFix().getTimePoint();
         final TimePoint to = sampleTrack.getLastRawFix().getTimePoint();
+        System.out.println("approxId,fixTimeMillis,validityCached,speedCached,COG,SOG");
         sampleTrack.lockForRead();
         try {
             for (final GPSFixMoving fix : sampleTrack.getRawFixes()) {
@@ -79,10 +82,19 @@ public class CourseChangeBasedTrackApproximationWithTracTracDataTest extends Onl
         } finally {
             sampleTrack.unlockAfterRead();
         }
-        final CourseChangeBasedTrackApproximation lateInitApproximation = new CourseChangeBasedTrackApproximation(trackCopy, sampleCompetitor.getBoat().getBoatClass());
+        final CourseChangeBasedTrackApproximation lateInitApproximation = new CourseChangeBasedTrackApproximation(trackCopy, sampleCompetitor.getBoat().getBoatClass(), /* logFixes */ true);
         assertEquals(earlyInitApproximation.getNumberOfFixesAdded(), lateInitApproximation.getNumberOfFixesAdded(), "Number of fixes added to approximators differs");
         final Iterable<GPSFixMoving> earlyInitResult = earlyInitApproximation.approximate(from, to);
         final Iterable<GPSFixMoving> lateInitResult = lateInitApproximation.approximate(from, to);
+        final Iterator<GPSFixMoving> earlyIter = earlyInitResult.iterator();
+        final Iterator<GPSFixMoving> lateIter = lateInitResult.iterator();
+        int i=0;
+        while (earlyIter.hasNext() && lateIter.hasNext()) {
+            final GPSFixMoving earlyFix = earlyIter.next();
+            final GPSFixMoving lateFix = lateIter.next();
+            assertEquals(earlyFix.getTimePoint(), lateFix.getTimePoint(), "Time points of approximation fixes differ at index "+i+" for competitor "+sampleCompetitor.getName());
+            i++;
+        }
         assertEquals(Util.size(earlyInitResult), Util.size(lateInitResult), "Different numbers of approximation points for competitor "+sampleCompetitor.getName());
         assertEquals(Util.asSet(earlyInitResult), Util.asSet(lateInitResult));
     }

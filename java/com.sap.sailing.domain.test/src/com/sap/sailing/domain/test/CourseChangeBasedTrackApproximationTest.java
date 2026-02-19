@@ -37,7 +37,7 @@ public class CourseChangeBasedTrackApproximationTest {
         final CompetitorWithBoat competitor = TrackBasedTest.createCompetitorWithBoat("Someone");
         track = new DynamicGPSFixMovingTrackImpl<Competitor>(competitor,
                 /* millisecondsOverWhichToAverage */5000, /* lossless compaction */true);
-        approximation = new CourseChangeBasedTrackApproximation(track, competitor.getBoat().getBoatClass());
+        approximation = new CourseChangeBasedTrackApproximation(track, competitor.getBoat().getBoatClass(), /* logFixes */ false);
     }
     
     @Test

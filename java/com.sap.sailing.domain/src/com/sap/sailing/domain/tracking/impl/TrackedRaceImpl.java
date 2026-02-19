@@ -585,7 +585,7 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
             markPassingsForCompetitor.put(competitor, new ConcurrentSkipListSet<MarkPassing>(MarkPassingByTimeComparator.INSTANCE));
             final DynamicGPSFixMovingTrackImpl<Competitor> track = new DynamicGPSFixMovingTrackImpl<Competitor>(competitor, millisecondsOverWhichToAverageSpeed);
             tracks.put(competitor, track);
-            maneuverApproximators.put(competitor, new CourseChangeBasedTrackApproximation(track, race.getBoatOfCompetitor(competitor).getBoatClass()));
+            maneuverApproximators.put(competitor, new CourseChangeBasedTrackApproximation(track, race.getBoatOfCompetitor(competitor).getBoatClass(), /* logFixes */ false));
         }
         markPassingsForWaypoint = new ConcurrentHashMap<Waypoint, NavigableSet<MarkPassing>>();
         for (Waypoint waypoint : race.getCourse().getWaypoints()) {

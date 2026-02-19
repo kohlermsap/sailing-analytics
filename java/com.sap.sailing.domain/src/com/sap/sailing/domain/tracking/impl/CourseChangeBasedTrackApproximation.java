@@ -135,7 +135,15 @@ public class CourseChangeBasedTrackApproximation implements Serializable, GPSTra
         private final double maneuverAngleInDegreesThreshold;
         private Duration windowDuration;
         
-        FixWindow() {
+        /**
+         * For debugging purposes, this flag can be set to {@code true} through the constructor, which will then log all
+         * fixes' values about estimated COG/SOG when moving from the {@link #queueOfNewFixes} into the {@link #window}.
+         * This is particularly helpful to analyze the influence of seeing or not seeing newer fixes on the track.
+         */
+        private final boolean logFixes;
+        
+        FixWindow(boolean logFixes) {
+            this.logFixes = logFixes;
             this.window = new LinkedList<>();
             this.queueOfNewFixes = new LinkedList<>();
             this.speedForFixesInWindow = new LinkedList<>();
@@ -237,11 +245,18 @@ public class CourseChangeBasedTrackApproximation implements Serializable, GPSTra
             }
             return result;
         }
-
+        
         private GPSFixMoving addOldEnoughFix(GPSFixMoving next) {
             assert window.isEmpty() || !next.getTimePoint().before(window.peekFirst().getTimePoint());
             final GPSFixMoving result;
             final SpeedWithBearing nextSpeed = next.isEstimatedSpeedCached() ? next.getCachedEstimatedSpeed() : track.getEstimatedSpeed(next.getTimePoint());
+            if (logFixes) {
+                // CSV logging: approxId, fixIndex, fixTimeMillis, validityCached, speedCached, COG, SOG
+                System.out.println(System.identityHashCode(this) + "," + next.getTimePoint().asMillis() + "," 
+                        + next.isValidityCached() + "," + next.isEstimatedSpeedCached() + ","
+                        + (nextSpeed == null ? "null" : nextSpeed.getBearing().getDegrees()) + ","
+                        + (nextSpeed == null ? "null" : nextSpeed.getKnots()));
+            }
             if (nextSpeed != null) {
                 numberOfFixesAdded++;
                 int insertPosition = window.size();
@@ -398,15 +413,15 @@ public class CourseChangeBasedTrackApproximation implements Serializable, GPSTra
         }
     }
 
-    public CourseChangeBasedTrackApproximation(GPSFixTrack<Competitor, GPSFixMoving> track, BoatClass boatClass) {
+    public CourseChangeBasedTrackApproximation(GPSFixTrack<Competitor, GPSFixMoving> track, BoatClass boatClass, boolean logFixes) {
         this.track = track;
         this.boatClass = boatClass;
-        this.fixWindow = new FixWindow();
+        this.fixWindow = new FixWindow(logFixes);
         this.maneuverCandidates = new TreeSet<>(TimedComparator.INSTANCE);
         track.addListener(this);
         addAllFixesOfTrack();
     }
-    
+
     /**
      * Defined only in order to make it {@code synchronized} so that data will be written to the output stream
      * consistently.
@@ -459,7 +474,7 @@ public class CourseChangeBasedTrackApproximation implements Serializable, GPSTra
         if (fixWindow.isAtOrAfterFirst(fix.getTimePoint())) {
             addFix(fix);
         } else {
-            final FixWindow outOfOrderWindow = new FixWindow();
+            final FixWindow outOfOrderWindow = new FixWindow(/* logFixes */ false);
             final Duration maximumWindowLength = outOfOrderWindow.getMaximumWindowLength();
             // fix is an out-of-order delivery; construct a new FixWindow and analyze the track around the new fix.
             // A time range around the fix is constructed that will be re-scanned. The time range covers at least

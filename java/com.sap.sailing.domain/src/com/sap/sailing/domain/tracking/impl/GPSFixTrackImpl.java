@@ -631,11 +631,15 @@ public abstract class GPSFixTrackImpl<ItemType, FixType extends GPSFix> extends 
                         ConfidenceFactory.INSTANCE.createExponentialTimeDifferenceWeigher(
                                 // use a minimum confidence to avoid the bearing to flip to 270deg in case all is zero
                                 getMillisecondsOverWhichToAverageSpeed() / 2, /* minimumConfidence */ 0.00000001)); // half confidence if half averaging interval apart
-                result = estimatedSpeed == null ? null : estimatedSpeed.getObject();
                 if (estimatedSpeed != null) {
                     if (ceil != null && ceil.getTimePoint().equals(at)) {
-                        ceil.cacheEstimatedSpeed(result);
+                        ceil.cacheEstimatedSpeed(estimatedSpeed.getObject());
+                        result = ceil.getCachedEstimatedSpeed(); // this way, should the fix apply compaction, we will still return consistent (compacted) results
+                    } else {
+                        result = estimatedSpeed.getObject();
                     }
+                } else {
+                    result = null;
                 }
             }
             if (logger.isLoggable(Level.FINEST) && (estimatedSpeedCacheHits + estimatedSpeedCacheMisses) % 1000 == 0) {
