@@ -619,7 +619,7 @@ public abstract class GPSFixTrackImpl<ItemType, FixType extends GPSFix> extends 
     @Override
     public SpeedWithBearing getEstimatedSpeed(TimePoint at) {
         lockForRead();
-        FixType ceil = getInternalFixes().ceiling(createDummyGPSFix(at));
+        FixType ceil = getInternalFixes().ceiling(createDummyGPSFix(at)); // TODO bug6209: if "at" is the time point of an outlier, ceil would be the first valid fix *after* the outlier! We shouldn't be updating the fix at "at" but some later valid fix which, if asked at its timepoint, may have computed a different estimation altogether
         try {
             final SpeedWithBearing result;
             if (ceil != null && ceil.getTimePoint().equals(at) && ceil.isEstimatedSpeedCached()) {

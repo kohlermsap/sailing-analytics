@@ -188,7 +188,8 @@ public class CourseChangeBasedTrackApproximation implements Serializable, GPSTra
         GPSFixMoving add(GPSFixMoving next) {
             insertIntoQueueSortedByTime(next);
             final GPSFixMoving first = queueOfNewFixes.getFirst();
-            final GPSFixMoving result = first.getTimePoint().until(next.getTimePoint()).asMillis() > track.getMillisecondsOverWhichToAverageSpeed()/2
+            // getMillisecondsOverWhichToAverageSpeed() is the duration in both directions that fixes are considered for validity  / outlier decisions.
+            final GPSFixMoving result = first.getTimePoint().until(next.getTimePoint()).asMillis() > track.getMillisecondsOverWhichToAverageSpeed()
                     ? addOldEnoughFix(queueOfNewFixes.removeFirst())
                     : null;
             return result;
@@ -244,10 +245,20 @@ public class CourseChangeBasedTrackApproximation implements Serializable, GPSTra
         private GPSFixMoving addOldEnoughFix(GPSFixMoving next) {
             assert window.isEmpty() || !next.getTimePoint().before(window.peekFirst().getTimePoint());
             final GPSFixMoving result;
-            final boolean validityCached = next.isValidityCached();
-            final boolean validity = validityCached ? next.isValidCached() : track.isValid(next);
             final SpeedWithBearing nextSpeed = next.isEstimatedSpeedCached() ? next.getCachedEstimatedSpeed() : track.getEstimatedSpeed(next.getTimePoint());
             if (logFixes) {
+                final boolean validityCached = next.isValidityCached();
+                final boolean validity;
+                if (validityCached) {
+                    validity = next.isValidCached();
+                } else {
+                    track.lockForRead();
+                    try {
+                        validity = track.isValid(next);
+                    } finally {
+                        track.unlockAfterRead();
+                    }
+                }
                 // CSV logging: approxId, fixIndex, fixTimeMillis, validityCached, speedCached, COG, SOG
                 System.out.println(System.identityHashCode(this) + "," + next.getTimePoint().asMillis() + ","
                         + next.isValidityCached() + "," + next.isEstimatedSpeedCached() + ","

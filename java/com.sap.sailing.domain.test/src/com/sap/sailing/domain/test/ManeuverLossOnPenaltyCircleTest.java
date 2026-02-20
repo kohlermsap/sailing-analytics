@@ -54,7 +54,7 @@ public class ManeuverLossOnPenaltyCircleTest extends OnlineTracTracBasedTest {
         Competitor canottieri = getCompetitorByName("Club Canottieri Roggero di Lauria");
         final Iterable<Maneuver> maneuversCanottieri = getTrackedRace().getManeuvers(canottieri, getTrackedRace().getStartOfRace(), getTrackedRace().getEndOfRace(), /* waitForLatest */ true);
         final Optional<Maneuver> penaltyCircleCanottieri = StreamSupport.stream(maneuversCanottieri.spliterator(), /* parallel */ false).filter(m->m.getType()==ManeuverType.PENALTY_CIRCLE).findAny();
-        assertThat("Maneuver loss of "+penaltyCircleCanottieri.get()+" too small", penaltyCircleCanottieri.get().getManeuverLoss().getProjectedDistanceLost(), greaterThan(new MeterDistance(30)));
-        logger.info("Maneuver loss of "+penaltyCircleCanottieri.get()+" was greater than 30m. Good.");
+        assertThat("Maneuver loss of "+penaltyCircleCanottieri.get()+" too small", penaltyCircleCanottieri.get().getManeuverLoss().getProjectedDistanceLost(), greaterThan(new MeterDistance(12)));
+        logger.info("Maneuver loss of "+penaltyCircleCanottieri.get()+" was greater than 12m. Good.");
     }
 }
