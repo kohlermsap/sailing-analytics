@@ -631,11 +631,15 @@ public abstract class GPSFixTrackImpl<ItemType, FixType extends GPSFix> extends 
                         ConfidenceFactory.INSTANCE.createExponentialTimeDifferenceWeigher(
                                 // use a minimum confidence to avoid the bearing to flip to 270deg in case all is zero
                                 getMillisecondsOverWhichToAverageSpeed() / 2, /* minimumConfidence */ 0.00000001)); // half confidence if half averaging interval apart
-                result = estimatedSpeed == null ? null : estimatedSpeed.getObject();
                 if (estimatedSpeed != null) {
                     if (ceil != null && ceil.getTimePoint().equals(at)) {
-                        ceil.cacheEstimatedSpeed(result);
+                        ceil.cacheEstimatedSpeed(estimatedSpeed.getObject());
+                        result = ceil.getCachedEstimatedSpeed(); // this way, should the fix apply compaction, we will still return consistent (compacted) results
+                    } else {
+                        result = estimatedSpeed.getObject();
                     }
+                } else {
+                    result = null;
                 }
             }
             if (logger.isLoggable(Level.FINEST) && (estimatedSpeedCacheHits + estimatedSpeedCacheMisses) % 1000 == 0) {
@@ -1022,6 +1026,11 @@ public abstract class GPSFixTrackImpl<ItemType, FixType extends GPSFix> extends 
      * point of the <code>gpsFix</code> "upwards." However, if the adjacent earlier fixes have changed their validity by
      * the addition of <code>gpsFix</code>, the distance cache must be invalidated starting with the first fix whose
      * validity changed.
+     * <p>
+     * 
+     * When a fix's validity changes, the set of fixes returned by {@link #getInternalFixes()} changes. Since
+     * {@link #getEstimatedSpeed(TimePoint)} uses {@link #getInternalFixes()} for its calculation, the estimated
+     * speed caches of fixes whose speed calculation might be affected need to be invalidated as well.
      */
     private void invalidateValidityAndEstimatedSpeedAndDistanceCaches(FixType gpsFix) {
         assertWriteLock();
@@ -1047,14 +1056,42 @@ public abstract class GPSFixTrackImpl<ItemType, FixType extends GPSFix> extends 
             boolean lowerWasValid = isValid(getRawFixes(), lower);
             lower.invalidateCache();
             boolean lowerIsValid = isValid(getRawFixes(), lower);
-            if (lowerIsValid != lowerWasValid && lower.getTimePoint().before(distanceCacheInvalidationStart)) {
-                distanceCacheInvalidationStart = lower.getTimePoint();
+            if (lowerIsValid != lowerWasValid) {
+                if (lower.getTimePoint().before(distanceCacheInvalidationStart)) {
+                    distanceCacheInvalidationStart = lower.getTimePoint();
+                }
+                invalidateEstimatedSpeedCachesAffectedByValidityChange(lower);
             }
         }
         getDistanceCache().invalidateAllAtOrLaterThan(distanceCacheInvalidationStart);
         Iterable<FixType> highers = getLaterFixesWhoseValidityMayBeAffected(gpsFix);
         for (FixType higher : highers) {
+            boolean higherWasValid = isValid(getRawFixes(), higher);
             higher.invalidateCache();
+            boolean higherIsValid = isValid(getRawFixes(), higher);
+            if (higherIsValid != higherWasValid) {
+                invalidateEstimatedSpeedCachesAffectedByValidityChange(higher);
+            }
+        }
+    }
+    
+    /**
+     * When the validity of {@code fixWithChangedValidity} changes, the set of fixes returned by
+     * {@link #getInternalFixes()} changes. Since {@link #getEstimatedSpeed(TimePoint)} uses
+     * {@link #getInternalFixes()} for its calculation, this method invalidates the estimated speed caches
+     * of all fixes whose speed estimation might be affected by this change.
+     * <p>
+     * 
+     * The affected fixes are those within the time interval returned by
+     * {@link #getTimeIntervalWhoseEstimatedSpeedMayHaveChangedAfterAddingFix(GPSFix)}, since a validity
+     * change has the same effect on speed estimation as adding or removing a fix.
+     */
+    private void invalidateEstimatedSpeedCachesAffectedByValidityChange(FixType fixWithChangedValidity) {
+        TimeRange affectedInterval = getTimeIntervalWhoseEstimatedSpeedMayHaveChangedAfterAddingFix(fixWithChangedValidity);
+        for (FixType affectedFix : getInternalRawFixes().subSet(
+                createDummyGPSFix(affectedInterval.from()), true,
+                createDummyGPSFix(affectedInterval.to()), true)) {
+            affectedFix.invalidateEstimatedSpeedCache();
         }
     }
 
