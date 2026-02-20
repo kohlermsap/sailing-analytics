@@ -87,7 +87,6 @@ public class CourseChangeBasedTrackApproximationWithTracTracDataTest extends Onl
         assertEquals(earlyInitApproximation.getNumberOfFixesAdded(), lateInitApproximation.getNumberOfFixesAdded(), "Number of fixes added to approximators differs");
         final Iterable<GPSFixMoving> earlyInitResult = earlyInitApproximation.approximate(from, to);
         final Iterable<GPSFixMoving> lateInitResult = lateInitApproximation.approximate(from, to);
-        assertEquals(Util.size(earlyInitResult), Util.size(lateInitResult), "Different numbers of approximation points for competitor "+sampleCompetitor.getName());
         final Iterator<GPSFixMoving> earlyIter = earlyInitResult.iterator();
         final Iterator<GPSFixMoving> lateIter = lateInitResult.iterator();
         int i=0;
@@ -97,6 +96,7 @@ public class CourseChangeBasedTrackApproximationWithTracTracDataTest extends Onl
             assertEquals(earlyFix.getTimePoint(), lateFix.getTimePoint(), "Time points of approximation fixes differ at index "+i+" for competitor "+sampleCompetitor.getName());
             i++;
         }
+        assertEquals(Util.size(earlyInitResult), Util.size(lateInitResult), "Different numbers of approximation points for competitor "+sampleCompetitor.getName());
         assertEquals(Util.asSet(earlyInitResult), Util.asSet(lateInitResult));
     }
 }
