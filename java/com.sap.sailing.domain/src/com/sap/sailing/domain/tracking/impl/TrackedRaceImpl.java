@@ -2864,7 +2864,7 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
     @Override
     public Iterable<GPSFixMoving> approximate(Competitor competitor, TimePoint from, TimePoint to) {
         return maneuverApproximators.computeIfAbsent(competitor,
-                c->new CourseChangeBasedTrackApproximation(getTrack(c), race.getBoatOfCompetitor(c).getBoatClass()))
+                c->new CourseChangeBasedTrackApproximation(getTrack(c), race.getBoatOfCompetitor(c).getBoatClass(), /* logFixes */ false))
                 .approximate(from, to);
     }
     
