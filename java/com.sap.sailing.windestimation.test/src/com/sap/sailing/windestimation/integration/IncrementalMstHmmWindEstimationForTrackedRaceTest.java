@@ -139,7 +139,7 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
             polarDataService.registerDomainFactory(baseDomainFactory);
             new PolarDataClient(Optional.ofNullable(System.getenv("POLAR_DATA_BASE_URL")).orElse("https://sapsailing.com"), polarDataService, polardataBearerToken).updatePolarDataRegressions();
         } else {
-            polarDataService = null;
+            polarDataService = new PolarDataServiceImpl();
         }
         getTrackedRace().setPolarDataService(polarDataService);
         final GregorianCalendar cal = new GregorianCalendar(2011, 05, 23, 13, 40);
