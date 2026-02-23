@@ -47,7 +47,7 @@ public class CompleteManeuverCurveToManeuverForEstimationConverter {
         if (!maneuverForEstimationTransformer.isManeuverEligibleForAnalysis(
                 maneuver.getManeuverCurveWithStableSpeedAndCourseBoundaries().getDirectionChangeInDegrees(),
                 maneuver.getMainCurveBoundaries().getDirectionChangeInDegrees())) {
-            // skip further computation in order to improve performance performance
+            // skip further computation in order to improve performance
             return null;
         }
         BoatClass boatClass = trackedRace.getBoatOfCompetitor(competitor).getBoatClass();
