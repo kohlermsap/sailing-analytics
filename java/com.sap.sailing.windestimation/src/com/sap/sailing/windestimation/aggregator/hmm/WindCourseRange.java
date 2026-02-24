@@ -147,10 +147,7 @@ public class WindCourseRange {
         }
         double deviationFromPortsideTowardStarboardInDegrees = deviationFromPortsideBoundaryTowardStarboard
                 - angleTowardStarboard;
-        if (deviationFromPortsideTowardStarboardInDegrees <= 0) {
-            return true;
-        }
-        return false;
+        return deviationFromPortsideTowardStarboardInDegrees <= 0;
     }
 
     @Override

@@ -21,6 +21,7 @@ import com.sap.sailing.windestimation.aggregator.hmm.WindCourseRange;
 import com.sap.sailing.windestimation.aggregator.msthmm.MstManeuverGraphGenerator.MstManeuverGraphComponents;
 import com.sap.sailing.windestimation.data.ManeuverForEstimation;
 import com.sap.sailing.windestimation.data.ManeuverTypeForClassification;
+import com.sap.sse.common.impl.DegreeBearingImpl;
 
 /**
  * Exports MST graph data to JSON format for visualization.
@@ -137,16 +138,18 @@ public class MstGraphExporter {
             writer.write("        {\n");
             writer.write("          \"type\": \"" + type.name() + "\",\n");
             writer.write("          \"confidence\": " + confidence + ",\n");
-            writer.write("          \"windRangeFrom\": " + windRange.getFromPortside() + ",\n");
+            writer.write("          \"windRangeFrom\": " +
+                    new DegreeBearingImpl(windRange.getFromPortside()).reverse().getDegrees() + ",\n");
             writer.write("          \"windRangeWidth\": " + windRange.getAngleTowardStarboard() + ",\n");
             
             // Calculate single wind direction estimate for TACK/JIBE (width ~0)
             double windEstimate;
             if (windRange.getAngleTowardStarboard() < 1.0) {
-                windEstimate = windRange.getFromPortside();
+                windEstimate = new DegreeBearingImpl(windRange.getFromPortside()).reverse().getDegrees();
             } else {
                 // For HEAD_UP/BEAR_AWAY, use middle of range
-                windEstimate = windRange.getFromPortside() + windRange.getAngleTowardStarboard() / 2.0;
+                windEstimate = new DegreeBearingImpl(windRange.getFromPortside()).reverse().getDegrees()
+                        + windRange.getAngleTowardStarboard() / 2.0;
                 if (windEstimate >= 360) {
                     windEstimate -= 360;
                 }
