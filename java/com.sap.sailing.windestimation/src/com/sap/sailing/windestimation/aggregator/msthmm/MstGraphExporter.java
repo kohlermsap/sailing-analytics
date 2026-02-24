@@ -8,18 +8,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.sap.sailing.windestimation.aggregator.graph.DijkstraShortestPathFinderImpl;
-import com.sap.sailing.windestimation.aggregator.graph.DijsktraShortestPathFinder;
-import com.sap.sailing.windestimation.aggregator.graph.ElementAdjacencyQualityMetric;
-import com.sap.sailing.windestimation.aggregator.graph.InnerGraphSuccessorSupplier;
 import com.sap.sailing.windestimation.aggregator.hmm.GraphLevelInference;
 import com.sap.sailing.windestimation.aggregator.hmm.GraphNode;
 import com.sap.sailing.windestimation.aggregator.hmm.WindCourseRange;
 import com.sap.sailing.windestimation.aggregator.msthmm.MstManeuverGraphGenerator.MstManeuverGraphComponents;
 import com.sap.sailing.windestimation.data.ManeuverForEstimation;
 import com.sap.sailing.windestimation.data.ManeuverTypeForClassification;
-
-import java.util.function.Supplier;
 
 /**
  * Exports MST graph data to JSON format for visualization.
@@ -44,22 +38,31 @@ public class MstGraphExporter {
      * @throws IOException if writing fails
      */
     public void exportToJson(MstManeuverGraphComponents graphComponents, Writer writer) throws IOException {
-        // Collect all best paths for highlighting
-        final Set<String> bestPathEdges = collectBestPathEdges(graphComponents);
-        final Map<String, String> bestNodePerLevel = collectBestNodePerLevel(graphComponents);
+        // First, assign node IDs and collect best nodes per level
+        final MstGraphLevel root = graphComponents.getRoot();
+        final Map<MstGraphLevel, Integer> levelToId = new HashMap<>();
+        final int[] nodeIdCounter = {0};
+        assignNodeIds(root, levelToId, nodeIdCounter);
+        
+        // Collect best (disambiguated) classification per node
+        final Map<String, String> bestNodePerLevel = collectBestNodePerLevel(graphComponents, levelToId);
+        
+        // Derive best path edges from the best node selections
+        // This ensures edges connect nodes with red frames (best classifications)
+        final Set<String> bestPathEdges = collectBestPathEdges(graphComponents, bestNodePerLevel, levelToId);
+        
         writer.write("{\n");
         writer.write("  \"nodes\": [\n");
         // Export all nodes starting from root
-        final MstGraphLevel root = graphComponents.getRoot();
         final boolean[] firstNode = {true};
-        final Map<MstGraphLevel, Integer> levelToId = new HashMap<>();
-        final int[] nodeIdCounter = {0};
-        exportNode(root, writer, firstNode, levelToId, nodeIdCounter, 0);
+        final int[] exportNodeIdCounter = {0};
+        final Map<MstGraphLevel, Integer> exportLevelToId = new HashMap<>();
+        exportNode(root, writer, firstNode, exportLevelToId, exportNodeIdCounter, 0);
         writer.write("\n  ],\n");
         writer.write("  \"edges\": [\n");
         // Export edges between nodes
         final boolean[] firstEdge = {true};
-        exportEdges(root, writer, firstEdge, levelToId, bestPathEdges);
+        exportEdges(root, writer, firstEdge, exportLevelToId, bestPathEdges);
         writer.write("\n  ],\n");
         // Export best path information
         writer.write("  \"bestPaths\": {\n");
@@ -178,54 +181,43 @@ public class MstGraphExporter {
         }
     }
 
-    private Set<String> collectBestPathEdges(MstManeuverGraphComponents graphComponents) {
-        final Set<String> bestPathEdges = new HashSet<>();
-        final Map<MstGraphLevel, Integer> levelToId = new HashMap<>();
-        final int[] nodeIdCounter = {0};
-        assignNodeIds(graphComponents.getRoot(), levelToId, nodeIdCounter);
-        final ElementAdjacencyQualityMetric<GraphNode<MstGraphLevel>> edgeQualityMetric = (previousNode, currentNode) -> {
-            return transitionProbabilitiesCalculator.getTransitionProbability(currentNode, previousNode,
-                    previousNode.getGraphLevel() == null ? 0.0 : previousNode.getGraphLevel().getDistanceToParent());
-        };
-        for (final MstGraphLevel leaf : graphComponents.getLeaves()) {
-            final InnerGraphSuccessorSupplier<GraphNode<MstGraphLevel>, MstGraphLevel> innerGraphSuccessorSupplier =
-                    new InnerGraphSuccessorSupplier<>(graphComponents,
-                            (final Supplier<String> nameSupplier) -> new GraphNode<MstGraphLevel>(
-                                    null, null, new WindCourseRange(0, 360), 1.0, 0, null) {
-                                @Override
-                                public String toString() {
-                                    return nameSupplier.get();
-                                }
-                            });
-            final DijsktraShortestPathFinder<GraphNode<MstGraphLevel>> dijkstra = 
-                    new DijkstraShortestPathFinderImpl<>(
-                            innerGraphSuccessorSupplier.getArtificialLeaf(leaf),
-                            innerGraphSuccessorSupplier.getArtificialRoot(),
-                            innerGraphSuccessorSupplier, edgeQualityMetric);
-            GraphNode<MstGraphLevel> prev = null;
-            for (final GraphNode<MstGraphLevel> node : dijkstra.getShortestPath()) {
-                if (prev != null && prev.getGraphLevel() != null && node.getGraphLevel() != null) {
-                    Integer prevId = levelToId.get(prev.getGraphLevel());
-                    Integer nodeId = levelToId.get(node.getGraphLevel());
-                    if (prevId != null && nodeId != null) {
-                        // Dijkstra goes from leaf to root (child to parent)
-                        // We export edges from parent to child, so store the edge in that direction
-                        String edgeKey = nodeId + "_" + node.getManeuverType().ordinal() + 
-                                        "_" + prevId + "_" + prev.getManeuverType().ordinal();
-                        bestPathEdges.add(edgeKey);
-                    }
-                }
-                prev = node;
-            }
-        }
+    /**
+     * Collects the best path edges based on the disambiguated best node selections.
+     * An edge is marked as "best" if it connects two nodes where both endpoints
+     * have their best (disambiguated) classification matching the edge's from/to types.
+     */
+    private Set<String> collectBestPathEdges(MstManeuverGraphComponents graphComponents, 
+            Map<String, String> bestNodePerLevel, Map<MstGraphLevel, Integer> levelToId) {
+        Set<String> bestPathEdges = new HashSet<>();
+        collectBestPathEdgesRecursive(graphComponents.getRoot(), bestPathEdges, bestNodePerLevel, levelToId);
         return bestPathEdges;
     }
+    
+    private void collectBestPathEdgesRecursive(MstGraphLevel parent, Set<String> bestPathEdges,
+            Map<String, String> bestNodePerLevel, Map<MstGraphLevel, Integer> levelToId) {
+        Integer parentId = levelToId.get(parent);
+        String parentBestType = bestNodePerLevel.get(String.valueOf(parentId));
+        
+        for (MstGraphLevel child : parent.getChildren()) {
+            Integer childId = levelToId.get(child);
+            String childBestType = bestNodePerLevel.get(String.valueOf(childId));
+            
+            // Mark the edge between the best classifications as the best path edge
+            if (parentBestType != null && childBestType != null) {
+                int parentTypeOrdinal = ManeuverTypeForClassification.valueOf(parentBestType).ordinal();
+                int childTypeOrdinal = ManeuverTypeForClassification.valueOf(childBestType).ordinal();
+                String edgeKey = parentId + "_" + parentTypeOrdinal + "_" + childId + "_" + childTypeOrdinal;
+                bestPathEdges.add(edgeKey);
+            }
+            
+            // Recurse to children
+            collectBestPathEdgesRecursive(child, bestPathEdges, bestNodePerLevel, levelToId);
+        }
+    }
 
-    private Map<String, String> collectBestNodePerLevel(MstManeuverGraphComponents graphComponents) {
+    private Map<String, String> collectBestNodePerLevel(MstManeuverGraphComponents graphComponents,
+            Map<MstGraphLevel, Integer> levelToId) {
         final Map<String, String> bestNodePerLevel = new HashMap<>();
-        final Map<MstGraphLevel, Integer> levelToId = new HashMap<>();
-        final int[] nodeIdCounter = {0};
-        assignNodeIds(graphComponents.getRoot(), levelToId, nodeIdCounter);
         // Use the MstBestPathsCalculatorImpl to get the best nodes
         final MstBestPathsCalculatorImpl calculator = new MstBestPathsCalculatorImpl(transitionProbabilitiesCalculator);
         for (final GraphLevelInference<MstGraphLevel> inference : calculator.getBestNodes(graphComponents)) {
