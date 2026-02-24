@@ -101,8 +101,9 @@ def format_distance(node):
 def create_node_label_with_ports(node, best_type=None):
     """
     Create HTML-like label for a node with 4 compartments.
-    Each compartment has a PORT attribute for edge connections.
-    Distance to parent is shown next to timestamp.
+    Each compartment has a PORT attribute for incoming edges (from above).
+    The footer row has additional ports for outgoing edges (going down).
+    This prevents edges from crossing through the timestamp/distance section.
     """
     compartments = {c['type']: c for c in node['compartments']}
     
@@ -118,8 +119,9 @@ def create_node_label_with_ports(node, best_type=None):
     
     # Build HTML table with PORT attributes
     html = '<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">'
-    html += '<TR>'
     
+    # Main row with compartments - ports here are for INCOMING edges (from above)
+    html += '<TR>'
     for type_name in TYPE_ORDER:
         comp = compartments.get(type_name)
         if comp is None:
@@ -143,7 +145,7 @@ def create_node_label_with_ports(node, best_type=None):
         wind_str = format_wind(comp)
         abbrev = TYPE_ABBREV[type_name]
         
-        # PORT attribute allows edges to connect to this specific cell
+        # PORT for incoming edges (named after type)
         port_name = type_name
         
         # Create cell content with PORT
@@ -154,14 +156,25 @@ def create_node_label_with_ports(node, best_type=None):
         )
         
         html += f'<TD PORT="{port_name}"{border_attr}>{cell_content}</TD>'
-    
     html += '</TR>'
-    # Footer row with timestamp and distance to parent
+    
+    # Footer row with timestamp/distance - spans all columns
     if dist_str:
         footer_content = f'{time_part}  <FONT COLOR="blue">↑{dist_str}</FONT>'
     else:
         footer_content = time_part
     html += f'<TR><TD COLSPAN="4" BGCOLOR="white"><FONT POINT-SIZE="9">{footer_content}</FONT></TD></TR>'
+    
+    # Bottom row with ports for OUTGOING edges (minimal height)
+    # Each cell corresponds to one compartment position for proper horizontal alignment
+    html += '<TR>'
+    for type_name in TYPE_ORDER:
+        # Port for outgoing edges (named type_out)
+        out_port_name = f'{type_name}_out'
+        # Minimal height cells just for port positioning
+        html += f'<TD PORT="{out_port_name}" BGCOLOR="white" HEIGHT="1"></TD>'
+    html += '</TR>'
+    
     html += '</TABLE>>'
     
     return html
@@ -279,8 +292,10 @@ def visualize_mst_graph(data, output_file=None, max_nodes=100, min_edge_prob=0.0
         edge_label = f'{from_abbrev}→{to_abbrev}\\n{prob_str}'
         
         # Use PORT to connect to specific compartments
-        from_port = f'{from_id}:{from_type}:s'  # :s = south (bottom) of cell
-        to_port = f'{to_id}:{to_type}:n'        # :n = north (top) of cell
+        # Outgoing edges use the _out ports in the footer row (below timestamp)
+        # Incoming edges use the compartment ports (top of compartment cells)
+        from_port = f'{from_id}:{from_type}_out:s'  # :s = south (bottom) of footer cell
+        to_port = f'{to_id}:{to_type}:n'            # :n = north (top) of compartment cell
         
         dot.edge(from_port, to_port,
                 label=edge_label,
