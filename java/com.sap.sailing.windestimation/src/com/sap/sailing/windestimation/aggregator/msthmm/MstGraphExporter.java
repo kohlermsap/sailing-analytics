@@ -3,11 +3,19 @@ package com.sap.sailing.windestimation.aggregator.msthmm;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import com.sap.sailing.windestimation.aggregator.graph.DijkstraShortestPathFinderImpl;
+import com.sap.sailing.windestimation.aggregator.graph.DijsktraShortestPathFinder;
+import com.sap.sailing.windestimation.aggregator.graph.ElementAdjacencyQualityMetric;
+import com.sap.sailing.windestimation.aggregator.graph.InnerGraphSuccessorSupplier;
 import com.sap.sailing.windestimation.aggregator.hmm.GraphLevelInference;
 import com.sap.sailing.windestimation.aggregator.hmm.GraphNode;
 import com.sap.sailing.windestimation.aggregator.hmm.WindCourseRange;
@@ -44,8 +52,12 @@ public class MstGraphExporter {
         final int[] nodeIdCounter = {0};
         assignNodeIds(root, levelToId, nodeIdCounter);
         
+        // Collect path vote diagnostics for debugging
+        final Map<MstGraphLevel, Map<ManeuverTypeForClassification, List<Double>>> pathVotes = 
+                collectPathVoteDiagnostics(graphComponents);
+        
         // Collect best (disambiguated) classification per node
-        final Map<String, String> bestNodePerLevel = collectBestNodePerLevel(graphComponents, levelToId);
+        final Map<String, String> bestNodePerLevel = collectBestNodePerLevel(graphComponents, levelToId, pathVotes);
         
         // Derive best path edges from the best node selections
         // This ensures edges connect nodes with red frames (best classifications)
@@ -57,7 +69,7 @@ public class MstGraphExporter {
         final boolean[] firstNode = {true};
         final int[] exportNodeIdCounter = {0};
         final Map<MstGraphLevel, Integer> exportLevelToId = new HashMap<>();
-        exportNode(root, writer, firstNode, exportLevelToId, exportNodeIdCounter, 0);
+        exportNode(root, writer, firstNode, exportLevelToId, exportNodeIdCounter, 0, pathVotes);
         writer.write("\n  ],\n");
         writer.write("  \"edges\": [\n");
         // Export edges between nodes
@@ -79,7 +91,8 @@ public class MstGraphExporter {
     }
 
     private void exportNode(MstGraphLevel level, Writer writer, boolean[] firstNode, 
-            Map<MstGraphLevel, Integer> levelToId, int[] nodeIdCounter, int depth) throws IOException {
+            Map<MstGraphLevel, Integer> levelToId, int[] nodeIdCounter, int depth,
+            Map<MstGraphLevel, Map<ManeuverTypeForClassification, List<Double>>> pathVotes) throws IOException {
         final int nodeId = nodeIdCounter[0]++;
         levelToId.put(level, nodeId);
         if (!firstNode[0]) {
@@ -139,11 +152,13 @@ public class MstGraphExporter {
             writer.write("          \"tackAfter\": \"" + node.getTackAfter() + "\"\n");
             writer.write("        }");
         }
-        writer.write("\n      ]\n");
+        writer.write("\n      ],\n");
+        // Add diagnostic info about path votes for this node
+        writer.write("      \"pathVotes\": " + formatPathVoteDiagnostics(level, pathVotes) + "\n");
         writer.write("    }");
         // Recursively export children
         for (MstGraphLevel child : level.getChildren()) {
-            exportNode(child, writer, firstNode, levelToId, nodeIdCounter, depth + 1);
+            exportNode(child, writer, firstNode, levelToId, nodeIdCounter, depth + 1, pathVotes);
         }
     }
 
@@ -215,21 +230,111 @@ public class MstGraphExporter {
         }
     }
 
-    private Map<String, String> collectBestNodePerLevel(MstManeuverGraphComponents graphComponents,
-            Map<MstGraphLevel, Integer> levelToId) {
-        final Map<String, String> bestNodePerLevel = new HashMap<>();
-        // Use the MstBestPathsCalculatorImpl to get the best nodes
-        final MstBestPathsCalculatorImpl calculator = new MstBestPathsCalculatorImpl(transitionProbabilitiesCalculator);
-        for (final GraphLevelInference<MstGraphLevel> inference : calculator.getBestNodes(graphComponents)) {
-            final MstGraphLevel level = inference.getGraphNode().getGraphLevel();
-            if (level != null) {
-                Integer nodeId = levelToId.get(level);
-                if (nodeId != null) {
-                    bestNodePerLevel.put(String.valueOf(nodeId), inference.getGraphNode().getManeuverType().name());
+    /**
+     * Collects diagnostic information about which paths voted for which classification at each node.
+     * This runs Dijkstra from each leaf and records which classification was selected and with what path quality.
+     */
+    private Map<MstGraphLevel, Map<ManeuverTypeForClassification, List<Double>>> collectPathVoteDiagnostics(
+            MstManeuverGraphComponents graphComponents) {
+        final Map<MstGraphLevel, Map<ManeuverTypeForClassification, List<Double>>> result = new HashMap<>();
+        
+        final ElementAdjacencyQualityMetric<GraphNode<MstGraphLevel>> edgeQualityMetric = (previousNode, currentNode) -> {
+            return transitionProbabilitiesCalculator.getTransitionProbability(currentNode, previousNode,
+                    previousNode.getGraphLevel() == null ? 0.0 : previousNode.getGraphLevel().getDistanceToParent());
+        };
+        
+        for (MstGraphLevel leaf : graphComponents.getLeaves()) {
+            final InnerGraphSuccessorSupplier<GraphNode<MstGraphLevel>, MstGraphLevel> innerGraphSuccessorSupplier =
+                    new InnerGraphSuccessorSupplier<>(graphComponents,
+                            (final Supplier<String> nameSupplier) -> new GraphNode<MstGraphLevel>(
+                                    null, null, new WindCourseRange(0, 360), 1.0, 0, null) {
+                                @Override
+                                public String toString() {
+                                    return nameSupplier.get();
+                                }
+                            });
+            
+            final DijsktraShortestPathFinder<GraphNode<MstGraphLevel>> dijkstra = 
+                    new DijkstraShortestPathFinderImpl<>(
+                            innerGraphSuccessorSupplier.getArtificialLeaf(leaf),
+                            innerGraphSuccessorSupplier.getArtificialRoot(),
+                            innerGraphSuccessorSupplier, edgeQualityMetric);
+            
+            for (GraphNode<MstGraphLevel> node : dijkstra.getShortestPath()) {
+                if (node.getGraphLevel() != null) {
+                    Map<ManeuverTypeForClassification, List<Double>> votesForNode = 
+                            result.computeIfAbsent(node.getGraphLevel(), k -> new HashMap<>());
+                    votesForNode.computeIfAbsent(node.getManeuverType(), k -> new ArrayList<>())
+                            .add(dijkstra.getPathQuality());
                 }
             }
         }
+        
+        return result;
+    }
+
+    private Map<String, String> collectBestNodePerLevel(MstManeuverGraphComponents graphComponents,
+            Map<MstGraphLevel, Integer> levelToId,
+            Map<MstGraphLevel, Map<ManeuverTypeForClassification, List<Double>>> pathVotes) {
+        final Map<String, String> bestNodePerLevel = new HashMap<>();
+        
+        // Determine best classification per node based on sum of path qualities
+        for (Map.Entry<MstGraphLevel, Map<ManeuverTypeForClassification, List<Double>>> entry : pathVotes.entrySet()) {
+            MstGraphLevel level = entry.getKey();
+            Map<ManeuverTypeForClassification, List<Double>> votes = entry.getValue();
+            
+            // Find classification with highest sum of path qualities
+            double maxSum = -1;
+            ManeuverTypeForClassification bestType = null;
+            
+            for (Map.Entry<ManeuverTypeForClassification, List<Double>> typeVotes : votes.entrySet()) {
+                double sum = typeVotes.getValue().stream().mapToDouble(Double::doubleValue).sum();
+                if (sum > maxSum) {
+                    maxSum = sum;
+                    bestType = typeVotes.getKey();
+                }
+            }
+            
+            if (bestType != null) {
+                Integer nodeId = levelToId.get(level);
+                if (nodeId != null) {
+                    bestNodePerLevel.put(String.valueOf(nodeId), bestType.name());
+                }
+            }
+        }
+        
         return bestNodePerLevel;
+    }
+    
+    /**
+     * Formats path vote diagnostics for a node as a JSON string for inclusion in the export.
+     */
+    private String formatPathVoteDiagnostics(MstGraphLevel level,
+            Map<MstGraphLevel, Map<ManeuverTypeForClassification, List<Double>>> pathVotes) {
+        Map<ManeuverTypeForClassification, List<Double>> votes = pathVotes.get(level);
+        if (votes == null || votes.isEmpty()) {
+            return "{}";
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        boolean first = true;
+        for (ManeuverTypeForClassification type : ManeuverTypeForClassification.values()) {
+            List<Double> typeVotes = votes.get(type);
+            if (typeVotes != null && !typeVotes.isEmpty()) {
+                if (!first) sb.append(", ");
+                first = false;
+                double sum = typeVotes.stream().mapToDouble(Double::doubleValue).sum();
+                sb.append("\"").append(type.name()).append("\": {");
+                sb.append("\"pathCount\": ").append(typeVotes.size());
+                sb.append(", \"qualitySum\": ").append(sum);
+                sb.append(", \"qualities\": [");
+                sb.append(typeVotes.stream().map(d -> String.format("%.6e", d)).collect(Collectors.joining(", ")));
+                sb.append("]}");
+            }
+        }
+        sb.append("}");
+        return sb.toString();
     }
 
     private void assignNodeIds(MstGraphLevel level, Map<MstGraphLevel, Integer> levelToId, int[] nodeIdCounter) {

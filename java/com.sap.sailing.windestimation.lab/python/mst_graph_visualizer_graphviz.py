@@ -165,20 +165,32 @@ def create_node_label_with_ports(node, best_type=None):
         footer_content = time_part
     html += f'<TR><TD COLSPAN="4" BGCOLOR="white"><FONT POINT-SIZE="9">{footer_content}</FONT></TD></TR>'
     
-    # Bottom row with ports for OUTGOING edges (minimal height)
+    # Bottom row with path vote diagnostics AND ports for OUTGOING edges
     # Each cell corresponds to one compartment position for proper horizontal alignment
+    path_votes = node.get('pathVotes', {})
     html += '<TR>'
     for type_name in TYPE_ORDER:
         # Port for outgoing edges (named type_out)
         out_port_name = f'{type_name}_out'
-        # Minimal height cells just for port positioning
-        html += f'<TD PORT="{out_port_name}" BGCOLOR="white" HEIGHT="1"></TD>'
+        
+        vote_info = path_votes.get(type_name, {})
+        path_count = vote_info.get('pathCount', 0)
+        quality_sum = vote_info.get('qualitySum', 0)
+        if path_count > 0:
+            # Format quality sum in scientific notation if very small
+            if quality_sum < 0.001:
+                qs_str = f'{quality_sum:.1e}'
+            else:
+                qs_str = f'{quality_sum:.3f}'
+            vote_content = f'<FONT POINT-SIZE="6" COLOR="gray40">{path_count}p/{qs_str}</FONT>'
+        else:
+            vote_content = '<FONT POINT-SIZE="6" COLOR="gray70">-</FONT>'
+        html += f'<TD PORT="{out_port_name}" BGCOLOR="white">{vote_content}</TD>'
     html += '</TR>'
     
     html += '</TABLE>>'
     
     return html
-
 
 def create_legend():
     """Create a legend explaining the colors."""
