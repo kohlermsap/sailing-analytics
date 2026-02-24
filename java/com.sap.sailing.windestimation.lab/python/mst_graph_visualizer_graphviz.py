@@ -60,10 +60,49 @@ def format_wind(comp):
         return f"{wind_est:.0f}±{wind_width/2:.0f}°"
 
 
+def format_distance(node):
+    """
+    Format distance/time to parent in human-readable form.
+    
+    The node may contain:
+    - spatialDistanceToParentMeters: actual spatial distance in meters
+    - timeDiffToParentSeconds: actual time difference in seconds
+    - compoundDistanceToParent: sum of predicted std deviations (legacy, for transition probability)
+    
+    We prefer to show actual spatial distance and time if available.
+    """
+    spatial_dist = node.get('spatialDistanceToParentMeters')
+    time_diff = node.get('timeDiffToParentSeconds')
+    
+    if spatial_dist is not None and time_diff is not None:
+        # Format spatial distance
+        if spatial_dist >= 1000:
+            dist_str = f'{spatial_dist/1000:.1f}km'
+        elif spatial_dist >= 1:
+            dist_str = f'{spatial_dist:.0f}m'
+        else:
+            dist_str = f'{spatial_dist:.1f}m'
+        
+        # Format time difference
+        if time_diff >= 60:
+            time_str = f'{time_diff/60:.1f}min'
+        else:
+            time_str = f'{time_diff:.0f}s'
+        
+        return f'{dist_str}, {time_str}'
+    
+    # Fallback to compound distance (legacy)
+    compound_dist = node.get('compoundDistanceToParent') or node.get('distanceToParent')
+    if compound_dist is None or compound_dist == 0:
+        return None
+    return f'σ={compound_dist:.1f}'  # Mark as std sum with σ symbol
+
+
 def create_node_label_with_ports(node, best_type=None):
     """
     Create HTML-like label for a node with 4 compartments.
     Each compartment has a PORT attribute for edge connections.
+    Distance to parent is shown next to timestamp.
     """
     compartments = {c['type']: c for c in node['compartments']}
     
@@ -73,6 +112,9 @@ def create_node_label_with_ports(node, best_type=None):
         time_part = timestamp.split(' ')[1][:8]  # HH:MM:SS
     else:
         time_part = timestamp[:8] if len(timestamp) >= 8 else timestamp
+    
+    # Get distance/time to parent (pass whole node for full info)
+    dist_str = format_distance(node)
     
     # Build HTML table with PORT attributes
     html = '<<TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">'
@@ -114,8 +156,12 @@ def create_node_label_with_ports(node, best_type=None):
         html += f'<TD PORT="{port_name}"{border_attr}>{cell_content}</TD>'
     
     html += '</TR>'
-    # Footer row with timestamp
-    html += f'<TR><TD COLSPAN="4" BGCOLOR="white"><FONT POINT-SIZE="9">{time_part}</FONT></TD></TR>'
+    # Footer row with timestamp and distance to parent
+    if dist_str:
+        footer_content = f'{time_part}  <FONT COLOR="blue">↑{dist_str}</FONT>'
+    else:
+        footer_content = time_part
+    html += f'<TR><TD COLSPAN="4" BGCOLOR="white"><FONT POINT-SIZE="9">{footer_content}</FONT></TD></TR>'
     html += '</TABLE>>'
     
     return html
@@ -221,18 +267,23 @@ def visualize_mst_graph(data, output_file=None, max_nodes=100, min_edge_prob=0.0
         
         # Format probability label
         if trans_prob >= 0.01:
-            prob_label = f'{trans_prob:.2f}'
+            prob_str = f'{trans_prob:.2f}'
         elif trans_prob >= 0.001:
-            prob_label = f'{trans_prob:.3f}'
+            prob_str = f'{trans_prob:.3f}'
         else:
-            prob_label = f'{trans_prob:.1e}'
+            prob_str = f'{trans_prob:.1e}'
+        
+        # Build edge label with type transition and probability
+        from_abbrev = TYPE_ABBREV[from_type]
+        to_abbrev = TYPE_ABBREV[to_type]
+        edge_label = f'{from_abbrev}→{to_abbrev}\\n{prob_str}'
         
         # Use PORT to connect to specific compartments
         from_port = f'{from_id}:{from_type}:s'  # :s = south (bottom) of cell
         to_port = f'{to_id}:{to_type}:n'        # :n = north (top) of cell
         
         dot.edge(from_port, to_port,
-                label=prob_label,
+                label=edge_label,
                 color=color,
                 penwidth=penwidth,
                 style=style,
@@ -293,8 +344,17 @@ def create_detailed_edge_graph(data, output_file=None, max_depth=10, min_edge_pr
         else:
             time_part = str(node_id)
         
+        # Get distance/time to parent (pass whole node)
+        dist_str = format_distance(node)
+        
+        # Build cluster label with time and distance
+        if dist_str:
+            cluster_label = f'{time_part}  ↑{dist_str}'
+        else:
+            cluster_label = time_part
+        
         with dot.subgraph(name=f'cluster_{node_id}') as c:
-            c.attr(label=f'{time_part}')
+            c.attr(label=cluster_label)
             c.attr(style='rounded,filled')
             c.attr(fillcolor='white')
             
@@ -367,14 +427,19 @@ def create_detailed_edge_graph(data, output_file=None, max_depth=10, min_edge_pr
         
         # Format probability label
         if trans_prob >= 0.01:
-            prob_label = f'{trans_prob:.2f}'
+            prob_str = f'{trans_prob:.2f}'
         elif trans_prob >= 0.001:
-            prob_label = f'{trans_prob:.3f}'
+            prob_str = f'{trans_prob:.3f}'
         else:
-            prob_label = f'{trans_prob:.1e}'
+            prob_str = f'{trans_prob:.1e}'
+        
+        # Build edge label with type transition and probability
+        from_abbrev = TYPE_ABBREV[edge['fromType']]
+        to_abbrev = TYPE_ABBREV[edge['toType']]
+        edge_label = f'{from_abbrev}→{to_abbrev}\\n{prob_str}'
         
         dot.edge(from_comp_id, to_comp_id,
-                label=prob_label,
+                label=edge_label,
                 color=color,
                 penwidth=penwidth,
                 fontsize='7',

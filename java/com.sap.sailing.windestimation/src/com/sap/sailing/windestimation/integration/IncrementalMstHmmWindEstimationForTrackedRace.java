@@ -185,10 +185,13 @@ public class IncrementalMstHmmWindEstimationForTrackedRace implements Incrementa
                 mstManeuverGraphGenerator.add(competitor, newManeuverSpot, trackTimeInfo);
             }
             graphComponents = mstManeuverGraphGenerator.parseGraph();
-            try {
-                MstGraphExportHelper.exportToFile(graphComponents, mstManeuverGraphGenerator.getTransitionProbabilitiesCalculator(), File.createTempFile("maneuverExport_", ".json").getCanonicalPath());
-            } catch (IOException e) {
-                logger.log(Level.WARNING, "Exporting the maneuver graph to file failed", e);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Exporting the maneuver graph to file after updating it with new maneuver spots for competitor "+competitor);
+                try {
+                    MstGraphExportHelper.exportToFile(graphComponents, mstManeuverGraphGenerator.getTransitionProbabilitiesCalculator(), File.createTempFile("maneuverExport_", ".json").getCanonicalPath());
+                } catch (IOException e) {
+                    logger.log(Level.WARNING, "Exporting the maneuver graph to file failed", e);
+                }
             }
             if (graphComponents != null) {
                 Iterable<GraphLevelInference<MstGraphLevel>> bestPath = bestPathsCalculator.getBestNodes(graphComponents);

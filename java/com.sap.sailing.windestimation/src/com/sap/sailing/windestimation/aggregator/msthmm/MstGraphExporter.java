@@ -90,9 +90,21 @@ public class MstGraphExporter {
         writer.write("      \"timestamp\": \"" + DATE_FORMAT.format(maneuver.getManeuverTimePoint().asDate()) + "\",\n");
         writer.write("      \"position\": {\"lat\": " + maneuver.getManeuverPosition().getLatDeg() + 
                      ", \"lon\": " + maneuver.getManeuverPosition().getLngDeg() + "},\n");
-        writer.write("      \"distanceToParent\": " + level.getDistanceToParent() + ",\n");
+        // distanceToParent is actually the "compound distance" = sum of two predicted standard deviations
+        // It's used for the Gaussian-based transition probability calculation
+        writer.write("      \"compoundDistanceToParent\": " + level.getDistanceToParent() + ",\n");
+        // Also export actual spatial distance and time difference to parent
+        final MstGraphLevel parent = level.getParent();
+        if (parent != null) {
+            final ManeuverForEstimation parentManeuver = parent.getManeuver();
+            final double spatialDistanceMeters = maneuver.getManeuverPosition()
+                    .getDistance(parentManeuver.getManeuverPosition()).getMeters();
+            final long timeDiffMillis = Math.abs(maneuver.getManeuverTimePoint().asMillis() 
+                    - parentManeuver.getManeuverTimePoint().asMillis());
+            writer.write("      \"spatialDistanceToParentMeters\": " + spatialDistanceMeters + ",\n");
+            writer.write("      \"timeDiffToParentSeconds\": " + (timeDiffMillis / 1000.0) + ",\n");
+        }
         writer.write("      \"compartments\": [\n");
-        
         // Export each maneuver type compartment
         boolean firstCompartment = true;
         for (GraphNode<MstGraphLevel> node : level.getLevelNodes()) {
