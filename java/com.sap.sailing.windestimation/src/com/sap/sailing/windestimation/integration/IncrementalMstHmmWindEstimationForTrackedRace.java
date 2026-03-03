@@ -186,9 +186,11 @@ public class IncrementalMstHmmWindEstimationForTrackedRace implements Incrementa
             }
             graphComponents = mstManeuverGraphGenerator.parseGraph();
             if (logger.isLoggable(Level.FINE)) {
-                logger.fine("Exporting the maneuver graph to file after updating it with new maneuver spots for competitor "+competitor);
                 try {
-                    MstGraphExportHelper.exportToFile(graphComponents, mstManeuverGraphGenerator.getTransitionProbabilitiesCalculator(), File.createTempFile("maneuverExport_", ".json").getCanonicalPath());
+                    final String canonicalTmpPath = File.createTempFile("maneuverExport_", ".json").getCanonicalPath();
+                    logger.fine("Exporting the maneuver graph to file after updating it with new maneuver spots for competitor "+competitor
+                            +"; visualize by running com.sap.sailing.windestimation.lab/python/mst_graph_visualizer_graphviz.py "+canonicalTmpPath+" output.pdf");
+                    MstGraphExportHelper.exportToFile(graphComponents, mstManeuverGraphGenerator.getTransitionProbabilitiesCalculator(), canonicalTmpPath);
                 } catch (IOException e) {
                     logger.log(Level.WARNING, "Exporting the maneuver graph to file failed", e);
                 }
