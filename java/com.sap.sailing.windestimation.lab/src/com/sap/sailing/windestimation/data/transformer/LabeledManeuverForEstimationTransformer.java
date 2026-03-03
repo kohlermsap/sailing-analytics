@@ -20,7 +20,7 @@ public class LabeledManeuverForEstimationTransformer implements
             ConvertableToLabeledManeuverForEstimation nextManeuver, double speedScalingDivisor, BoatClass boatClass,
             String regattaName, String competitorName) {
         ManeuverForEstimation maneuverForEstimation = internalTransformer.getManeuverForEstimation(maneuver,
-                speedScalingDivisor, boatClass);
+                speedScalingDivisor, boatClass, competitorName);
         ManeuverTypeForClassification maneuverType = getManeuverTypeForClassification(maneuver);
         LabeledManeuverForEstimation labelledManeuverForEstimation = new LabeledManeuverForEstimation(
                 maneuverForEstimation.getManeuverTimePoint(), maneuverForEstimation.getManeuverPosition(),
