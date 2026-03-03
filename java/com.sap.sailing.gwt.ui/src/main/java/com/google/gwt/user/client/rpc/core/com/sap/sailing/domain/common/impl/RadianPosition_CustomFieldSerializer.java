@@ -4,7 +4,7 @@ import com.google.gwt.user.client.rpc.CustomFieldSerializer;
 import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.client.rpc.SerializationStreamReader;
 import com.google.gwt.user.client.rpc.SerializationStreamWriter;
-import com.sap.sailing.domain.common.impl.RadianPosition;
+import com.sap.sse.common.impl.RadianPosition;
 
 public final class RadianPosition_CustomFieldSerializer extends CustomFieldSerializer<RadianPosition> {
     @Override

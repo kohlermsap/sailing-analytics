@@ -4,7 +4,7 @@ import com.google.gwt.user.client.rpc.CustomFieldSerializer;
 import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.client.rpc.SerializationStreamReader;
 import com.google.gwt.user.client.rpc.SerializationStreamWriter;
-import com.sap.sailing.domain.common.impl.MeterDistance;
+import com.sap.sse.common.impl.MeterDistance;
 
 public class MeterDistance_CustomFieldSerializer extends CustomFieldSerializer<MeterDistance> {
 

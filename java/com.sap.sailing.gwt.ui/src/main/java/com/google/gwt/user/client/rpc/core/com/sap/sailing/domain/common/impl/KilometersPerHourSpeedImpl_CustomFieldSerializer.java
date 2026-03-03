@@ -4,7 +4,7 @@ import com.google.gwt.user.client.rpc.CustomFieldSerializer;
 import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.client.rpc.SerializationStreamReader;
 import com.google.gwt.user.client.rpc.SerializationStreamWriter;
-import com.sap.sailing.domain.common.impl.KilometersPerHourSpeedImpl;
+import com.sap.sse.common.impl.KilometersPerHourSpeedImpl;
 
 public class KilometersPerHourSpeedImpl_CustomFieldSerializer extends CustomFieldSerializer<KilometersPerHourSpeedImpl> {
 

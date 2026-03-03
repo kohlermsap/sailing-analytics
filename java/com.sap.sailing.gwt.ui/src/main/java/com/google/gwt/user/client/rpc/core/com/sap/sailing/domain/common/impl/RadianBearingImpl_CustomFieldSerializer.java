@@ -4,7 +4,7 @@ import com.google.gwt.user.client.rpc.CustomFieldSerializer;
 import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.client.rpc.SerializationStreamReader;
 import com.google.gwt.user.client.rpc.SerializationStreamWriter;
-import com.sap.sailing.domain.common.impl.RadianBearingImpl;
+import com.sap.sse.common.impl.RadianBearingImpl;
 
 public class RadianBearingImpl_CustomFieldSerializer extends CustomFieldSerializer<RadianBearingImpl> {
 

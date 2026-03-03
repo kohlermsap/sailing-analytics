@@ -1,6 +1,6 @@
 package com.sap.sailing.domain.common.tracking;
 
-import com.sap.sailing.domain.common.SpeedWithBearing;
+import com.sap.sse.common.SpeedWithBearing;
 
 public interface WithEstimatedSpeedCache {
     boolean isEstimatedSpeedCached();

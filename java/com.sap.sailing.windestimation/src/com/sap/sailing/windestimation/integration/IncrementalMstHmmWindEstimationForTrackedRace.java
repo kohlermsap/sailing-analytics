@@ -15,7 +15,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sap.sailing.domain.base.Competitor;
-import com.sap.sailing.domain.common.Position;
 import com.sap.sailing.domain.common.Wind;
 import com.sap.sailing.domain.common.WindSource;
 import com.sap.sailing.domain.common.WindSourceType;
@@ -43,6 +42,7 @@ import com.sap.sailing.windestimation.windinference.MiddleCourseBasedTwdCalculat
 import com.sap.sailing.windestimation.windinference.PolarsBasedTwsCalculatorImpl;
 import com.sap.sailing.windestimation.windinference.WindTrackCalculator;
 import com.sap.sailing.windestimation.windinference.WindTrackCalculatorImpl;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.Util.Triple;

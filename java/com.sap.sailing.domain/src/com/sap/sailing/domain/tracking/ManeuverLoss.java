@@ -1,11 +1,11 @@
 package com.sap.sailing.domain.tracking;
 
-import com.sap.sailing.domain.common.Position;
-import com.sap.sailing.domain.common.SpeedWithBearing;
 import com.sap.sailing.domain.maneuverdetection.impl.ManeuverDetectorImpl;
 import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Distance;
 import com.sap.sse.common.Duration;
+import com.sap.sse.common.Position;
+import com.sap.sse.common.SpeedWithBearing;
 
 /**
  * Updated ManeuverLoss class to use it to visualize the correct maneuver loss on the race map. To draw the ManeuverLoss

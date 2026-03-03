@@ -1,12 +1,13 @@
 package com.sap.sailing.domain.common.confidence.impl;
 
-import com.sap.sailing.domain.common.DoubleTriple;
 import com.sap.sailing.domain.common.Wind;
 import com.sap.sailing.domain.common.impl.WindImpl;
-import com.sap.sailing.domain.common.scalablevalue.impl.ScalablePosition;
-import com.sap.sailing.domain.common.scalablevalue.impl.ScalableSpeedWithBearing;
+import com.sap.sse.common.DoubleTriple;
+import com.sap.sse.common.confidence.impl.LazyDividedScaledPosition;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
 import com.sap.sse.common.scalablevalue.ScalableValue;
+import com.sap.sse.common.scalablevalue.impl.ScalablePosition;
+import com.sap.sse.common.scalablevalue.impl.ScalableSpeedWithBearing;
 
 /**
  * Wind values are scaled by separately scaling their speed and bearing, and separately scaling their time point, and

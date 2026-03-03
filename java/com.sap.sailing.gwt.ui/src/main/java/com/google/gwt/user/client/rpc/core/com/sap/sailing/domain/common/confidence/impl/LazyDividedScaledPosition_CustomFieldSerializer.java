@@ -4,13 +4,13 @@ import com.google.gwt.user.client.rpc.CustomFieldSerializer;
 import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.client.rpc.SerializationStreamReader;
 import com.google.gwt.user.client.rpc.SerializationStreamWriter;
-import com.sap.sailing.domain.common.Position;
-import com.sap.sailing.domain.common.confidence.impl.LazyDividedScaledPosition;
-import com.sap.sailing.domain.common.impl.DegreePosition;
-import com.sap.sailing.domain.common.scalablevalue.impl.ScalablePosition;
+import com.sap.sse.common.Position;
+import com.sap.sse.common.confidence.impl.LazyDividedScaledPosition;
+import com.sap.sse.common.impl.DegreePosition;
+import com.sap.sse.common.scalablevalue.impl.ScalablePosition;
 
 public final class LazyDividedScaledPosition_CustomFieldSerializer extends
-        CustomFieldSerializer<com.sap.sailing.domain.common.confidence.impl.LazyDividedScaledPosition> {
+        CustomFieldSerializer<com.sap.sse.common.confidence.impl.LazyDividedScaledPosition> {
     public static void deserialize(SerializationStreamReader streamReader, LazyDividedScaledPosition instance)
             throws SerializationException {
     }
