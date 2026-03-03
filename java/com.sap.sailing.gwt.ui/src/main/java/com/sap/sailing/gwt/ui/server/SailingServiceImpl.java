@@ -896,7 +896,7 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
                 // total distance traveled in meters has to be expanded for the test to work.
                 final boolean storeLeaderboardForTesting = false;
                 if (storeLeaderboardForTesting) {
-                    ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("C:/data/SAP/sailing/workspace/java/com.sap.sailing.domain.test/resources/IncrementalLeaderboardDTO.ser")));
+                    ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("../com.sap.sailing.domain.test/resources/IncrementalLeaderboardDTO.ser")));
                     oos.writeObject(leaderboardDTO);
                     oos.close();
                 }
