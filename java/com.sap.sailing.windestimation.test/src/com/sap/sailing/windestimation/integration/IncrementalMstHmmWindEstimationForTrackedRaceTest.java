@@ -7,8 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -140,18 +138,8 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
             if (polarDataBearerToken == null) {
                 logger.warning("Couldn't find POLAR_DATA_BEARER_TOKEN environment variable either, polar data service will not be available");
             } else {
-                final byte[] digest = MessageDigest.getInstance("SHA-256").digest(polarDataBearerToken.getBytes(StandardCharsets.UTF_8));
-                final StringBuilder hexString = new StringBuilder();
-                for (byte b : digest) {
-                    String hex = Integer.toHexString(0xff & b);
-                    if (hex.length() == 1) {
-                        hexString.append('0');
-                    }
-                    hexString.append(hex);
-                }
                 logger.info("Found POLAR_DATA_BEARER_TOKEN environment variable, length "+polarDataBearerToken.length()
-                    +", SHA256 hash "+hexString.toString()
-                    +"; polar data service will be available");
+                           +"; polar data service will be available");
             }
         } else {
             logger.info("Found polardata.source.bearertoken system property, polar data service will be available");
