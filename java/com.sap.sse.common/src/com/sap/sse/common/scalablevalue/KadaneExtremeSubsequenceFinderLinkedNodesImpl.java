@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -63,7 +64,7 @@ public class KadaneExtremeSubsequenceFinderLinkedNodesImpl<ValueType, AveragesTo
      */
     private static class Node<ValueType, AveragesTo extends Comparable<AveragesTo>, T extends ComparableScalableValueWithDistance<ValueType, AveragesTo>> implements Serializable {
         private static final long serialVersionUID = -2547142048423135013L;
-        private static int idCounter = 0;
+        private static final AtomicInteger idCounter = new AtomicInteger(0);
         private final T value;
         private final int id;
         private transient Node<ValueType, AveragesTo, T> previous;
@@ -75,7 +76,7 @@ public class KadaneExtremeSubsequenceFinderLinkedNodesImpl<ValueType, AveragesTo
 
         private Node(Node<ValueType, AveragesTo, T> previous, Node<ValueType, AveragesTo, T> next, T value) {
             super();
-            id = idCounter++;
+            id = idCounter.getAndIncrement();
             this.previous = previous;
             this.next = next;
             this.value = value;
