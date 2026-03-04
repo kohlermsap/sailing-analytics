@@ -1,4 +1,4 @@
-package com.google.gwt.user.client.rpc.core.com.sap.sailing.domain.common.confidence.impl;
+package com.google.gwt.user.client.rpc.core.com.sap.sse.common.confidence.impl;
 
 import com.google.gwt.user.client.rpc.CustomFieldSerializer;
 import com.google.gwt.user.client.rpc.SerializationException;
