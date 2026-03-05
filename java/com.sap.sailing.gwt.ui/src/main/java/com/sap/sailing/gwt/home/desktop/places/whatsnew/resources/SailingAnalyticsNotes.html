@@ -10,7 +10,8 @@
             <li>Maneuver analysis now identifies track segments worth looking at with consistency.
                 Before, depending on fix arrival timing, analysis windows may have missed significant
                 course changes under special circumstances such as COG values changing in opposite
-                directions quickly.</li>
+                directions quickly. The changes also lead to the maneuver time points being closer
+                to the greatest angular speed during the maneuver for most cases.</li>
             <li>Position fixes are considered for maneuver analysis now only after enough later fixes
                 (usually ten seconds) have been received to ensure that the older fixes don't change
                 their dampened COG/SOG values based on the newer fixes. This sacrifices short
