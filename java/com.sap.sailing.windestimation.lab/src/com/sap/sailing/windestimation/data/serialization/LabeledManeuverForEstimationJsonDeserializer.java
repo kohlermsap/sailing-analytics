@@ -62,6 +62,7 @@ public class LabeledManeuverForEstimationJsonDeserializer implements JsonDeseria
         Double windSpeedInKnots = (Double) object.get(LabeledManeuverForEstimationJsonSerializer.WIND_SPEED);
         Double windCourse = (Double) object.get(LabeledManeuverForEstimationJsonSerializer.WIND_COURSE);
         String regattaName = (String) object.get(LabeledManeuverForEstimationJsonSerializer.REGATTA_NAME);
+        String competitorName = (String) object.get(LabeledManeuverForEstimationJsonSerializer.COMPETITOR_NAME);
         MillisecondsTimePoint maneuverTimePoint = new MillisecondsTimePoint(maneuverTimePointMillis);
         DegreePosition maneuverPosition = new DegreePosition(positionLatitude, positionLongitude);
         LabeledManeuverForEstimation maneuver = new LabeledManeuverForEstimation(maneuverTimePoint, maneuverPosition,
@@ -74,7 +75,7 @@ public class LabeledManeuverForEstimationJsonDeserializer implements JsonDeseria
                 markPassingDataAvailable, maneuverType,
                 new WindImpl(maneuverPosition, maneuverTimePoint,
                         new KnotSpeedWithBearingImpl(windSpeedInKnots, new DegreeBearingImpl(windCourse))),
-                regattaName);
+                regattaName, competitorName);
         return maneuver;
     }
 

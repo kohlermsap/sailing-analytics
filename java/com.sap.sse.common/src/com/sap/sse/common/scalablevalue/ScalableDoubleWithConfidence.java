@@ -1,6 +1,4 @@
-package com.sap.sailing.domain.common.confidence.impl;
-
-import com.sap.sailing.domain.common.confidence.HasConfidenceAndIsScalable;
+package com.sap.sse.common.scalablevalue;
 
 public class ScalableDoubleWithConfidence<RelativeTo> extends ScalableDouble implements HasConfidenceAndIsScalable<Double, Double, RelativeTo> {
     private static final long serialVersionUID = 1042652394404557792L;

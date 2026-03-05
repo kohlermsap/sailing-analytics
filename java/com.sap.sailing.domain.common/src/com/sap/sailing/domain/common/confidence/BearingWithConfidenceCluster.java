@@ -8,6 +8,7 @@ import com.sap.sailing.domain.common.DoublePair;
 import com.sap.sailing.domain.common.confidence.impl.BearingWithConfidenceImpl;
 import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Util;
+import com.sap.sse.common.scalablevalue.HasConfidence;
 
 /**
  * Contains a number of {@link Bearing} objects and maintains the average bearing. For a given {@link Bearing} it

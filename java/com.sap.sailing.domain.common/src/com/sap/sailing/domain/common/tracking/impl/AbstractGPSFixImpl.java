@@ -96,6 +96,7 @@ public abstract class AbstractGPSFixImpl implements GPSFix {
     }
 
     @Override
-    public void cacheEstimatedSpeed(SpeedWithBearing estimatedSpeed) {
+    public SpeedWithBearing cacheEstimatedSpeed(SpeedWithBearing estimatedSpeed) {
+        return estimatedSpeed;
     }
 }

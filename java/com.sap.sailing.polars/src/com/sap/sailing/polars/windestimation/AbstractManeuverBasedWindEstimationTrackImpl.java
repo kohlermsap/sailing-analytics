@@ -17,8 +17,6 @@ import com.sap.sailing.domain.common.ManeuverType;
 import com.sap.sailing.domain.common.Wind;
 import com.sap.sailing.domain.common.confidence.ConfidenceBasedAverager;
 import com.sap.sailing.domain.common.confidence.ConfidenceFactory;
-import com.sap.sailing.domain.common.confidence.HasConfidence;
-import com.sap.sailing.domain.common.confidence.impl.ScalableDouble;
 import com.sap.sailing.domain.common.impl.WindImpl;
 import com.sap.sailing.domain.common.polars.NotEnoughDataHasBeenAddedException;
 import com.sap.sailing.domain.common.scalablevalue.impl.ScalableBearing;
@@ -30,6 +28,8 @@ import com.sap.sse.common.Speed;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.Util.Triple;
 import com.sap.sse.common.impl.DegreeBearingImpl;
+import com.sap.sse.common.scalablevalue.HasConfidence;
+import com.sap.sse.common.scalablevalue.ScalableDouble;
 import com.sap.sse.util.kmeans.Cluster;
 import com.sap.sse.util.kmeans.KMeansMappingClusterer;
 

@@ -59,6 +59,7 @@ SAP is at the center of today’s technology revolution, developing innovations 
 * Amazon
   * [[Amazon EC2|wiki/info/landscape/amazon-ec2]]
   * [[Upgrading ARCHIVE server|wiki/info/landscape/archive-server-upgrade]]
+  * [[Upgrading MongoDB Nodes|wiki/info/landscape/mongo-cluster-upgrade]]
   * [[EC2 Backup Strategy|wiki/info/landscape/amazon-ec2-backup-strategy]]
   * [[Creating an EC2 image from scratch|wiki/info/landscape/creating-ec2-image-from-scratch]]
   * [[Upgrading an EC2 image|wiki/info/landscape/upgrading-ec2-image]]

@@ -97,11 +97,11 @@ jobs:
           log-accepted-android-sdk-licenses: 'false'
           cmdline-tools-version: 9123335  # This corresponds to human-friendly version number 8.0
       - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@90004df786821b6308fb02299e5835d0dae05d0d #v1.12.0
+        uses: supercharge/mongodb-github-action@315db7fe45ac2880b7758f1933e6e5d59afd5e94 #v1.12.1
         with:
           mongodb-version: 7.0
       - name: Start RabbitMQ
-        uses: namoshek/rabbitmq-github-action@58b841360ede0e19fc5e4929fc2477ecc09193d8 # v1.1.0
+        uses: Namoshek/rabbitmq-github-action@80a182e44c7f60bc3417a8689d6a24fe9d08b27b #v1.2.0
         with:
           version: '3.8.9'
           ports: '5672:5672'
@@ -112,6 +112,8 @@ jobs:
           AWS_S3_TEST_S3ACCESSKEY: ${{ secrets.AWS_S3_TEST_S3ACCESSKEY }}
           GEONAMES_ORG_USERNAMES: ${{ secrets.GEONAMES_ORG_USERNAMES }}
           GOOGLE_MAPS_AUTHENTICATION_PARAMS: ${{ secrets.GOOGLE_MAPS_AUTHENTICATION_PARAMS }}
+          POLAR_DATA_BASE_URL: ${{ secrets.POLAR_DATA_BASE_URL }}
+          POLAR_DATA_BEARER_TOKEN: ${{ secrets.POLAR_DATA_BEARER_TOKEN }}
           APP_PARAMETERS: "-Daws.region=eu-west-1"
           JAVA8_HOME: ${{env.JAVA_HOME_8_X64}}
           JAVA17_HOME: ${{env.JAVA_HOME_17_X64}}

@@ -7,7 +7,9 @@ Bundle-Vendor: SAP
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .
 Export-Package: 
+ com.sap.sailing.polars,
  com.sap.sailing.polars.impl,
+ com.sap.sailing.polars.jaxrs.client,
  com.sap.sailing.polars.mining,
  com.sap.sailing.polars.regression,
  com.sap.sailing.polars.regression.impl,

@@ -125,6 +125,14 @@ public interface SharedLandscapeConstants {
     String SAILING_ANALYTICS_APPLICATION_HOST_TAG = "sailing-analytics-server";
 
     String ARCHIVE_SERVER_APPLICATION_REPLICA_SET_NAME = "ARCHIVE";
+    
+    String ARCHIVE_SERVER_INSTANCE_NAME = "SL Archive";
+    
+    String ARCHIVE_SERVER_NEW_CANDIDATE_INSTANCE_NAME = ARCHIVE_SERVER_INSTANCE_NAME+" (New Candidate)";
+
+    String ARCHIVE_SERVER_FAILOVER_INSTANCE_NAME = ARCHIVE_SERVER_INSTANCE_NAME+" (Failover)";
+
+    String ARCHIVE_CANDIDATE_SUBDOMAIN = "archive-candidate";
 
     /**
      * Value of the {@link #SAILING_ANALYTICS_APPLICATION_HOST_TAG} tag

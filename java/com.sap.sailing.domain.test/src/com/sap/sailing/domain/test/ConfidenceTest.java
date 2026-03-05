@@ -18,11 +18,8 @@ import com.sap.sailing.domain.common.Wind;
 import com.sap.sailing.domain.common.confidence.BearingWithConfidence;
 import com.sap.sailing.domain.common.confidence.BearingWithConfidenceCluster;
 import com.sap.sailing.domain.common.confidence.ConfidenceBasedAverager;
-import com.sap.sailing.domain.common.confidence.HasConfidence;
-import com.sap.sailing.domain.common.confidence.HasConfidenceAndIsScalable;
 import com.sap.sailing.domain.common.confidence.Weigher;
 import com.sap.sailing.domain.common.confidence.impl.BearingWithConfidenceImpl;
-import com.sap.sailing.domain.common.confidence.impl.ScalableDoubleWithConfidence;
 import com.sap.sailing.domain.common.confidence.impl.ScalableWind;
 import com.sap.sailing.domain.common.impl.DegreePosition;
 import com.sap.sailing.domain.common.impl.KnotSpeedWithBearingImpl;
@@ -39,6 +36,9 @@ import com.sap.sse.common.Bearing;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.impl.DegreeBearingImpl;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
+import com.sap.sse.common.scalablevalue.HasConfidence;
+import com.sap.sse.common.scalablevalue.HasConfidenceAndIsScalable;
+import com.sap.sse.common.scalablevalue.ScalableDoubleWithConfidence;
 import com.sap.sse.common.scalablevalue.ScalableValue;
 
 public class ConfidenceTest {

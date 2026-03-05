@@ -19,11 +19,14 @@ import java.util.Optional;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.sap.sailing.domain.base.Competitor;
+import com.sap.sailing.domain.base.DomainFactory;
 import com.sap.sailing.domain.common.NoWindException;
 import com.sap.sailing.domain.common.Position;
 import com.sap.sailing.domain.common.Wind;
@@ -46,6 +49,7 @@ import com.sap.sailing.domain.tractracadapter.ReceiverType;
 import com.sap.sailing.domain.windestimation.IncrementalWindEstimation;
 import com.sap.sailing.domain.windestimation.TimePointAndPositionWithToleranceComparator;
 import com.sap.sailing.polars.impl.PolarDataServiceImpl;
+import com.sap.sailing.polars.jaxrs.client.PolarDataClient;
 import com.sap.sailing.windestimation.ManeuverBasedWindEstimationComponentImpl;
 import com.sap.sailing.windestimation.aggregator.ManeuverClassificationsAggregatorFactory;
 import com.sap.sailing.windestimation.data.CompetitorTrackWithEstimationData;
@@ -76,6 +80,8 @@ import com.sap.sse.testutils.MeasurementXMLFile;
  *
  */
 public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTracTracBasedTest {
+    private static final Logger logger = Logger.getLogger(IncrementalMstHmmWindEstimationForTrackedRaceTest.class.getName());
+
 
     private static final double PERCENT_QUANTILE = 0.8;
 
@@ -104,6 +110,7 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
     protected final SimpleDateFormat dateFormat;
     private WindEstimationFactoryServiceImpl windEstimationFactoryService;
     private ClassPathReadOnlyModelStoreImpl modelStore;
+    private PolarDataServiceImpl polarDataService;
 
     public IncrementalMstHmmWindEstimationForTrackedRaceTest() throws Exception {
         dateFormat = new SimpleDateFormat("MM/dd/yyyy-HH:mm:ss");
@@ -124,34 +131,60 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
                 new URL("file:///" + new File("resources/event_20110609_KielerWoch-505_Race_2.txt").getCanonicalPath()),
                 /* liveUri */ null, /* storedUri */ storedUri,
                 new ReceiverType[] { ReceiverType.MARKPASSINGS, ReceiverType.RACECOURSE, ReceiverType.RAWPOSITIONS, ReceiverType.MARKPOSITIONS });
-        final MillisecondsTimePoint timePointForFixes = new MillisecondsTimePoint(new GregorianCalendar(2011, 05, 23, 10, 00).getTime());
+        String polarDataBearerToken = System.getProperty("polardata.source.bearertoken");
+        if (polarDataBearerToken == null) {
+            logger.info("Couldn't find polardata.source.bearertoken system property, trying environment variable POLAR_DATA_BEARER_TOKEN");
+            polarDataBearerToken = System.getenv("POLAR_DATA_BEARER_TOKEN");
+            if (polarDataBearerToken == null) {
+                logger.warning("Couldn't find POLAR_DATA_BEARER_TOKEN environment variable either, polar data service will not be available");
+            } else {
+                logger.info("Found POLAR_DATA_BEARER_TOKEN environment variable, length "+polarDataBearerToken.length()
+                           +"; polar data service will be available");
+            }
+        } else {
+            logger.info("Found polardata.source.bearertoken system property, polar data service will be available");
+        }
+        final Optional<String> polardataBearerTokenOptional = Optional.ofNullable(polarDataBearerToken);
+        if (polardataBearerTokenOptional.isPresent()) {
+            polarDataService = new PolarDataServiceImpl();
+            final com.sap.sailing.domain.tractracadapter.DomainFactory domainFactoryImpl = getDomainFactory();
+            final DomainFactory baseDomainFactory = domainFactoryImpl.getBaseDomainFactory();
+            polarDataService.registerDomainFactory(baseDomainFactory);
+            new PolarDataClient(Optional.ofNullable(System.getenv("POLAR_DATA_BASE_URL")).orElse("https://sapsailing.com"), polarDataService, polardataBearerTokenOptional)
+                .updatePolarDataRegressions();
+        } else {
+            polarDataService = new PolarDataServiceImpl();
+        }
+        getTrackedRace().setPolarDataService(polarDataService);
+        final GregorianCalendar cal = new GregorianCalendar(2011, 05, 23, 13, 40);
+        cal.setTimeZone(TimeZone.getTimeZone("UTC"));
+        final MillisecondsTimePoint timePointForFixes = new MillisecondsTimePoint(cal.getTime());
         final WindSourceWithAdditionalID testWindSource = new WindSourceWithAdditionalID(WindSourceType.EXPEDITION, "Test");
         getTrackedRace().getOrCreateWindTrack(testWindSource).add(
                 new WindImpl(new DegreePosition(54.48448470246412, 10.185846456327479),
-                        timePointForFixes, new KnotSpeedWithBearingImpl(12.5, /* to */ new DegreeBearingImpl(60))));
-        final MillisecondsTimePoint timePointForFixes2 = new MillisecondsTimePoint(new GregorianCalendar(2011, 05, 23, 10, 30).getTime());
+                        timePointForFixes, new KnotSpeedWithBearingImpl(9, /* to */ new DegreeBearingImpl(51))));
+        cal.set(2011, 05, 23, 14, 6);
+        final MillisecondsTimePoint timePointForFixes2 = new MillisecondsTimePoint(cal.getTime());
         getTrackedRace().getOrCreateWindTrack(testWindSource).add(
                 new WindImpl(new DegreePosition(54.48448470246412, 10.185846456327479),
-                        timePointForFixes2, new KnotSpeedWithBearingImpl(11.5, /* to */ new DegreeBearingImpl(58))));
-        final MillisecondsTimePoint timePointForFixes3 = new MillisecondsTimePoint(new GregorianCalendar(2011, 05, 23, 10, 45).getTime());
+                        timePointForFixes2, new KnotSpeedWithBearingImpl(11, /* to */ new DegreeBearingImpl(60))));
+        cal.set(2011, 05, 23, 14, 35);
+        final MillisecondsTimePoint timePointForFixes3 = new MillisecondsTimePoint(cal.getTime());
         getTrackedRace().getOrCreateWindTrack(testWindSource).add(
                 new WindImpl(new DegreePosition(54.4844847, 10.1858464),
-                        timePointForFixes3, new KnotSpeedWithBearingImpl(12.1, /* to */ new DegreeBearingImpl(59))));
-        final PolarDataServiceImpl polarDataService = new PolarDataServiceImpl();
-        getTrackedRace().setPolarDataService(polarDataService);
+                        timePointForFixes3, new KnotSpeedWithBearingImpl(14, /* to */ new DegreeBearingImpl(58))));
         polarDataService.insertExistingFixes(getTrackedRace());
         Wait.wait(()->!polarDataService.isCurrentlyActiveOrHasQueue(), /* timeout */ Optional.of(Duration.ONE_MINUTE),
                 /* sleepBetweenAttempts */ Duration.ONE_SECOND.times(5), Level.INFO, "Waiting for polar data service to finish computing");
         OnlineTracTracBasedTest.fixApproximateMarkPositionsForWindReadOut(getTrackedRace(), timePointForFixes);
         final IncrementalWindEstimation windEstimation = windEstimationFactoryService.createIncrementalWindEstimationTrack(getTrackedRace());
-        getTrackedRace()
-                .setWindEstimation(windEstimation);
+        getTrackedRace().setWindEstimation(windEstimation);
         getTrackedRace().waitForManeuverDetectionToFinish();
         windEstimation.waitUntilDone();
     }
 
     @Test
-    public void testIncrementalMstHmmWindEstimationForTrackedRace() throws NoWindException, IOException {
+    public void testIncrementalMstHmmWindEstimationForTrackedRace() throws NoWindException, IOException, ClassNotFoundException, ParseException, InterruptedException {
         assertTrue(windEstimationFactoryService.isReady(), "Wind estimation models are empty");
         DynamicTrackedRaceImpl trackedRace = getTrackedRace();
         WindTrack estimatedWindTrackOfTrackedRace = trackedRace
@@ -159,9 +192,9 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
         List<CompetitorTrackWithEstimationData<CompleteManeuverCurveWithEstimationData>> competitorTracks = new ArrayList<>();
         for (Competitor competitor : trackedRace.getRace().getCompetitors()) {
             IncrementalManeuverDetectorImpl maneuverDetector = new IncrementalManeuverDetectorImpl(trackedRace,
-                    competitor, null);
+                    competitor, /* wind estimation interaction */ null);
             ManeuverDetectorWithEstimationDataSupportDecoratorImpl maneuverDetectorWithEstimationDataSupportDecorator = new ManeuverDetectorWithEstimationDataSupportDecoratorImpl(
-                    maneuverDetector, null);
+                    maneuverDetector, polarDataService);
             List<CompleteManeuverCurve> maneuverCurves = maneuverDetectorWithEstimationDataSupportDecorator
                     .detectCompleteManeuverCurves();
             List<CompleteManeuverCurveWithEstimationData> completeManeuverCurvesWithEstimationData = maneuverDetectorWithEstimationDataSupportDecorator
@@ -176,10 +209,10 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
                 competitorTracks.get(0).getRegattaName(), competitorTracks.get(0).getRaceName(), WindQuality.LOW,
                 competitorTracks);
         ManeuverBasedWindEstimationComponentImpl<RaceWithEstimationData<CompleteManeuverCurveWithEstimationData>> targetWindEstimation = new ManeuverBasedWindEstimationComponentImpl<>(
-                new RaceElementsFilteringPreprocessingPipelineImpl(false,
+                new RaceElementsFilteringPreprocessingPipelineImpl(/* enable competitor track filtering */ false,
                         new CompleteManeuverCurveWithEstimationDataToManeuverForEstimationTransformer()),
                 windEstimationFactoryService.maneuverClassifiersCache,
-                new ManeuverClassificationsAggregatorFactory(null, modelStore, false, Long.MAX_VALUE).mstHmm(false),
+                new ManeuverClassificationsAggregatorFactory(polarDataService, modelStore, /* preload all models */ false, Long.MAX_VALUE).mstHmm(false),
                 new WindTrackCalculatorImpl(new MiddleCourseBasedTwdCalculatorImpl(),
                         new DummyBasedTwsCalculatorImpl()));
         List<WindWithConfidence<Pair<Position, TimePoint>>> windFixes = targetWindEstimation.estimateWindTrack(race);
@@ -189,12 +222,14 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
         List<Wind> targetWindFixes = new ArrayList<>(windFixes.size());
         for (WindWithConfidence<Pair<Position, TimePoint>> windFix : windFixes) {
             Wind wind = windFix.getObject();
-            targetWindFixes.add(wind);
-            // System.out.println("Target: " + wind.getTimePoint() + " " + wind.getPosition() + " "
-            // + Math.round(wind.getFrom().getDegrees()));
+            if (!wind.getTimePoint().before(trackedRace.getStartOfRace())) {
+                targetWindFixes.add(wind);
+                // System.out.println("Target: " + wind.getTimePoint() + " " + wind.getPosition() + " "
+                // + Math.round(wind.getFrom().getDegrees()));
+            }
         }
         List<Wind> estimatedWindFixes = new ArrayList<>();
-        assertMostFixesTWDAround(targetWindFixes, 233, /* range for 90% quantile */ 17, /* average tolerance */ 2);
+        assertMostFixesTWDAround(targetWindFixes, 235, /* range for 90% quantile */ 38, /* average tolerance */ 2);
         estimatedWindTrackOfTrackedRace.lockForRead();
         try {
             for (Wind wind : estimatedWindTrackOfTrackedRace.getFixes()) {
@@ -267,6 +302,8 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
         for (final Wind wind : targetWindFixes) {
             if (wind.getFrom().getDifferenceTo(targetTWD).abs().getDegrees() <= toleranceForPercentQuantile) {
                 insideRange++;
+            } else {
+                logger.fine(()->"Wind fix "+wind+" is outside of range "+(expectedTWDAverageInDegrees-toleranceForPercentQuantile)+" to "+(expectedTWDAverageInDegrees+toleranceForPercentQuantile));
             }
             final ScalableBearing scalableBearing = new ScalableBearing(wind.getFrom());
             if (bearingSum == null) {

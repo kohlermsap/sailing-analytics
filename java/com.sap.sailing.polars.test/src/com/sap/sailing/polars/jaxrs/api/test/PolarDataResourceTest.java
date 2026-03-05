@@ -58,7 +58,6 @@ public class PolarDataResourceTest {
         BoatClass boatClass = domainFactory.getOrCreateBoatClass(BOAT_CLASS);
         PolynomialFunction angleDownwindFunction = new PolynomialFunction(ANGLE_FUNCTION_COEFFS_DOWNWIND);
         PolynomialFunction speedDownwindFunction = new PolynomialFunction(SPEED_FUNCTIONS_COEFFS_DOWNWIND);
-
         assertThat(polarService.getSpeedRegressionsPerAngle().size(), is(68));
         assertThat(polarService.getCubicRegressionsPerCourse().size(), is(4));
         assertThat(polarService.getFixCountPerBoatClass().get(boatClass), is(9330L));
@@ -67,5 +66,4 @@ public class PolarDataResourceTest {
         assertThat(polarService.getAngleRegressionFunction(boatClass, LegType.DOWNWIND), is(angleDownwindFunction));
         assertThat(polarService.getSpeedRegressionFunction(boatClass, LegType.DOWNWIND), is(speedDownwindFunction));
     }
-
 }

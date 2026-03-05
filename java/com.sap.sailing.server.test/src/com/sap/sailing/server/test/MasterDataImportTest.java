@@ -35,6 +35,7 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -194,6 +195,8 @@ public class MasterDataImportTest {
 
     @AfterEach
     public void tearDown() {
+        ThreadContext.unbindSecurityManager();
+        ThreadContext.unbindSubject();
         deleteAllDataFromDatabase();
     }
 
@@ -205,8 +208,16 @@ public class MasterDataImportTest {
         securityService = Mockito.mock(SecurityService.class);
         SecurityManager securityManager = Mockito.mock(org.apache.shiro.mgt.SecurityManager.class);
         Subject fakeSubject = Mockito.mock(Subject.class);
-        SecurityUtils.setSecurityManager(securityManager);
+        // Stub the mock BEFORE installing it as the global SecurityManager to avoid a race
+        // condition: SecurityUtils.setSecurityManager() sets a JVM-wide static singleton.
+        // Any thread that calls SecurityUtils.getSubject() (when no Subject is bound to its
+        // ThreadContext) will trigger securityManager.createSubject(). If that happens between
+        // the .when(securityManager) call (which sets pending doAnswer-style answers on the
+        // mock's InvocationContainer) and the .createSubject() call (which completes the
+        // stubbing), the other thread's call consumes the pending answers first, causing an
+        // AssertionError in InvocationContainerImpl.setMethodForStubbing (line 123).
         Mockito.doReturn(fakeSubject).when(securityManager).createSubject(Mockito.any());
+        SecurityUtils.setSecurityManager(securityManager);
         Mockito.doReturn(defaultTenant).when(securityService).getServerGroup();
         Mockito.doReturn(currentUser).when(securityService).getCurrentUser();
         Mockito.doReturn(true).when(securityService).hasCurrentUserReadPermission(Mockito.any());

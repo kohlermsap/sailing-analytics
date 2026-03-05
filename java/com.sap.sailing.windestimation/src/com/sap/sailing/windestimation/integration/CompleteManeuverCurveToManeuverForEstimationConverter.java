@@ -47,7 +47,7 @@ public class CompleteManeuverCurveToManeuverForEstimationConverter {
         if (!maneuverForEstimationTransformer.isManeuverEligibleForAnalysis(
                 maneuver.getManeuverCurveWithStableSpeedAndCourseBoundaries().getDirectionChangeInDegrees(),
                 maneuver.getMainCurveBoundaries().getDirectionChangeInDegrees())) {
-            // skip further computation in order to improve performance performance
+            // skip further computation in order to improve performance
             return null;
         }
         BoatClass boatClass = trackedRace.getBoatOfCompetitor(competitor).getBoatClass();
@@ -111,7 +111,7 @@ public class CompleteManeuverCurveToManeuverForEstimationConverter {
         // TODO compute scaledSpeedDivisor, recompute maneuverForEstimation, reclassify all maneuver instances if
         // scaledSpeedDivisor has significantly changed?
         ManeuverForEstimation maneuverForEstimation = maneuverForEstimationTransformer
-                .getManeuverForEstimation(convertableManeuver, 1.0, boatClass);
+                .getManeuverForEstimation(convertableManeuver, 1.0, boatClass, competitor.getName());
         return maneuverForEstimation;
     }
 

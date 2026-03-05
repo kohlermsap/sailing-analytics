@@ -97,9 +97,9 @@ public class PreciseCompactGPSFixImpl extends AbstractCompactGPSFixImpl {
     }
 
     @Override
-    public void cacheEstimatedSpeed(SpeedWithBearing estimatedSpeed) {
+    public SpeedWithBearing cacheEstimatedSpeed(SpeedWithBearing estimatedSpeed) {
         cachedEstimatedSpeedBearingInDegrees = estimatedSpeed.getBearing().getDegrees();
         cachedEstimatedSpeedInKnots = estimatedSpeed.getKnots();
-        super.cacheEstimatedSpeed(estimatedSpeed);
+        return super.cacheEstimatedSpeed(estimatedSpeed);
     }
 }

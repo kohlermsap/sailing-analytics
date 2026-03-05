@@ -12,6 +12,6 @@ public interface WithEstimatedSpeedCache {
 
     void invalidateEstimatedSpeedCache();
 
-    void cacheEstimatedSpeed(SpeedWithBearing estimatedSpeed);
+    SpeedWithBearing cacheEstimatedSpeed(SpeedWithBearing estimatedSpeed);
 
 }

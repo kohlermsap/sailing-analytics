@@ -29,7 +29,6 @@ import com.sap.sailing.domain.tractracadapter.impl.TracTracAdapterFactoryImpl;
 import com.sap.sailing.simulator.Path;
 import com.sap.sailing.simulator.SimulationParameters;
 import com.sap.sailing.simulator.TimedPositionWithSpeed;
-import com.sap.sse.common.Distance;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.impl.DegreeBearingImpl;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
@@ -176,7 +175,7 @@ public class PathGeneratorTracTrac extends PathGeneratorBase {
     }
 
     @SuppressWarnings("null")
-    public Path getPathPolyline(Distance maxDistance) {
+    public Path getPathPolyline() {
         this.intializeRaceHandle();
         // getting the race
         RaceDefinition raceDef = this.raceHandle.getRace();
@@ -216,7 +215,7 @@ public class PathGeneratorTracTrac extends PathGeneratorBase {
         Wind endWind = trackedRace.getWind(endPosition, endTime);
         this.raceCourse.addLast(new TimedPositionWithSpeedImpl(endTime, endPosition, endWind));
 
-        Iterable<GPSFixMoving> gpsFixes = trackedRace.approximate(competitor, maxDistance, startTime, endTime);
+        Iterable<GPSFixMoving> gpsFixes = trackedRace.approximate(competitor, startTime, endTime);
         Iterator<GPSFixMoving> gpsIter = gpsFixes.iterator();
 
         while (gpsIter.hasNext()) {

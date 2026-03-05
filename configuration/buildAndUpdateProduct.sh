@@ -671,7 +671,7 @@ if [[ "$@" == "build" ]] || [[ "$@" == "all" ]]; then
         PATH=$PATH:$ANDROID_HOME/platform-tools
         SDK_MANAGER="$ANDROID_HOME/cmdline-tools/8.0/bin/sdkmanager"
         if [ \! -x "$SDK_MANAGER" ]; then
-            SDK_MANAGER="$ANDROID_HOME/tools/bin/sdkmanager.bat"
+            SDK_MANAGER="$ANDROID_HOME/tools/bin/sdkmanager"
         fi
         echo "SDK_MANAGER=${SDK_MANAGER}"
         echo "cmdline-tools:"

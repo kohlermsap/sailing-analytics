@@ -1,10 +1,9 @@
-package com.sap.sailing.domain.common.confidence;
+package com.sap.sse.common.scalablevalue;
 
 import java.io.Serializable;
 
 import com.sap.sse.common.Distance;
 import com.sap.sse.common.TimePoint;
-import com.sap.sse.common.scalablevalue.ScalableValue;
 
 /**
  * Some values, particularly those obtained from real-world measurements, are not always accurate. Some values are

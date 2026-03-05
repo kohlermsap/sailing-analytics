@@ -21,12 +21,12 @@ public class LabeledManeuverForEstimation extends ManeuverForEstimation {
             double lowestSpeedVsExitingSpeedRatio, boolean clean, ManeuverCategory maneuverCategory,
             double scaledSpeedBefore, double scaledSpeedAfter, boolean markPassing, BoatClass boatClass,
             boolean markPassingDataAvailable, ManeuverTypeForClassification maneuverType, Wind wind,
-            String regattaName) {
+            String regattaName, String competitorName) {
         super(maneuverTimePoint, maneuverPosition, middleCourse, speedWithBearingBefore, speedWithBearingAfter,
                 courseChangeInDegrees, courseChangeWithinMainCurveInDegrees, maxTurningRateInDegreesPerSecond,
                 deviationFromOptimalTackAngleInDegrees, deviationFromOptimalJibeAngleInDegrees, speedLossRatio,
                 speedGainRatio, lowestSpeedVsExitingSpeedRatio, clean, maneuverCategory, scaledSpeedBefore,
-                scaledSpeedAfter, markPassing, boatClass, markPassingDataAvailable);
+                scaledSpeedAfter, markPassing, boatClass, markPassingDataAvailable, competitorName);
         this.maneuverType = maneuverType;
         this.wind = wind;
         this.regattaName = regattaName;

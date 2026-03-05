@@ -2,6 +2,7 @@ package com.sap.sailing.landscape;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -17,8 +18,10 @@ import com.sap.sailing.landscape.procedures.SailingProcessConfigurationVariables
 import com.sap.sailing.landscape.procedures.StartMultiServer;
 import com.sap.sailing.server.gateway.interfaces.CompareServersResult;
 import com.sap.sailing.server.gateway.interfaces.SailingServer;
+import com.sap.sailing.server.gateway.interfaces.SailingServerFactory;
 import com.sap.sse.common.Duration;
 import com.sap.sse.common.Util.Triple;
+import com.sap.sse.common.mail.MailException;
 import com.sap.sse.landscape.Release;
 import com.sap.sse.landscape.application.ApplicationReplicaSet;
 import com.sap.sse.landscape.aws.AmazonMachineImage;
@@ -26,8 +29,11 @@ import com.sap.sse.landscape.aws.AwsApplicationReplicaSet;
 import com.sap.sse.landscape.aws.AwsAvailabilityZone;
 import com.sap.sse.landscape.aws.AwsLandscape;
 import com.sap.sse.landscape.aws.impl.AwsRegion;
+import com.sap.sse.landscape.mongodb.Database;
 import com.sap.sse.landscape.mongodb.MongoEndpoint;
 import com.sap.sse.security.SecurityService;
+import com.sap.sse.security.shared.HasPermissions.Action;
+import com.sap.sse.security.shared.impl.User;
 
 import software.amazon.awssdk.services.autoscaling.model.AutoScalingGroup;
 import software.amazon.awssdk.services.ec2.model.InstanceType;
@@ -151,6 +157,35 @@ public interface LandscapeService {
             Integer optionalMemoryInMegabytesOrNull, Integer optionalMemoryTotalSizeFactorOrNull,
             Integer optionalIgtimiRiotPort, Optional<Integer> minimumAutoScalingGroupSize, Optional<Integer> maximumAutoScalingGroupSize)
             throws Exception;
+    
+    /**
+     * Runs phase 1 of an ARCHIVE server upgrade. This includes launching the new instance in a favorable availability
+     * zone where ideally we have a reverse proxy and that ideally is different from the AZ in which the current
+     * production ARCHIVE server runs. It then installs a {@link ArchiveCandidateMonitoringBackgroundTask background
+     * task} that keeps applying a sequence of checks. When any of the checks keeps failing beyond a timeout, the
+     * activity is aborted, and the user who triggered it receives an e-mail about this. If all checks pass, the user
+     * receives an e-mail that asks for manual spot checks and a confirmation about the rotation. A link embedded in the
+     * e-mail grants the user easy access to the
+     * {@link #makeCandidateArchiveServerGoLive(String, String, byte[], String)} method which then performs phase 2.
+     * 
+     * @param continuationBaseURL
+     *            the base URL to which to direct the user for continuation of the ARCHIVE upgrade process (phase 2)
+     *            after this first phase has completed successfully
+     */
+    void createArchiveReplicaSet(
+            String regionId, String name, String instanceType, String releaseNameOrNullForLatestMaster, Database databaseConfiguration,
+            String optionalKeyName, byte[] privateKeyEncryptionPassphrase, String replicaReplicationBearerToken,
+            String optionalDomainName, Integer optionalMemoryInMegabytesOrNull, String securityServiceReplicationBearerToken,
+            Integer optionalMemoryTotalSizeFactorOrNull, Integer optionalIgtimiRiotPort, URL continuationBaseURL) throws Exception;
+
+    /**
+     * Phase 2 of an ARCHIVE server upgrade. This is to be triggered ideally after a "human in the loop" step
+     * where a user makes some spot checks and then confirms that the archive candidate can be installed as the
+     * new production server, with the previous production server then becoming the failover, and the old failover
+     * instance being terminated.
+     */
+    void makeCandidateArchiveServerGoLive(String regionId, String optionalKeyName,
+            byte[] privateKeyEncryptionPassphrase, String optionalDomainName) throws Exception;
 
     /**
      * Starts a first master process of a new replica set whose name is provided by the {@code replicaSetName}
@@ -485,4 +520,27 @@ public interface LandscapeService {
             String optionalKeyName, byte[] privateKeyEncryptionPassphrase) throws Exception;
 
     String getHostname(String replicaSetName, String optionalDomainName);
+
+    /**
+     * @param subjectMessageKey
+     *            must have a single placeholder argument representing the name of the replica set
+     * @param bodyMessageKey
+     *            must have a single placeholder argument representing the name of the replica set
+     * @param alsoSendToAllUsersWithThisPermissionOnReplicaSet
+     *            when not empty, all users that have permission to this {@link SecuredSecurityTypes#SERVER SERVER}
+     *            action on the {@code replicaSet} will receive the e-mail in addition to the server owner. No user
+     *            will receive the e-mail twice.
+     */
+    void sendMailToReplicaSetOwner(
+            AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> replicaSet,
+            String subjectMessageKey, String bodyMessageKey,
+            Optional<Action> alsoSendToAllUsersWithThisPermissionOnReplicaSet) throws MailException;
+
+    void sendMailToCurrentUser(String messageSubjectKey, String messageBodyKey, String... messageParameters)
+            throws MailException;
+
+    void sendMailToUser(User user, String messageSubjectKey, String messageBodyKey, String... messageParameters)
+            throws MailException;
+    
+    SailingServerFactory getSailingServerFactory();
 }

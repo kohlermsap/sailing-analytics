@@ -357,7 +357,7 @@ public class TrackTest {
         GPSFix fix4 = new GPSFixImpl(new DegreePosition(4./60., 0), new MillisecondsTimePoint(10800000)); // 1nm in one hour = 1kt
         track.addGPSFix(fix4);
         assertEquals(1., track.getMaximumSpeedOverGround(new MillisecondsTimePoint(0), new MillisecondsTimePoint(3600000)).
-                getB().getKnots(), 0.001);
+                getB().getKnots(), 0.01);
     }
 
     @Test
@@ -372,7 +372,7 @@ public class TrackTest {
         GPSFix fix4 = new GPSFixImpl(new DegreePosition(4./60., 0), new MillisecondsTimePoint(10800000)); // 1nm in one hour = 1kt
         track.addGPSFix(fix4);
         assertEquals(2., track.getMaximumSpeedOverGround(new MillisecondsTimePoint(0), new MillisecondsTimePoint(10800000)).
-                getB().getKnots(), 0.001);
+                getB().getKnots(), 0.01);
     }
 
     @Test

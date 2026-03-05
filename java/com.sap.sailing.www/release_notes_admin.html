@@ -23,6 +23,18 @@
         <div class="mainContent">
           <h2 class="releaseHeadline">Release Notes - Administration Console</h2>
           <div class="innerContent">
+          <h2 class="articleSubheadline">February 2026</h2>
+          <ul class="bulletList">
+                <li>Implemented an automated procedure for upgrading the ARCHIVE server. This is now available
+                    through the "Upgrade" action icon in the landscape management panel for "phase 1" (launching,
+                    setting https://archive-candidate.sapsailing.com as redirect, and scheduling periodic
+                    checks in the background for completion of loading and calculations as well as a final
+                    "compare servers"), and the "Activate ARCHIVE Candidate" action icon for "phase 2" which
+                    will then, after the user has confirmed having done some manual spot checks, rotate the
+                    new candidate to the live server, and the former live server to the "fail-over" role,
+                    renaming instances, terminating the old "fail-over" instance and updating all
+                    reverse proxies in the landscape accordingly. User information is sent via e-mail.</li>
+          </ul>
           <h2 class="articleSubheadline">January 2026</h2>
           <ul class="bulletList">
                 <li>Extended RabbitMQ channel heartbeat interval to 1h. This will suffice even for
