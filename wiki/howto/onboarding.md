@@ -10,7 +10,9 @@ First of all, make sure you've looked at [http://www.amazon.de/Patterns-Elements
 
 1. Git Account
 
-   - The primary Git repository for the project is hosted on Github (see [https://github.com/SAP/sailing-analytics](https://github.com/SAP/sailing-analytics)). To clone, use ``git@github.com:SAP/sailing-analytics.git``. To gain write access you have to become member of the [sailing-analytics-team](https://github.com/orgs/SAP/teams/sailing-analytics-team) organization. For that you need to [link your Github user to the Github SAP organization](https://wiki.one.int.sap/wiki/display/ospodocs/Self-Service+for+Joining+an+SAP+GitHub+Organization). For that to work, your Github account needs to have your @sap.com e-mail address assigned and verified. We still have a shadow repository around that, e.g., powers our Wiki at [https://wiki.sapsailing.com](https://wiki.sapsailing.com) and which lives at ``ssh://trac@sapsailing.com/home/trac/git``. 
+   - The primary Git repository for the project is hosted on Github (see [https://github.com/SAP/sailing-analytics](https://github.com/SAP/sailing-analytics)). To clone, use ``git@github.com:SAP/sailing-analytics.git``.
+   - If you are on Windows, keep in mind you may run into the following problem. By default, the filesystem in Windows enforces a 260 character limit on paths. The longest path length for a file in this project, if the drive name is included, is 263 characters. A possible solution is to pass a single character name for the project folder in the git clone command, and clone the project on drive root, which may bring the longest file path down to compatible length. Alternatively, Windows 10 and 11 offer settings to enable a much much longer maximum file path that requires additional configuration. You may check that out at your own will.
+   - To gain write access you have to become member of the [sailing-analytics-team](https://github.com/orgs/SAP/teams/sailing-analytics-team) organization. For that you need to [link your Github user to the Github SAP organization](https://wiki.one.int.sap/wiki/display/ospodocs/Self-Service+for+Joining+an+SAP+GitHub+Organization). For that to work, your Github account needs to have your @sap.com e-mail address assigned and verified. We still have a shadow repository around that, e.g., powers our Wiki at [https://wiki.sapsailing.com](https://wiki.sapsailing.com) and which lives at ``ssh://trac@sapsailing.com/home/trac/git``. 
    - Announcements relevant for developers are posted on [GitHub](https://github.com/SAP/sailing-analytics) in the Discussions tab. In order to get notifications you can subscribe to discussions by clicking on "Watch" in the Repository, then "Custom". In the new Popup select "Discussions" and confirm by clicking "Apply".
 
    <img src="/wiki/images/github/GitHubWatch.jpg" style="width: 50%"/>
@@ -194,6 +196,9 @@ If git is not in the Path system environment variable, the gradle build will not
 
 ### Build for deployment
 Open a shell (preferrably a git bash or a cygwin bash), cd to the git workspace's root folder and issue "./configuration/buildAndUpdateProduct.sh build". This should build the software and run all the tests. If you want to avoid the tests being executed, use the -t option. If you only want to build one GWT permutation (Chrome/English), use the -b option. When inside the SAP VPN, add the -p option for proxy use. Run the build script without arguments to get usage hints.
+
+### Development Environment
+Read [[here|wiki/info/landscape/development-environment]] and importantly for [[pushing to main|https://wiki.sapsailing.com/wiki/info/landscape/development-environment.md#git-bugzilla-and-our-branches]]. 
 
 ### Steps to consider for using other GWT modules
 

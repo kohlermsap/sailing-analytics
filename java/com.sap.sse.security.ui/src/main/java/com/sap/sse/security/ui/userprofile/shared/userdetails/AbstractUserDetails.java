@@ -113,8 +113,7 @@ public class AbstractUserDetails extends Composite implements UserDetailsView {
     
     @UiHandler("saveChangesUi")
     public void onSaveChangesClicked(ClickEvent event) {
-        presenter.handleSaveChangesRequest(nameUi.getValue(), companyUi.getValue(), localeUi.getValue(),
-                defaultTenantUi.getSelectedValue());
+        presenter.handleSaveChangesRequest(nameUi.getValue(), companyUi.getValue(), localeUi.getValue(), defaultTenantUi.getSelectedValue());
     }
     
     @UiHandler("changeEmailUi")

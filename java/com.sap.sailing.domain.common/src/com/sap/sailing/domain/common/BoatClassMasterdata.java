@@ -56,6 +56,7 @@ public enum BoatClassMasterdata {
     ELLIOTT_6M ("Elliott 6m", true, 6.0, 2.35, BoatHullType.MONOHULL, true, "Elliott6m"),
     EUROPE_INT ("Europe Int.", true, 3.35, 1.35, BoatHullType.MONOHULL, false, "Europe"),
     F_18 ("Formula 18", true, 6.85, 2.25, BoatHullType.CATAMARAN, true, "F18", "F-18"),
+    FAREAST28R ("Fareast 28R", true, 9.07, 2.75, BoatHullType.MONOHULL, true, "FE28R", "F28R"),
     FARR_30 ("Farr 30", true, 9.42, 3.08, BoatHullType.MONOHULL, true, "F30", "F-30", "Farr-30"),
     FARR_280 ("Farr 280", true, 8.72, 2.87, BoatHullType.MONOHULL, true, "F280", "F-280", "Farr-280"),
     FINN ("Finn", true, 4.50, 1.51, BoatHullType.MONOHULL, false),
