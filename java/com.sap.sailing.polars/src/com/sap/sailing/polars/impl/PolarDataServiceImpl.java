@@ -74,6 +74,13 @@ public class PolarDataServiceImpl extends AbstractReplicableWithObjectInputStrea
         resetState();
     }
 
+    public PolarDataServiceImpl filterToBoatClasses(Iterable<BoatClass> boatClassesToFilterTo) {
+        final PolarDataMiner filteredPolarDataMiner = polarDataMiner.filterToBoatClasses(boatClassesToFilterTo);
+        final PolarDataServiceImpl filteredService = new PolarDataServiceImpl();
+        filteredService.polarDataMiner = filteredPolarDataMiner;
+        return filteredService;
+    }
+    
     @Override
     public void resetState() {
         PolarSheetGenerationSettings settings = PolarSheetGenerationSettingsImpl.createBackendPolarSettings();

@@ -23,6 +23,7 @@ import com.sap.sailing.polars.regression.IncrementalLeastSquares;
 import com.sap.sailing.polars.regression.impl.IncrementalAnyOrderLeastSquaresImpl;
 import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Speed;
+import com.sap.sse.common.Util;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.impl.DegreeBearingImpl;
 import com.sap.sse.datamining.components.AdditionalResultDataBuilder;
@@ -32,6 +33,7 @@ import com.sap.sse.datamining.data.ClusterGroup;
 import com.sap.sse.datamining.factories.GroupKeyFactory;
 import com.sap.sse.datamining.impl.components.GroupedDataEntry;
 import com.sap.sse.datamining.shared.GroupKey;
+import com.sap.sse.datamining.shared.impl.GenericGroupKey;
 
 /**
  * Holds one speed regression per BoatClass, WindSpeed, Beat Angle Range combination and provides means for adding and
@@ -61,6 +63,49 @@ public class SpeedRegressionPerAngleClusterProcessor implements
 
     public SpeedRegressionPerAngleClusterProcessor(ClusterGroup<Bearing> angleClusterGroup) {
         this.angleClusterGroup = angleClusterGroup;
+    }
+
+    public SpeedRegressionPerAngleClusterProcessor filterToBoatClasses(Iterable<BoatClass> boatClasses) {
+        final Set<BoatClass> allowedBoatClasses = Util.asSet(boatClasses);
+        final SpeedRegressionPerAngleClusterProcessor filteredProcessor = new SpeedRegressionPerAngleClusterProcessor(angleClusterGroup);
+        synchronized (regressions) {
+            for (Map.Entry<GroupKey, IncrementalLeastSquares> entry : regressions.entrySet()) {
+                GroupKey key = entry.getKey();
+                BoatClass boatClass = extractBoatClass(key);
+                if (boatClass != null && allowedBoatClasses.contains(boatClass)) {
+                    filteredProcessor.regressions.put(key, entry.getValue());
+                }
+            }
+        }
+        synchronized (fixCountPerBoatClass) {
+            for (Map.Entry<BoatClass, Long> entry : fixCountPerBoatClass.entrySet()) {
+                if (allowedBoatClasses.contains(entry.getKey())) {
+                    filteredProcessor.fixCountPerBoatClass.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        return filteredProcessor;
+    }
+
+    private BoatClass extractBoatClass(GroupKey key) {
+        final BoatClass result;
+        if (key.hasSubKeys()) {
+            // In the compound key, BoatClass is the first dimension (index 0)
+            GroupKey boatClassKey = key.getKeys().get(0);
+            if (boatClassKey instanceof GenericGroupKey) {
+                Object value = ((GenericGroupKey<?>) boatClassKey).getValue();
+                if (value instanceof BoatClass) {
+                    result = (BoatClass) value;
+                } else {
+                    result = null;
+                }
+            } else {
+                result = null;
+            }
+        } else {
+            result = null;
+        }
+        return result;
     }
 
     @Override

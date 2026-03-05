@@ -136,6 +136,13 @@ public class PolarDataMiner {
             throw new RuntimeException(e);
         }
     }
+    
+    public PolarDataMiner filterToBoatClasses(Iterable<BoatClass> boatClasses) {
+        return new PolarDataMiner(backendPolarSheetGenerationSettings,
+                                  cubicRegressionPerCourseProcessor.filterToBoatClasses(boatClasses),
+                                  speedRegressionPerAngleClusterProcessor.filterToBoatClasses(boatClasses),
+                                  angleClusterGroup);
+    }
 
     private void setUpWorkflow() throws ClassCastException, NoSuchMethodException, SecurityException {
         Collection<Processor<GroupedDataEntry<GPSFixMovingWithPolarContext>, ?>> regressionPerCourseGrouperResultReceivers = new ArrayList<Processor<GroupedDataEntry<GPSFixMovingWithPolarContext>, ?>>();
