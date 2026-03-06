@@ -145,10 +145,20 @@ public class LeagueEventHierarchyOwnershipChangeTest {
     }
 
     @Test
-    public void testCyclicLeagueHierarchyOwnershipChangeStartingAtEventTerminates() {
+    public void testCyclicLeagueHierarchyOwnershipChangeStartingAtEventTerminatesWithNewCourseArea() {
+        final CourseArea otherCourseArea = new CourseAreaImpl("Other", UUID.randomUUID(), /* centerPosition */ null, /* radius */ null);
+        testCyclicLeagueHierarchyOwnershipChangeStartingAtEventTerminates(otherCourseArea);
+    }
+    
+    @Test
+    public void testCyclicLeagueHierarchyOwnershipChangeStartingAtEventTerminatesWithSharedCourseArea() {
+        testCyclicLeagueHierarchyOwnershipChangeStartingAtEventTerminates(defaultCourseArea);
+    }
+    
+    private void testCyclicLeagueHierarchyOwnershipChangeStartingAtEventTerminates(CourseArea courseAreaForSharedLeaderboard) {
         final Event otherEvent = service.addEvent("Test2", "Test Event 2", TimePoint.now(), TimePoint.now().plus(Duration.ONE_WEEK), "There",
                 /* isPublic */ true, UUID.randomUUID());
-        otherEvent.getVenue().addCourseArea(defaultCourseArea);
+        otherEvent.getVenue().addCourseArea(courseAreaForSharedLeaderboard);
         try {
             final LeaderboardGroup sharedLeaderboardGroup = new LeaderboardGroupImpl("LG-shared", "LGDesc-shared",
                     "The shared LG", /* displayGroupsInReverseOrder */ false, Collections.emptyList());
