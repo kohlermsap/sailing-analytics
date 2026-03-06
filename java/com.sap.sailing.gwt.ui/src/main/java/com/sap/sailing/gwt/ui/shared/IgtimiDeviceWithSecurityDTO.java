@@ -1,7 +1,7 @@
 package com.sap.sailing.gwt.ui.shared;
 
-import com.sap.sailing.domain.common.Position;
 import com.sap.sailing.domain.common.security.SecuredDomainType;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.security.shared.HasPermissions;

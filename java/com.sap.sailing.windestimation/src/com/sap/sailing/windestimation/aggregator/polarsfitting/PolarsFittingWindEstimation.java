@@ -11,9 +11,6 @@ import com.sap.sailing.domain.base.SpeedWithBearingWithConfidence;
 import com.sap.sailing.domain.base.SpeedWithConfidence;
 import com.sap.sailing.domain.base.impl.SpeedWithBearingWithConfidenceImpl;
 import com.sap.sailing.domain.base.impl.SpeedWithConfidenceImpl;
-import com.sap.sailing.domain.common.SpeedWithBearing;
-import com.sap.sailing.domain.common.impl.KnotSpeedImpl;
-import com.sap.sailing.domain.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sailing.domain.common.impl.WindImpl;
 import com.sap.sailing.domain.common.polars.NotEnoughDataHasBeenAddedException;
 import com.sap.sailing.domain.polars.PolarDataService;
@@ -23,8 +20,11 @@ import com.sap.sailing.windestimation.data.CompetitorTrackWithEstimationData;
 import com.sap.sailing.windestimation.data.ManeuverForEstimation;
 import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Speed;
+import com.sap.sse.common.SpeedWithBearing;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.impl.DegreeBearingImpl;
+import com.sap.sse.common.impl.KnotSpeedImpl;
+import com.sap.sse.common.impl.KnotSpeedWithBearingImpl;
 
 /**
  * 

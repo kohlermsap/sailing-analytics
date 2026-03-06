@@ -17,13 +17,13 @@ import java.util.TimeZone;
 
 import org.junit.jupiter.api.Test;
 
-import com.sap.sailing.domain.common.Bounds;
-import com.sap.sailing.domain.common.Position;
-import com.sap.sailing.domain.common.impl.DegreePosition;
 import com.sap.sailing.domain.tracking.WindWithConfidence;
 import com.sap.sailing.grib.GribWindField;
 import com.sap.sailing.grib.GribWindFieldFactory;
+import com.sap.sse.common.Bounds;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.TimePoint;
+import com.sap.sse.common.impl.DegreePosition;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
 
 import ucar.ma2.ArrayFloat.D2;

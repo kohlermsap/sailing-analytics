@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.sap.sailing.domain.common.impl.MeterDistance;
 import com.sap.sse.common.Distance;
+import com.sap.sse.common.impl.MeterDistance;
 
 
 public enum BoatClassMasterdata {

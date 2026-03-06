@@ -1,10 +1,10 @@
 package com.sap.sailing.windestimation.data;
 
 import com.sap.sailing.domain.base.BoatClass;
-import com.sap.sailing.domain.common.Position;
-import com.sap.sailing.domain.common.SpeedWithBearing;
 import com.sap.sailing.domain.common.Wind;
 import com.sap.sse.common.Bearing;
+import com.sap.sse.common.Position;
+import com.sap.sse.common.SpeedWithBearing;
 import com.sap.sse.common.TimePoint;
 
 public class LabeledManeuverForEstimation extends ManeuverForEstimation {

@@ -28,15 +28,11 @@ import org.junit.jupiter.api.Test;
 import com.sap.sailing.domain.base.Competitor;
 import com.sap.sailing.domain.base.DomainFactory;
 import com.sap.sailing.domain.common.NoWindException;
-import com.sap.sailing.domain.common.Position;
 import com.sap.sailing.domain.common.Wind;
 import com.sap.sailing.domain.common.WindSourceType;
-import com.sap.sailing.domain.common.impl.DegreePosition;
-import com.sap.sailing.domain.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sailing.domain.common.impl.WindImpl;
 import com.sap.sailing.domain.common.impl.WindSourceImpl;
 import com.sap.sailing.domain.common.impl.WindSourceWithAdditionalID;
-import com.sap.sailing.domain.common.scalablevalue.impl.ScalableBearing;
 import com.sap.sailing.domain.maneuverdetection.CompleteManeuverCurveWithEstimationData;
 import com.sap.sailing.domain.maneuverdetection.impl.IncrementalManeuverDetectorImpl;
 import com.sap.sailing.domain.maneuverdetection.impl.ManeuverDetectorWithEstimationDataSupportDecoratorImpl;
@@ -49,7 +45,7 @@ import com.sap.sailing.domain.tractracadapter.ReceiverType;
 import com.sap.sailing.domain.windestimation.IncrementalWindEstimation;
 import com.sap.sailing.domain.windestimation.TimePointAndPositionWithToleranceComparator;
 import com.sap.sailing.polars.impl.PolarDataServiceImpl;
-import com.sap.sailing.polars.jaxrs.client.PolarDataClient;
+import com.sap.sailing.polars.jaxrs.client.FileBasedPolarDataClient;
 import com.sap.sailing.windestimation.ManeuverBasedWindEstimationComponentImpl;
 import com.sap.sailing.windestimation.aggregator.ManeuverClassificationsAggregatorFactory;
 import com.sap.sailing.windestimation.data.CompetitorTrackWithEstimationData;
@@ -65,10 +61,14 @@ import com.sap.sailing.windestimation.windinference.MiddleCourseBasedTwdCalculat
 import com.sap.sailing.windestimation.windinference.WindTrackCalculatorImpl;
 import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Duration;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.impl.DegreeBearingImpl;
+import com.sap.sse.common.impl.DegreePosition;
+import com.sap.sse.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
+import com.sap.sse.common.scalablevalue.impl.ScalableBearing;
 import com.sap.sse.shared.util.Wait;
 import com.sap.sse.testutils.Measurement;
 import com.sap.sse.testutils.MeasurementCase;
@@ -79,7 +79,7 @@ import com.sap.sse.testutils.MeasurementXMLFile;
  * @author Vladislav Chumak (D069712)
  *
  */
-public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTracTracBasedTest {
+public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends AbstractTestWithLocal505PolarData {
     private static final Logger logger = Logger.getLogger(IncrementalMstHmmWindEstimationForTrackedRaceTest.class.getName());
 
 
@@ -131,30 +131,11 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends OnlineTra
                 new URL("file:///" + new File("resources/event_20110609_KielerWoch-505_Race_2.txt").getCanonicalPath()),
                 /* liveUri */ null, /* storedUri */ storedUri,
                 new ReceiverType[] { ReceiverType.MARKPASSINGS, ReceiverType.RACECOURSE, ReceiverType.RAWPOSITIONS, ReceiverType.MARKPOSITIONS });
-        String polarDataBearerToken = System.getProperty("polardata.source.bearertoken");
-        if (polarDataBearerToken == null) {
-            logger.info("Couldn't find polardata.source.bearertoken system property, trying environment variable POLAR_DATA_BEARER_TOKEN");
-            polarDataBearerToken = System.getenv("POLAR_DATA_BEARER_TOKEN");
-            if (polarDataBearerToken == null) {
-                logger.warning("Couldn't find POLAR_DATA_BEARER_TOKEN environment variable either, polar data service will not be available");
-            } else {
-                logger.info("Found POLAR_DATA_BEARER_TOKEN environment variable, length "+polarDataBearerToken.length()
-                           +"; polar data service will be available");
-            }
-        } else {
-            logger.info("Found polardata.source.bearertoken system property, polar data service will be available");
-        }
-        final Optional<String> polardataBearerTokenOptional = Optional.ofNullable(polarDataBearerToken);
-        if (polardataBearerTokenOptional.isPresent()) {
-            polarDataService = new PolarDataServiceImpl();
-            final com.sap.sailing.domain.tractracadapter.DomainFactory domainFactoryImpl = getDomainFactory();
-            final DomainFactory baseDomainFactory = domainFactoryImpl.getBaseDomainFactory();
-            polarDataService.registerDomainFactory(baseDomainFactory);
-            new PolarDataClient(Optional.ofNullable(System.getenv("POLAR_DATA_BASE_URL")).orElse("https://sapsailing.com"), polarDataService, polardataBearerTokenOptional)
-                .updatePolarDataRegressions();
-        } else {
-            polarDataService = new PolarDataServiceImpl();
-        }
+        polarDataService = new PolarDataServiceImpl();
+        final com.sap.sailing.domain.tractracadapter.DomainFactory domainFactoryImpl = getDomainFactory();
+        final DomainFactory baseDomainFactory = domainFactoryImpl.getBaseDomainFactory();
+        final FileBasedPolarDataClient client = new FileBasedPolarDataClient(new File("resources/polar_data"), polarDataService, baseDomainFactory);
+        client.updatePolarDataRegressions();
         getTrackedRace().setPolarDataService(polarDataService);
         final GregorianCalendar cal = new GregorianCalendar(2011, 05, 23, 13, 40);
         cal.setTimeZone(TimeZone.getTimeZone("UTC"));
