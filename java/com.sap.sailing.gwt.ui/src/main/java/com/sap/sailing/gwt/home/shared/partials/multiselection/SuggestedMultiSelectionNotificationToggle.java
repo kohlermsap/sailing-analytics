@@ -12,7 +12,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import com.sap.sailing.gwt.common.client.SharedResources;
 
-public class SuggestedMultiSelectionNotificationToggle extends Composite implements HasValue<Boolean> {
+class SuggestedMultiSelectionNotificationToggle extends Composite implements HasValue<Boolean> {
 
     private static LocalUiBinder uiBinder = GWT.create(LocalUiBinder.class);
 

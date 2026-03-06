@@ -70,25 +70,25 @@ public class UserPreferences extends Composite implements UserPreferencesView {
         }
 
         private CheckBoxTile composeFeatureAndCommunityUpdatesTile(final UserPreferencesView.Presenter presenter) {
-            final BiConsumer<Boolean, AsyncCallback<VoidResult>> onToggle = (newlyToggledValue, callback) -> {
+            final BiConsumer<Boolean, AsyncCallback<VoidResult>> onToggle = (isReceiveNowTrue, callback) -> {
                 final AsyncCallback<VoidResult> wrapCallbackWithToastNotification = new AsyncCallback<VoidResult>() {
                     @Override
                     public void onFailure(Throwable caught) {
-                        final String message = StringMessages.INSTANCE.featureAndCommunityUpdates() + ": "
-                                + StringMessages.INSTANCE.couldNotUpdateSubscription();
+                        final String message = StringMessages.INSTANCE.failedToSetStatusOfFeatureAndCommunityUpdates();
                         Notification.notify(message, NotificationType.ERROR);
                         callback.onFailure(caught);
                     }
 
                     @Override
                     public void onSuccess(VoidResult result) {
-                        final String message = StringMessages.INSTANCE.featureAndCommunityUpdates() + ": "
-                                + StringMessages.INSTANCE.subscriptionUpdatedSuccessfully();
+                        final String willRcvMsg = StringMessages.INSTANCE.youWillNowReceiveFeatureAndCommunityUpdates();
+                        final String willNotRcvMsg = StringMessages.INSTANCE.youWillNotReceiveFeatureAndCommunityUpdatesAnymore();
+                        final String message = isReceiveNowTrue ? willRcvMsg : willNotRcvMsg;
                         Notification.notify(message, NotificationType.SUCCESS);
                         callback.onSuccess(result);
                     }
                 };
-                presenter.setIsSubscribedToFeatureAndCommunityUpdates(newlyToggledValue, wrapCallbackWithToastNotification);
+                presenter.setIsSubscribedToFeatureAndCommunityUpdates(isReceiveNowTrue, wrapCallbackWithToastNotification);
             };
             return new CheckBoxTile(StringMessages.INSTANCE.featureAndCommunityUpdates(), false, onToggle);
         }
