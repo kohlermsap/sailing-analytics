@@ -2,10 +2,10 @@ package com.sap.sailing.domain.tracking;
 
 import java.io.Serializable;
 
-import com.sap.sailing.domain.common.SpeedWithBearing;
 import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Duration;
 import com.sap.sse.common.Speed;
+import com.sap.sse.common.SpeedWithBearing;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.impl.DegreeBearingImpl;
 

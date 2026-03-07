@@ -81,7 +81,7 @@ public interface DomainFactory {
     
     com.sap.sailing.domain.base.DomainFactory getBaseDomainFactory();
 
-    com.sap.sailing.domain.common.Position createPosition(IPosition position);
+    com.sap.sse.common.Position createPosition(IPosition position);
 
     com.sap.sse.common.TimePoint createTimePoint(long timestamp);
 

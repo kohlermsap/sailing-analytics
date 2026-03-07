@@ -34,8 +34,6 @@ import com.sap.sailing.domain.common.PolarSheetsData;
 import com.sap.sailing.domain.common.PolarSheetsHistogramData;
 import com.sap.sailing.domain.common.Tack;
 import com.sap.sailing.domain.common.TrackedRaceStatusEnum;
-import com.sap.sailing.domain.common.impl.KnotSpeedImpl;
-import com.sap.sailing.domain.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sailing.domain.common.impl.PolarSheetsDataImpl;
 import com.sap.sailing.domain.common.impl.PolarSheetsHistogramDataImpl;
 import com.sap.sailing.domain.common.polars.NotEnoughDataHasBeenAddedException;
@@ -48,6 +46,8 @@ import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Speed;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.impl.DegreeBearingImpl;
+import com.sap.sse.common.impl.KnotSpeedImpl;
+import com.sap.sse.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sse.datamining.components.FilterCriterion;
 import com.sap.sse.datamining.components.Processor;
 import com.sap.sse.datamining.data.ClusterGroup;
@@ -135,6 +135,13 @@ public class PolarDataMiner {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
+    }
+    
+    public PolarDataMiner filterToBoatClasses(Iterable<BoatClass> boatClasses) {
+        return new PolarDataMiner(backendPolarSheetGenerationSettings,
+                                  cubicRegressionPerCourseProcessor.filterToBoatClasses(boatClasses),
+                                  speedRegressionPerAngleClusterProcessor.filterToBoatClasses(boatClasses),
+                                  angleClusterGroup);
     }
 
     private void setUpWorkflow() throws ClassCastException, NoSuchMethodException, SecurityException {

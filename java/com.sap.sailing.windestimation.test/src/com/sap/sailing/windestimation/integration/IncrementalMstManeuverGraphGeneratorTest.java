@@ -13,30 +13,24 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
-import java.util.logging.Logger;
 
 import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.sap.sailing.domain.base.Competitor;
-import com.sap.sailing.domain.base.DomainFactory;
-import com.sap.sailing.domain.common.Position;
 import com.sap.sailing.domain.maneuverdetection.TrackTimeInfo;
 import com.sap.sailing.domain.maneuverdetection.impl.IncrementalManeuverDetectorImpl;
 import com.sap.sailing.domain.maneuverdetection.impl.ManeuverDetectorWithEstimationDataSupportDecoratorImpl;
+import com.sap.sailing.domain.polars.PolarDataService;
 import com.sap.sailing.domain.test.OnlineTracTracBasedTest;
 import com.sap.sailing.domain.tracking.CompleteManeuverCurve;
 import com.sap.sailing.domain.tracking.impl.DynamicTrackedRaceImpl;
 import com.sap.sailing.domain.tractracadapter.ReceiverType;
 import com.sap.sailing.domain.windestimation.TimePointAndPositionWithToleranceComparator;
-import com.sap.sailing.polars.ReplicablePolarService;
-import com.sap.sailing.polars.impl.PolarDataServiceImpl;
-import com.sap.sailing.polars.jaxrs.client.PolarDataClient;
 import com.sap.sailing.windestimation.aggregator.msthmm.DistanceAndDurationAwareWindTransitionProbabilitiesCalculator;
 import com.sap.sailing.windestimation.aggregator.msthmm.MstGraphLevel;
 import com.sap.sailing.windestimation.aggregator.msthmm.MstManeuverGraphGenerator.MstManeuverGraphComponents;
@@ -46,6 +40,7 @@ import com.sap.sailing.windestimation.model.classifier.maneuver.ManeuverFeatures
 import com.sap.sailing.windestimation.model.exception.ModelPersistenceException;
 import com.sap.sailing.windestimation.model.regressor.twdtransition.GaussianBasedTwdTransitionDistributionCache;
 import com.sap.sailing.windestimation.model.store.ClassPathReadOnlyModelStoreImpl;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
@@ -55,9 +50,7 @@ import com.sap.sse.common.impl.MillisecondsTimePoint;
  * @author Vladislav Chumak (D069712)
  *
  */
-public class IncrementalMstManeuverGraphGeneratorTest extends OnlineTracTracBasedTest {
-    private static final Logger logger = Logger.getLogger(IncrementalMstManeuverGraphGeneratorTest.class.getName());
-
+public class IncrementalMstManeuverGraphGeneratorTest extends AbstractTestWithLocal505PolarData {
     protected final SimpleDateFormat dateFormat;
     private ClassPathReadOnlyModelStoreImpl modelStore;
 
@@ -94,32 +87,7 @@ public class IncrementalMstManeuverGraphGeneratorTest extends OnlineTracTracBase
         assertTrue(gaussianBasedTwdTransitionDistributionCache.isReady() && maneuverClassifiersCache.isReady(),
                 "Wind estimation models are empty");
         final DynamicTrackedRaceImpl trackedRace = getTrackedRace();
-        final ReplicablePolarService polarDataService;
-        String polarDataBearerToken = System.getProperty("polardata.source.bearertoken");
-        if (polarDataBearerToken == null) {
-            logger.info("Couldn't find polardata.source.bearertoken system property, trying environment variable POLAR_DATA_BEARER_TOKEN");
-            polarDataBearerToken = System.getenv("POLAR_DATA_BEARER_TOKEN");
-            if (polarDataBearerToken == null) {
-                logger.warning("Couldn't find POLAR_DATA_BEARER_TOKEN environment variable either, polar data service will not be available");
-            } else {
-                logger.info("Found POLAR_DATA_BEARER_TOKEN environment variable, length "+polarDataBearerToken.length()
-                    +"; polar data service will be available");
-            }
-        } else {
-            logger.info("Found polardata.source.bearertoken system property, polar data service will be available");
-        }
-        final Optional<String> polardataBearerTokenOptional = Optional.ofNullable(polarDataBearerToken);
-        if (polardataBearerTokenOptional.isPresent()) {
-            polarDataService = new PolarDataServiceImpl();
-            final com.sap.sailing.domain.tractracadapter.DomainFactory domainFactoryImpl = getDomainFactory();
-            final DomainFactory baseDomainFactory = domainFactoryImpl.getBaseDomainFactory();
-            polarDataService.registerDomainFactory(baseDomainFactory);
-            new PolarDataClient(
-                    Optional.ofNullable(System.getenv("POLAR_DATA_BASE_URL")).orElse("https://sapsailing.com"),
-                    polarDataService, polardataBearerTokenOptional).updatePolarDataRegressions();
-        } else {
-            polarDataService = null;
-        }
+        final PolarDataService polarDataService = createPolarDataService();
         final IncrementalMstManeuverGraphGenerator generator = new IncrementalMstManeuverGraphGenerator(
                 new CompleteManeuverCurveToManeuverForEstimationConverter(trackedRace, polarDataService),
                 transitionProbabilitiesCalculator, maneuverClassifiersCache);
