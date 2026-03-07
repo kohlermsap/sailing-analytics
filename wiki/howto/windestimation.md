@@ -1,5 +1,7 @@
 # Training of internal Wind Estimation models
 
+[[_TOC_]]
+
 This document describes the generation process of Machine Learning (ML) models which are used internally by the maneuver-based wind estimation. It is highly recommended to process this howto step by step considering the order of sections. At the end of this howto, you will generate a file containing the representation of internal models used by ``com.sap.sailing.windestimation`` bundle. You can use this file to update the wind estimation models of a running server instance. If you are interested in a more advanced tutorial which requires all the execution steps contained in ``SimpleModelsTrainingPart...`` classes to be executed manually, then you might be interested in [Advanced Guide for training of internal Wind Estimation models](./windestimationAdvanced.md)
 
 ## Prerequisites
