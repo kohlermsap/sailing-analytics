@@ -83,7 +83,7 @@ public class IncrementalMstHmmWindEstimationForTrackedRaceTest extends AbstractT
     private static final Logger logger = Logger.getLogger(IncrementalMstHmmWindEstimationForTrackedRaceTest.class.getName());
 
 
-    private static final double PERCENT_QUANTILE = 0.8;
+    private static final double PERCENT_QUANTILE = 0.75;
 
     /**
      * These model file names must match up with the boundaries defined in the {@link DistanceValueRange} and {@link DurationValueRange}
