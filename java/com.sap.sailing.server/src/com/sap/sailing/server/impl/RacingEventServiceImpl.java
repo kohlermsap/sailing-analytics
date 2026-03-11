@@ -2726,9 +2726,12 @@ Replicator {
         final RegattaAndRaceIdentifier trackedRaceIdentifier = trackedRace.getRaceIdentifier();
         final List<Triple<Leaderboard, RaceColumn, Fleet>> trackedRaceLink = getColumnsWithRaceLogForTrackedRace(trackedRaceIdentifier);
         for (final Triple<Leaderboard, RaceColumn, Fleet> leaderboardRaceColumnAndFleet : trackedRaceLink) {
-            leaderboardRaceColumnAndFleet.getB().setTrackedRace(leaderboardRaceColumnAndFleet.getC(), trackedRace);
-            replicate(new ConnectTrackedRaceToLeaderboardColumn(leaderboardRaceColumnAndFleet.getA().getName(), leaderboardRaceColumnAndFleet.getB().getName(),
-                    leaderboardRaceColumnAndFleet.getC().getName(), trackedRaceIdentifier));
+            if (leaderboardRaceColumnAndFleet.getB().getTrackedRace(leaderboardRaceColumnAndFleet.getC()) == null) {
+                // attach the tracked race only if not yet attached
+                leaderboardRaceColumnAndFleet.getB().setTrackedRace(leaderboardRaceColumnAndFleet.getC(), trackedRace);
+                replicate(new ConnectTrackedRaceToLeaderboardColumn(leaderboardRaceColumnAndFleet.getA().getName(), leaderboardRaceColumnAndFleet.getB().getName(),
+                        leaderboardRaceColumnAndFleet.getC().getName(), trackedRaceIdentifier));
+            }
         }
         return trackedRaceLink;
     }
@@ -2740,8 +2743,7 @@ Replicator {
         for (Leaderboard leaderboard : getLeaderboards().values()) {
             for (RaceColumn column : leaderboard.getRaceColumns()) {
                 for (Fleet fleet : column.getFleets()) {
-                    if (trackedRaceIdentifier.equals(column.getRaceIdentifier(fleet))
-                            && column.getTrackedRace(fleet) == null) {
+                    if (trackedRaceIdentifier.equals(column.getRaceIdentifier(fleet))) {
                         trackedRaceLink.add(new Triple<>(leaderboard, column, fleet));
                     }
                 }
