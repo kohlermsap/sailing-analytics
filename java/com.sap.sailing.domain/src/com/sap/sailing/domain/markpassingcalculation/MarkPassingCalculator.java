@@ -182,7 +182,7 @@ public class MarkPassingCalculator {
     }
 
     private Thread createAndStartListenerThread() {
-        final Thread result = new Thread(listen, "MarkPassingCalculator for race " + race.getRace().getName());
+        final Thread result = new Thread(listen, "MarkPassingCalculator for race " + race.getRaceIdentifier());
         result.setDaemon(true);
         result.start();
         return result;
