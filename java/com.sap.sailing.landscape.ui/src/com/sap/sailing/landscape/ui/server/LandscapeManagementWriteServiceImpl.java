@@ -707,7 +707,7 @@ public class LandscapeManagementWriteServiceImpl extends ResultCachingProxiedRem
                 Landscape.WAIT_FOR_PROCESS_TIMEOUT, Optional.ofNullable(optionalKeyName),
                 privateKeyEncryptionPassphrase);
         final URL requestURL = new URL(getThreadLocalRequest().getRequestURL().toString());
-        final URL continuationBaseURL = new URL(requestURL.getProtocol(), requestURL.getHost(), requestURL.getPort(), "/");
+        final URL continuationBaseURL = new URL(requestURL.getProtocol(), requestURL.getHost(), requestURL.getPort(), "");
         getLandscapeService()
                 .createArchiveReplicaSet(regionId, replicaSetName, instanceType, releaseNameOrNullForLatestMaster,
                         databaseConfiguration, optionalKeyName, privateKeyEncryptionPassphrase,
