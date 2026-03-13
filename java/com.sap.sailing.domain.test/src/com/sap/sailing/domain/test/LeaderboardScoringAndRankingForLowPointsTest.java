@@ -179,7 +179,7 @@ public class LeaderboardScoringAndRankingForLowPointsTest extends LeaderboardSco
         final List<Fleet> fleets = new ArrayList<>();
         final Fleet defaultFleet = new FleetImpl("Default");
         fleets.add(defaultFleet);
-        final List<String> raceColumnNames = Arrays.asList("R1", "R2", "R3");
+        final List<String> raceColumnNames = Arrays.asList("R1", "R2", "R3", "R4", "R5");
         Series openingSeries = new SeriesImpl("Opening", /* isMedal */ false,
                 /* isFleetsCanRunInParallel */ true, fleets, raceColumnNames,
                 /* trackedRegattaRegistry */ null);
@@ -195,14 +195,16 @@ public class LeaderboardScoringAndRankingForLowPointsTest extends LeaderboardSco
         series.add(medalSeries);
         final Regatta regatta = setupRegatta(/* use first two wins */ false); // regular LowPoint
         final List<Competitor> competitors = createCompetitors(20);
-        openingSeries.getRaceColumnByName("R1").setTrackedRace(defaultFleet, new MockedTrackedRaceWithStartTimeAndRanks(now, competitors));
-        openingSeries.getRaceColumnByName("R2").setTrackedRace(defaultFleet, new MockedTrackedRaceWithStartTimeAndRanks(now, competitors));
-        openingSeries.getRaceColumnByName("R3").setTrackedRace(defaultFleet, new MockedTrackedRaceWithStartTimeAndRanks(now, competitors));
+        for (final RaceColumn openingSeriesRaceColumn : openingSeries.getRaceColumns()) {
+            openingSeriesRaceColumn.setTrackedRace(defaultFleet, new MockedTrackedRaceWithStartTimeAndRanks(now, competitors));
+        }
         final Leaderboard leaderboard = createLeaderboard(regatta, /* discarding thresholds */ new int[0]);
         final RaceColumn carryColumn = leaderboard.getRaceColumnByName("Carry");
+        final Competitor thirdAfterOpeningSeries = Util.get(leaderboard.getCompetitorsFromBestToWorst(now), 2);
+        final double scoreOfThirdAfterOpeningSeries = leaderboard.getNetPoints(thirdAfterOpeningSeries, now);
         for (int medalRaceCompetitorIndex=0; medalRaceCompetitorIndex<10; medalRaceCompetitorIndex++) {
-            final double regularScore = 3*(medalRaceCompetitorIndex+1); // 3, 6, 9, ...
-            leaderboard.getScoreCorrection().correctScore(competitors.get(medalRaceCompetitorIndex), carryColumn, Math.min(regularScore, 3*3+18));
+            final double regularScore = leaderboard.getNetPoints(competitors.get(medalRaceCompetitorIndex), now);
+            leaderboard.getScoreCorrection().correctScore(competitors.get(medalRaceCompetitorIndex), carryColumn, Math.min(regularScore, scoreOfThirdAfterOpeningSeries+18));
         }
         final RaceColumn f1 = leaderboard.getRaceColumnByName("F1");
         final RaceColumn f2 = leaderboard.getRaceColumnByName("F2");
@@ -212,10 +214,10 @@ public class LeaderboardScoringAndRankingForLowPointsTest extends LeaderboardSco
         // construct a tie between C1 and C2 (index 0 and 1, respectively); the tie is expected to be broken
         // in favor of C2 because C2 must have performed better in the medal races F1/F2 due to the worse
         // carried score
-        assertEquals(3.0, leaderboard.getNetPoints(competitors.get(0), carryColumn, now), EPSILON);
+        assertEquals(raceColumnNames.size(), leaderboard.getNetPoints(competitors.get(0), carryColumn, now), EPSILON);
         leaderboard.getScoreCorrection().correctScore(competitors.get(0), f1, 5.0);
         leaderboard.getScoreCorrection().correctScore(competitors.get(0), f2, 3.0); // medal series: 3 (Carry) + 5 + 3 = 11
-        assertEquals(6.0, leaderboard.getNetPoints(competitors.get(1), carryColumn, now), EPSILON);
+        assertEquals(2*raceColumnNames.size(), leaderboard.getNetPoints(competitors.get(1), carryColumn, now), EPSILON);
         leaderboard.getScoreCorrection().correctScore(competitors.get(1), f1, 1.0);
         leaderboard.getScoreCorrection().correctScore(competitors.get(1), f2, 4.0); // medal series: 6 (Carry) + 1 + 4 = 11
         // construct a tie between C9 and C10 (index 8 and 9, respectively); the tie is expected to be broken
@@ -224,25 +226,36 @@ public class LeaderboardScoringAndRankingForLowPointsTest extends LeaderboardSco
         // best score.
         assertEquals(leaderboard.getNetPoints(competitors.get(8), carryColumn, now), leaderboard.getNetPoints(competitors.get(9), carryColumn, now), EPSILON);
         leaderboard.getScoreCorrection().correctScore(competitors.get(8), f1, 6.0);
-        leaderboard.getScoreCorrection().correctScore(competitors.get(8), f1, 8.0);
+        leaderboard.getScoreCorrection().correctScore(competitors.get(8), f2, 8.0);
         leaderboard.getScoreCorrection().correctScore(competitors.get(9), f1, 7.0);
-        leaderboard.getScoreCorrection().correctScore(competitors.get(9), f1, 7.0);
-        // construct scores for the remaining competitors C3..C8
+        leaderboard.getScoreCorrection().correctScore(competitors.get(9), f2, 7.0);
+        // construct a tie between C7 and C8 (index 6 and 7, respectively); the tie is based on
+        // equal carried points and equal medal series points throughout (both DNF in F1 and F2),
+        // but C7 is expected to be ranked better because of the better rank in the opening series,
+        // only it got "squashed" to the same reduced points as those of C8, but the tie break would
+        // have to go by opening series rank as a last resort:
+        assertEquals(leaderboard.getNetPoints(competitors.get(6), carryColumn, now), leaderboard.getNetPoints(competitors.get(7), carryColumn, now), EPSILON);
+        leaderboard.getScoreCorrection().correctScore(competitors.get(6), f1, 11.0);
+        leaderboard.getScoreCorrection().setMaxPointsReason(competitors.get(6), f1, MaxPointsReason.DNF);
+        leaderboard.getScoreCorrection().correctScore(competitors.get(6), f2, 11.0);
+        leaderboard.getScoreCorrection().setMaxPointsReason(competitors.get(6), f2, MaxPointsReason.DNF);
+        leaderboard.getScoreCorrection().correctScore(competitors.get(7), f1, 11.0);
+        leaderboard.getScoreCorrection().setMaxPointsReason(competitors.get(7), f1, MaxPointsReason.DNF);
+        leaderboard.getScoreCorrection().correctScore(competitors.get(7), f2, 11.0);
+        leaderboard.getScoreCorrection().setMaxPointsReason(competitors.get(7), f2, MaxPointsReason.DNF);
+        // construct scores for the remaining competitors C3..C6
         leaderboard.getScoreCorrection().correctScore(competitors.get(2), f1, 2.0);
         leaderboard.getScoreCorrection().correctScore(competitors.get(3), f1, 3.0);
         leaderboard.getScoreCorrection().correctScore(competitors.get(4), f1, 4.0);
         leaderboard.getScoreCorrection().correctScore(competitors.get(5), f1, 8.0);
-        leaderboard.getScoreCorrection().correctScore(competitors.get(6), f1, 9.0);
-        leaderboard.getScoreCorrection().correctScore(competitors.get(7), f1, 10.0);
         leaderboard.getScoreCorrection().correctScore(competitors.get(2), f2, 1.0);
         leaderboard.getScoreCorrection().correctScore(competitors.get(3), f2, 2.0);
         leaderboard.getScoreCorrection().correctScore(competitors.get(4), f2, 5.0);
         leaderboard.getScoreCorrection().correctScore(competitors.get(5), f2, 6.0);
-        leaderboard.getScoreCorrection().correctScore(competitors.get(6), f2, 9.0);
-        leaderboard.getScoreCorrection().correctScore(competitors.get(7), f2, 10.0);
         final Iterable<Competitor> ranking = leaderboard.getCompetitorsFromBestToWorst(now);
-        assertTrue(Util.indexOf(ranking, competitors.get(1)) < Util.indexOf(ranking, competitors.get(0)));
+        assertTrue(Util.indexOf(ranking, competitors.get(6)) < Util.indexOf(ranking, competitors.get(7)));
         assertTrue(Util.indexOf(ranking, competitors.get(8)) < Util.indexOf(ranking, competitors.get(9)));
+        assertTrue(Util.indexOf(ranking, competitors.get(1)) < Util.indexOf(ranking, competitors.get(0)));
     }
 
     @Test
