@@ -21,6 +21,13 @@
             <li>The polar data export service now allows clients to filter the result down to one or
                 more boat classes. See <a href="/polars/webservices/api/polar_data.html">https://sapsailing.com/polars/webservices/api/polar_data.html</a>
                 for more details.</li>
+            <li>For standard Low Point scoring (other than those scoring "wins" in the medal series), if
+                there are more than one medal races, there now is standard A8 tie breaking based on those multiple
+                medal races in case two competitors are equal on points and scored equal points in all
+                scoring medal races (other than carry-forward columns in the medal series). If that does
+                not break the tie (meaning the two competitors scored equal total points and equal medal
+                race score sums), tie breaking resorts to the regular A8 scheme which will break the
+                tie based on the scores of all races.</li>
          </ul>
          <h5 class="articleSubheadline">December 2025</h5>
          <ul class="bulletList">
