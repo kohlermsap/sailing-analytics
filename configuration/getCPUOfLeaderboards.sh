@@ -15,7 +15,15 @@ JSON_OUTPUT='['`curl -L "${BASE_URL}/sailingserver/api/v1/leaderboards" 2>/dev/n
   else
     FIRST=0
   fi
-  LEADERBOARD_CPU_JSON=$( curl -L -H 'Authorization: Bearer '${BEARER_TOKEN} "${url}" 2>/dev/null )
-  echo -n "{\"leaderboard\": \"${lb}\", \"cpu\": ${LEADERBOARD_CPU_JSON}}"
+  if [ -z "${BEARER_TOKEN}" ]; then
+    LEADERBOARD_CPU_JSON=$( curl -L "${url}" 2>/dev/null )
+  else
+    LEADERBOARD_CPU_JSON=$( curl -L -H 'Authorization: Bearer '${BEARER_TOKEN} "${url}" 2>/dev/null )
+  fi
+  if ! echo "${LEADERBOARD_CPU_JSON}" | grep -q "Subject does not have permission \[LEADERBOARD:UPDATE"; then
+    echo -n "{\"leaderboard\": \"${lb}\", \"cpu\": ${LEADERBOARD_CPU_JSON}}"
+  else
+    FIRST=1
+  fi
 done`']'
 echo "${JSON_OUTPUT}"
