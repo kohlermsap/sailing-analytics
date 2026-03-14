@@ -2,7 +2,7 @@ require 'gollum/app'
 require 'digest/sha1'
 require 'logger'
 require 'rest-client'
-
+require 'base64'
 
 class App < Precious::App
   use Rack::Session::Pool, :cookie_only => false
@@ -25,6 +25,24 @@ class App < Precious::App
   end
 
   get '/logout' do
+    if session[:access_token]     
+        uri = URI::HTTPS.build(
+            host: 'api.github.com',
+            path: "/applications/#{CLIENT_ID}/token",
+        )
+        basicAuth = Base64.strict_encode64("#{CLIENT_ID}:#{CLIENT_SECRET}")
+        RestClient::Request.execute(
+        method: :delete,
+        url: uri.to_s(), 
+        payload: {  
+            :access_token => session[:access_token]
+        },
+        headers: {
+            :Authorization => "Basic #{basicAuth}",
+            :accept => "application/vnd.github.v3+json"
+        })
+
+    end
     session.clear()
     'logged out'
   end
@@ -74,8 +92,7 @@ class App < Precious::App
     redirect "/"
   end
 
-  helpers do
-    
+  helpers do 
     def public_path?(path)
         if path == "/" 
           return true
@@ -87,8 +104,8 @@ class App < Precious::App
     end
     
     def auth_path?(path)
-        auth_paths = [%r{\A/gollum/(edit|create|rename|preview)/.*\z}, %r{\A/gollum/overview}]  
-      auth_paths.any? {|pattern| pattern.match(path)}
+        auth_paths = [%r{\A/gollum/(edit|create|rename)/.*\z}, %r{\A/gollum/(overview|preview)}]  
+        auth_paths.any? {|pattern| pattern.match(path)}
     end
 
     def login_path?(path)
@@ -117,8 +134,6 @@ class App < Precious::App
         return false unless response
         result = JSON.parse(response)
         result.dig('permissions', 'push') == true
-    rescue RestClient::ExceptionWithResponse
-        false
     end
     
     def fetch_and_set_user_email()
