@@ -63,18 +63,8 @@ class App < Precious::App
     scopes = result['scope'].split(',')
     if scopes.include?('user:email') && scopes.include?('public_repo') && result['access_token']
         session[:access_token] = result['access_token']
-        emails =  JSON.parse(github_api_get('/user/emails'))
-        if emails[0] && emails[0]['email']
-            session[:email] = emails[0]['email']
-            LOGGER.debug("email is #{session[:email]}")
-        end
-
-        user_details = JSON.parse(github_api_get('/user'))
-        if user_details['login'] && user_details['id']
-            session[:user_id] = user_details['id']
-            session[:name] = user_details['login']
-            LOGGER.debug("user #{session[:email]} logged in")
-        end
+        fetch_and_set_user_email()
+        fetch_and_set_user_name_and_id()
     end
     
     if session[:prev] 
@@ -130,6 +120,28 @@ class App < Precious::App
     rescue RestClient::ExceptionWithResponse
         false
     end
+    
+    def fetch_and_set_user_email()
+        response = github_api_get('/user/emails')
+        return unless response
+        emails =  JSON.parse(response)
+        if emails[0] && emails[0]['email']
+            session[:email] = emails[0]['email']
+            LOGGER.debug("email is #{session[:email]}")
+        end
+    end
+    
+    def fetch_and_set_user_name_and_id()
+        response = github_api_get('/user')
+        return unless response
+        user_details = JSON.parse(response)
+        if user_details['login'] && user_details['id']
+            session[:user_id] = user_details['id']
+            session[:name] = user_details['login']
+            LOGGER.debug("user #{session[:email]} logged in")
+        end
+    end
+
     def github_api_get(path) 
         uri = URI::HTTPS.build(
         host: 'api.github.com',
