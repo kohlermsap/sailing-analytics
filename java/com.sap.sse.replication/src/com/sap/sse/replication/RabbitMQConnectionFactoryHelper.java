@@ -13,7 +13,7 @@ public class RabbitMQConnectionFactoryHelper {
         connectionFactory.setAutomaticRecoveryEnabled(true);
         connectionFactory.setTopologyRecoveryEnabled(true);
         connectionFactory.setNetworkRecoveryInterval(10000);
-        connectionFactory.setRequestedHeartbeat(0);
+        connectionFactory.setRequestedHeartbeat(24*3600); // no heartbeat in 24h allows for dropping connection
         return connectionFactory;
     }
 }
