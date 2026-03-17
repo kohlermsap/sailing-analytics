@@ -26,5 +26,4 @@ url="${BASE_URL}/sailingserver/api/v1/leaderboards/$( echo -n "${lb}" | sed -e '
     FIRST=1
   fi
 done`']'
-#echo "${JSON_OUTPUT}" | jq -C 'sort_by(.cpu.totals.cpuTotalMillis) | reverse' | less -R
-echo "${JSON_OUTPUT}"
+echo "${JSON_OUTPUT}" | jq -C 'sort_by(.cpu.totals.cpuTotalMillis) | reverse' | less -R
