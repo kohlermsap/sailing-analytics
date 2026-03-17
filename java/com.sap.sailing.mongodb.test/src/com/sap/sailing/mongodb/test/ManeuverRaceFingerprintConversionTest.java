@@ -1,6 +1,7 @@
 package com.sap.sailing.mongodb.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.MalformedURLException;
@@ -27,9 +28,11 @@ import com.sap.sailing.domain.persistence.PersistenceFactory;
 import com.sap.sailing.domain.persistence.impl.MongoObjectFactoryImpl;
 import com.sap.sailing.domain.test.OnlineTracTracBasedTest;
 import com.sap.sailing.domain.tracking.Maneuver;
+import com.sap.sailing.domain.tracking.ManeuverCurveBoundaries;
 import com.sap.sailing.domain.tracking.ManeuverLoss;
 import com.sap.sailing.domain.tracking.impl.DynamicTrackedRaceImpl;
 import com.sap.sailing.domain.tractracadapter.ReceiverType;
+import com.sap.sse.common.SpeedWithBearing;
 import com.sap.sse.mongodb.MongoDBConfiguration;
 
 public class ManeuverRaceFingerprintConversionTest extends OnlineTracTracBasedTest {
@@ -85,11 +88,26 @@ public class ManeuverRaceFingerprintConversionTest extends OnlineTracTracBasedTe
             final Iterator<Maneuver> maneuverIter = maneuvers.get(c).iterator();
             for (final Maneuver m : maneuversLoaded.get(c)) {
                 final Maneuver maneuverDetected = maneuverIter.next();
+                assertSame(maneuverDetected.getClass(), m.getClass());
                 assertEqualManeuverLoss(maneuverDetected.getManeuverLoss(), m.getManeuverLoss());
                 assertEquals(maneuverDetected.getAvgTurningRateInDegreesPerSecond(), m.getAvgTurningRateInDegreesPerSecond(), 0.000001);
                 assertEquals(maneuverDetected.getDirectionChangeInDegrees(), m.getDirectionChangeInDegrees());
+                assertEqualsManeuverCurveBoundaries(maneuverDetected.getManeuverBoundaries(), m.getManeuverBoundaries());
+                assertEqualsManeuverCurveBoundaries(maneuverDetected.getManeuverCurveWithStableSpeedAndCourseBoundaries(), m.getManeuverCurveWithStableSpeedAndCourseBoundaries());
             }
         }
+    }
+
+    private void assertEqualsManeuverCurveBoundaries(ManeuverCurveBoundaries maneuverBoundaries1, ManeuverCurveBoundaries maneuverBoundaries2) {
+        assertEquals(maneuverBoundaries1.getDirectionChangeInDegrees(), maneuverBoundaries2.getDirectionChangeInDegrees(), 0.000001);
+        assertEquals(maneuverBoundaries1.getDuration().asSeconds(), maneuverBoundaries2.getDuration().asSeconds(), 0.000001);
+        assertEquals(maneuverBoundaries1.getHighestSpeed().getKnots(), maneuverBoundaries2.getHighestSpeed().getKnots(), 0.000001);
+        assertEquals(maneuverBoundaries1.getLowestSpeed().getKnots(), maneuverBoundaries2.getLowestSpeed().getKnots(), 0.000001);
+        assertEquals(maneuverBoundaries1.getMiddleCourse().getDegrees(), maneuverBoundaries2.getMiddleCourse().getDegrees(), 0.000001);
+        assertEqualSpeeds(maneuverBoundaries1.getSpeedWithBearingAfter(), maneuverBoundaries2.getSpeedWithBearingAfter());
+        assertEqualSpeeds(maneuverBoundaries1.getSpeedWithBearingBefore(), maneuverBoundaries2.getSpeedWithBearingBefore());
+        assertEquals(maneuverBoundaries1.getTimePointAfter(), maneuverBoundaries2.getTimePointAfter());
+        assertEquals(maneuverBoundaries1.getTimePointBefore(), maneuverBoundaries2.getTimePointBefore());
     }
 
     private void assertEqualManeuverLoss(ManeuverLoss maneuverLoss1, ManeuverLoss maneuverLoss2) {
@@ -104,8 +122,12 @@ public class ManeuverRaceFingerprintConversionTest extends OnlineTracTracBasedTe
             assertEquals(maneuverLoss1.getMiddleManeuverAngle().getDegrees(), maneuverLoss2.getMiddleManeuverAngle().getDegrees(), 0.000001);
             assertEquals(maneuverLoss1.getProjectedDistanceLost().getMeters(), maneuverLoss2.getProjectedDistanceLost().getMeters(), 0.000001);
             assertEquals(maneuverLoss1.getRatioBetweenDistanceSailedWithAndWithoutManeuver(), maneuverLoss2.getRatioBetweenDistanceSailedWithAndWithoutManeuver(), 0.000001);
-            assertEquals(maneuverLoss1.getSpeedWithBearingBefore().getKnots(), maneuverLoss2.getSpeedWithBearingBefore().getKnots(), 0.000001);
-            assertEquals(maneuverLoss1.getSpeedWithBearingBefore().getBearing().getDegrees(), maneuverLoss2.getSpeedWithBearingBefore().getBearing().getDegrees(), 0.000001);
+            assertEqualSpeeds(maneuverLoss1.getSpeedWithBearingBefore(), maneuverLoss2.getSpeedWithBearingBefore());
         }
+    }
+
+    private void assertEqualSpeeds(SpeedWithBearing speedWithBearing1, SpeedWithBearing speedWithBearing2) {
+        assertEquals(speedWithBearing1.getKnots(), speedWithBearing2.getKnots(), 0.000001);
+        assertEquals(speedWithBearing1.getBearing().getDegrees(), speedWithBearing2.getBearing().getDegrees(), 0.000001);
     }
 }

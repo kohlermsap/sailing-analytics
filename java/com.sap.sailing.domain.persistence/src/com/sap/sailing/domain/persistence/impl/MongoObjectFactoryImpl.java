@@ -2090,10 +2090,10 @@ public class MongoObjectFactoryImpl implements MongoObjectFactory {
         d.put(FieldNames.MANEUVER_SPEED_WITH_BEARING_BEFORE_DEGREES.name(), f.getSpeedWithBearingBefore().getBearing().getDegrees());
         d.put(FieldNames.MANEUVER_SPEED_WITH_BEARING_BEFORE_SPEED.name(), f.getSpeedWithBearingBefore().getKnots());
         d.put(FieldNames.MANEUVER_SPEED_WITH_BEARING_AFTER_DEGREES.name(), f.getSpeedWithBearingAfter().getBearing().getDegrees());
-        d.put(FieldNames.MANEUVER_SPEED_WITH_BEARING_AFTER_SPEED.name(), f.getSpeedWithBearingAfter().getKnots());
+        d.put(FieldNames.MANEUVER_SPEED_WITH_BEARING_AFTER_SPEED_IN_KNOTS.name(), f.getSpeedWithBearingAfter().getKnots());
         d.put(FieldNames.MANEUVER_DIRECTION_CHANGE_IN_DEGREES.name(), f.getDirectionChangeInDegrees());
-        d.put(FieldNames.MANEUVER_LOWEST_SPEED.name(), f.getLowestSpeed().getKnots());
-        d.put(FieldNames.MANEUVER_HIGHEST_SPEED.name(), f.getHighestSpeed().getKnots());
+        d.put(FieldNames.MANEUVER_LOWEST_SPEED_IN_KNOTS.name(), f.getLowestSpeed().getKnots());
+        d.put(FieldNames.MANEUVER_HIGHEST_SPEED_IN_KNOTS.name(), f.getHighestSpeed().getKnots());
         return d;
     }
 

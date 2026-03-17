@@ -3410,14 +3410,14 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
         final Bearing bearingBefore = new DegreeBearingImpl(speedWithBearingBeforeDegrees);
         final SpeedWithBearing speedWithBearingBefore = new KnotSpeedWithBearingImpl(speedWithBearingBeforeSpeed, bearingBefore);
         final Double speedWithBearingAfterDegrees = document.getDouble(FieldNames.MANEUVER_SPEED_WITH_BEARING_AFTER_DEGREES.name());
-        final Double speedWithBearingAfterSpeed = document.getDouble(FieldNames.MANEUVER_SPEED_WITH_BEARING_AFTER_SPEED.name());
-        final Bearing bearingAfter = new DegreeBearingImpl(speedWithBearingAfterSpeed);
-        final SpeedWithBearing speedWithBearingAfter = new KnotSpeedWithBearingImpl(speedWithBearingAfterDegrees, bearingAfter);
+        final Double speedWithBearingAfterSpeedInKnots = document.getDouble(FieldNames.MANEUVER_SPEED_WITH_BEARING_AFTER_SPEED_IN_KNOTS.name());
+        final Bearing bearingAfter = new DegreeBearingImpl(speedWithBearingAfterDegrees);
+        final SpeedWithBearing speedWithBearingAfter = new KnotSpeedWithBearingImpl(speedWithBearingAfterSpeedInKnots, bearingAfter);
         final double directionChangeInDegrees = document.getDouble(FieldNames.MANEUVER_DIRECTION_CHANGE_IN_DEGREES.name());
-        final double lowestSpeedDouble = document.getDouble(FieldNames.MANEUVER_LOWEST_SPEED.name());
-        final Speed lowestSpeed = new KnotSpeedImpl(lowestSpeedDouble);
-        final double highestSpeedDouble = document.getDouble(FieldNames.MANEUVER_HIGHEST_SPEED.name());
-        final Speed highestSpeed = new KnotSpeedImpl(highestSpeedDouble);
+        final double lowestSpeedInKnotsDouble = document.getDouble(FieldNames.MANEUVER_LOWEST_SPEED_IN_KNOTS.name());
+        final Speed lowestSpeed = new KnotSpeedImpl(lowestSpeedInKnotsDouble);
+        final double highestSpeedInKnotsDouble = document.getDouble(FieldNames.MANEUVER_HIGHEST_SPEED_IN_KNOTS.name());
+        final Speed highestSpeed = new KnotSpeedImpl(highestSpeedInKnotsDouble);
         final ManeuverCurveBoundaries maneuverCurveBoundaries = new ManeuverCurveBoundariesImpl(timePointBefore,
                 timePointAfter, speedWithBearingBefore, speedWithBearingAfter, directionChangeInDegrees, lowestSpeed,
                 highestSpeed);
