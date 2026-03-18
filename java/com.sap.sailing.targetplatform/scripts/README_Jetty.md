@@ -50,7 +50,7 @@ This will:
    Central into a temporary staging directory.
 2. Download 4 static (non-Jetty-versioned) bundles that also ship with the
    official Eclipse Jetty p2 repository (see
-   [What's in the p2 repository](#whats-in-the-p2-repository) below).
+   [What's in the p2 repository](#what-s-in-the-p2-repository) below).
 3. Generate two Eclipse features wrapping these bundles:
    - `org.eclipse.jetty.bundles.f` — the main feature
    - `org.eclipse.jetty.bundles.f.source` — the source feature
