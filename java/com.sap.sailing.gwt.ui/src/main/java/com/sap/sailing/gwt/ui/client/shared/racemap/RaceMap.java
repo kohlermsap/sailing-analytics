@@ -2658,22 +2658,22 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
     }
 
     private DisplayMode displayHighlighted(CompetitorDTO competitorDTO) {
-        boolean competitorisSelected = competitorSelection.isSelected(competitorDTO);
+        final DisplayMode result;
+        final boolean competitorisSelected = competitorSelection.isSelected(competitorDTO);
         if (!settings.isShowOnlySelectedCompetitors()) {
             if (competitorisSelected) {
-                return DisplayMode.SELECTED;
+                result = DisplayMode.SELECTED;
             } else {
                 if (isSomeOtherCompetitorSelected()) {
-                    return DisplayMode.NOT_SELECTED;
+                    result = DisplayMode.NOT_SELECTED;
                 } else {
-                    return DisplayMode.DEFAULT;
+                    result = DisplayMode.DEFAULT;
                 }
             }
+        } else {
+            result = competitorSelection.isSelected(competitorDTO) ? DisplayMode.SELECTED : DisplayMode.DEFAULT;
         }
-        else{
-            return competitorSelection.isSelected(competitorDTO) ? DisplayMode.SELECTED : DisplayMode.DEFAULT;
-        }
-       
+        return result;
     }
     
     private boolean isSomeOtherCompetitorSelected(){
@@ -3163,7 +3163,6 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
                 @Override
                 public void execute() {
                     selectionDependentRefreshScheduled = false;
-
                     if (selectionDependentRefreshPending) {
                         selectionDependentRefreshPending = false;
                         refreshSelectionDependentTailAndMapState();
@@ -3172,6 +3171,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
             });
         }
     }
+    
     private void refreshSelectionDependentTailAndMapState() {
         if (selectedDetailType != null && !selectedDetailTypeChanged) {
             // assumes that the detail values have already been loaded, as the detail type hasn't changed
@@ -3182,16 +3182,12 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
             Colorline tail = fixesAndTails.getTail(oneOfAllCompetitors);
             if (tail != null) {
                 final DisplayMode newDisplayMode = displayHighlighted(oneOfAllCompetitors);
-                if (selectedDetailType == null) {
-                    final String competitorId = oneOfAllCompetitors.getIdAsString();
-                    final DisplayMode previousDisplayMode = lastAppliedTailDisplayModes.get(competitorId);
-                    if (previousDisplayMode == newDisplayMode) {
-                        continue;
-                    }
+                final String competitorId = oneOfAllCompetitors.getIdAsString();
+                if (lastAppliedTailDisplayModes.get(competitorId) != newDisplayMode) {
                     lastAppliedTailDisplayModes.put(competitorId, newDisplayMode);
+                    ColorlineOptions newOptions = createTailStyle(oneOfAllCompetitors, newDisplayMode);
+                    tail.setOptions(newOptions);
                 }
-                ColorlineOptions newOptions = createTailStyle(oneOfAllCompetitors, newDisplayMode);
-                tail.setOptions(newOptions);
             }
         }
         // Trigger auto-zoom if needed
@@ -3613,7 +3609,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
      * {@link ColorlineMode#MONOCHROMATIC}. This avoids unnecessary switching between monochromatic and
      * polychromatic rendering, which would force {@code Colorline.setOptions(...)} to rebuild the tail
      * polyline structure via {@code setPath(...)} and was identified as a significant performance cost
-     * during selection updates.</p>
+     * during selection updates. See also bug 6214.</p>
      *
      * @param competitor the competitor whose tail is being styled
      * @param displayMode the desired display mode for this competitor tail
