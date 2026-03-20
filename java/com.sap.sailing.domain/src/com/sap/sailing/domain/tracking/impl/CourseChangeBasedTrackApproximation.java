@@ -173,7 +173,7 @@ public class CourseChangeBasedTrackApproximation implements Serializable, GPSTra
          * <p>
          * 
          * This method queues the new fix and only adds it to the window when it is "old enough" to not be influenced
-         * anymore by newer fixes that may still arrive. The influence is measured by half the
+         * anymore by newer fixes that may still arrive. The influence is measured by the
          * {@link GPSFixTrack#getMillisecondsOverWhichToAverageSpeed()} interval. This way, approximation results
          * are more stable but have a delay with regards to the newest fixes known by the track.<p>
          * 
@@ -280,6 +280,12 @@ public class CourseChangeBasedTrackApproximation implements Serializable, GPSTra
                         courseChangeBetweenFixesInWindow.add(new ScalableDouble(courseChangeBetweenPreviousAndNextInDegrees));
                     } else {
                         courseChangeBetweenFixesInWindow.add(insertPosition-1, new ScalableDouble(courseChangeBetweenPreviousAndNextInDegrees));
+                        if (courseChangeBetweenFixesInWindow.size() > insertPosition) { // the node just added isn't the last one; update the next node!
+                            courseChangeBetweenFixesInWindow.remove(insertPosition);
+                            final SpeedWithBearing nextNextSpeed = this.speedForFixesInWindow.get(insertPosition+1);
+                            final double courseChangeBetweenNextAndNextNextInDegrees = nextSpeed.getBearing().getDifferenceTo(nextNextSpeed.getBearing()).getDegrees();
+                            courseChangeBetweenFixesInWindow.add(insertPosition, new ScalableDouble(courseChangeBetweenNextAndNextNextInDegrees));
+                        }
                     }
                     if (windowDuration.compareTo(getMaximumWindowLength()) > 0) {
                         result = tryToExtractManeuverCandidate();

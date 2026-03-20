@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.NoSuchElementException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +39,68 @@ public class CourseChangeBasedTrackApproximationTest {
         final CompetitorWithBoat competitor = TrackBasedTest.createCompetitorWithBoat("Someone");
         track = new DynamicGPSFixMovingTrackImpl<Competitor>(competitor,
                 /* millisecondsOverWhichToAverage */5000, /* lossless compaction */true);
-        approximation = new CourseChangeBasedTrackApproximation(track, competitor.getBoat().getBoatClass(), /* logFixes */ false);
+        approximation = new CourseChangeBasedTrackApproximation(track, competitor.getBoat().getBoatClass(), /* logFixes */ true);
+    }
+    
+    /**
+     * Whitebox test for {@link FixWindow} and its queue: add a few fixes to the queue, then add a few significantly
+     * newer fixes to the queue that cause the older fixes to get added to the {@ilnk FixWindow} one after the other.
+     * Then, add a fix immediately before the last that causes a direction change that exceeds the threshold and thus
+     * produces a maneuver candidate letting only the newest fix in FixWindow. Then, add another fix to the queue,
+     * causing the queue's oldest fix to get moved to the {@link FixWindow}, unless when trimming the
+     * {@link FixWindow} the queue would have been trimmed with it. If not, a {@link NoSuchElementException}
+     * would be thrown.
+     */
+    @Test
+    public void testInsertWithEqualTimePoints() {
+        final GPSFixMoving fix1 = fix(10000l, 49, 8, 5, 2);
+        final GPSFixMoving fix2 = travel(fix1, 1000l, 5, 4);
+        final GPSFixMoving fix3 = travel(fix2, 1000l, 5, 6);
+        final double lastCOG = 16;
+        final GPSFixMoving fix4 = travel(fix3, 1000l, 5, lastCOG);
+        final GPSFixMoving fix5 = travel(fix4, 1000l, 5, lastCOG);
+        track.add(fix1);
+        track.add(fix2);
+        track.add(fix3);
+        track.add(fix4);
+        track.add(fix5);
+        // now add five newer fixes, forcing the five older fixes to advance into the FixWindow:
+        final GPSFixMoving fix6 = travel(fix1, track.getMillisecondsOverWhichToAverageSpeed()+1, 5, lastCOG);
+        final GPSFixMoving fix7 = travel(fix6, 1000l, 5, lastCOG);
+        final GPSFixMoving fix8 = travel(fix7, 1000l, 5, lastCOG);
+        final GPSFixMoving fix9 = travel(fix8, 1000l, 5, lastCOG);
+        final GPSFixMoving fix10 = travel(fix9, 1000l, 5, lastCOG);
+        track.add(fix6);
+        track.add(fix7);
+        track.add(fix8);
+        track.add(fix9);
+        track.add(fix10);
+        // we expect no maneuver to have been recognized yet
+        Iterable<GPSFixMoving> candidates = approximation.approximate(fix1.getTimePoint(), fix5.getTimePoint());
+        assertTrue(Util.isEmpty(candidates));
+        // now add a fix to the queue that is later than the FixWindow's start (assumed to be at fix1)
+        // and before the FixWindow's end (assumed to be fix5 at the moment); the fix won't be added until
+        // a fix that is at least track.getMillisecondsOverWhichToAverageSpeed() newer is added to the queue:
+        final GPSFixMoving fix3_5 = travel(fix3, 500l, 5, 7);
+        track.add(fix3_5);
+        // now an even earlier fix that, when added to FixWindow, will trigger a maneuver candidate emission
+        // because COG 0deg to COG 16deg is more than the 15deg threshold
+        final GPSFixMoving fix2_5 = travel(fix2, 500l, 5, 320); // FIXME bug6222: this leads to the maneuver candidate being recognized at the beginning of the window, turning to port
+        track.add(fix2_5);
+        // force fix2_5 to get moved to FixWindow:
+        final GPSFixMoving fix11 = travel(fix10, 1000l, 5, lastCOG);
+        track.add(fix11); // expected to trigger moving oldest queued fix2_5 to get added to the FixWindow
+        // we expect one maneuver candidate to have been recognized now
+        Iterable<GPSFixMoving> candidates2 = approximation.approximate(fix1.getTimePoint(), fix5.getTimePoint());
+        assertEquals(1, Util.size(candidates2));
+//        assertSame(fix5, candidates2.iterator().next()); // TODO bug6222: fixes are replaced upon track insertion; use equality
+        // and this should have spanned fix1..fix5 with the greatest course change on fix5, so that gets
+        // emitted as the maneuver candidate, and all fixes from FixWindow's head up to and including fix5
+        // are expected to get removed from FixWindow
+        // Now add an ever newer fix to the queue, forcing fix3_5 to get added if it hasn't been cleaned up
+        // by the FixWindow trimming:
+        final GPSFixMoving fix12 = travel(fix11, 4000l, 5, 2);
+        track.add(fix12);
     }
     
     @Test
