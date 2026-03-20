@@ -290,12 +290,13 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
      * instead of running the expensive refresh logic once per competitor.
      */
     private boolean selectionDependentRefreshScheduled;
-
+    
     /**
-     * True when at least one selection change occurred and a selection-dependent refresh is still
-     * needed. The scheduled command clears this flag after performing the consolidated refresh.
+     * True once a selection-dependent tail/map refresh needs redraw.
+     * For example, we avoid redraw in this situation:
+     * no helper lines, all competitors shown, one is getting deselected.
      */
-    private boolean selectionDependentRefreshPending;
+    private boolean selectionDependentRefreshNeedsRedraw;
 
     /**
      * Remembers the last tail display mode applied per competitor id. This allows us to skip
@@ -3161,17 +3162,13 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
      * refresh is still pending.</p>
      */
     private void scheduleSelectionDependentTailAndMapStateRefresh() {
-        selectionDependentRefreshPending = true;
         if (!selectionDependentRefreshScheduled) {
             selectionDependentRefreshScheduled = true;
             Scheduler.get().scheduleFinally(new Scheduler.ScheduledCommand() {
                 @Override
                 public void execute() {
                     selectionDependentRefreshScheduled = false;
-                    if (selectionDependentRefreshPending) {
-                        selectionDependentRefreshPending = false;
-                        refreshSelectionDependentTailAndMapState();
-                    }
+                    refreshSelectionDependentTailAndMapState();
                 }
             });
         }
@@ -3200,7 +3197,9 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
         if (!zoomSettings.containsZoomType(ZoomTypes.NONE) && zoomSettings.isZoomToSelectedCompetitors()) {
             zoomMapToNewBounds(zoomSettings.getNewBounds(this));
         }
-        redraw();
+        if (selectionDependentRefreshNeedsRedraw) {
+            redraw();
+        }
     }
 
     @Override
@@ -3237,13 +3236,13 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
         if (isShowAnyHelperLines()) {
             // helper lines depend on which competitor is visible, because the *visible* leader is used for
             // deciding which helper lines to show:
-            //redraw();
+            selectionDependentRefreshNeedsRedraw = true;
         } else {
             // try a more incremental update otherwise
             if (settings.isShowOnlySelectedCompetitors()) {
                 // if selection is now empty, show all competitors
                 if (Util.isEmpty(competitorSelection.getSelectedCompetitors())) {
-                    //redraw();
+                    selectionDependentRefreshNeedsRedraw = true;
                 } else {
                     // otherwise remove only deselected competitor's boat images and tail
                     final BoatOverlay removedBoatOverlay = boatOverlaysByCompetitorIdsAsStrings.remove(competitor.getIdAsString());
@@ -3252,6 +3251,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
                     }
                     removeTail(competitor.getIdAsString());
                     showCompetitorInfoOnMap(timer.getTime(), -1, competitorSelection.getSelectedFilteredCompetitors());
+                    selectionDependentRefreshNeedsRedraw = false;
                 }
             } else {
                 // "lowlight" currently selected competitor
@@ -3261,6 +3261,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
                     boatCanvas.draw();
                 }
                 showCompetitorInfoOnMap(timer.getTime(), -1, competitorSelection.getSelectedFilteredCompetitors());
+                selectionDependentRefreshNeedsRedraw = false;
             }
         }
         // Now update tails for all competitors because selection change may also affect all unselected competitors
