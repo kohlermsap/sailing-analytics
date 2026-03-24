@@ -113,11 +113,11 @@ public class UserImpl extends SecurityUserImpl<RoleDefinition, Role, UserGroup, 
     public UserImpl(String name, String email, Map<String, UserGroup> defaultTenantForServer,
             Collection<Account> accounts, UserGroupProvider userGroupProvider, TimedLock timedLock) {
         this(name, email, /* fullName */ null, /* company */ null, /* locale */ null, /* is email validated */ false,
-                /* did opt out of marketing emails */ false, /* password reset secret */ null, /* validation secret */ null,
+                /* did opt out of feature and community emails */ false, /* password reset secret */ null, /* validation secret */ null,
                 defaultTenantForServer, accounts, userGroupProvider, timedLock);
     }
 
-    public UserImpl(String name, String email, String fullName, String company, Locale locale, Boolean emailValidated,
+    public UserImpl(String name, String email, String fullName, String company, Locale locale, boolean emailValidated,
             boolean didOptOutOfFeatureAndCommunityEmails, String passwordResetSecret, String validationSecret,
             Map<String, UserGroup> defaultTenantForServer, Collection<Account> accounts,
             UserGroupProvider userGroupProvider, TimedLock timedLock) {

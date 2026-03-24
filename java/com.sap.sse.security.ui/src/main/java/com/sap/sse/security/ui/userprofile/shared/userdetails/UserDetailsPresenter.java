@@ -49,7 +49,8 @@ public class UserDetailsPresenter implements AbstractUserDetails.Presenter {
     @Override
     public void handleSaveChangesRequest(String fullName, String company, String locale,
             String defaultTenantIdAsString) {
-        authenticationManager.updateUserProperties(fullName, company, locale, null, defaultTenantIdAsString,
+        authenticationManager.updateUserProperties(fullName, company, locale,
+                /* don' t change the "opt out of feature and community mails" setting */ null, defaultTenantIdAsString,
                 new AsyncCallback<UserDTO>() {
                     @Override
                     public void onSuccess(UserDTO result) {

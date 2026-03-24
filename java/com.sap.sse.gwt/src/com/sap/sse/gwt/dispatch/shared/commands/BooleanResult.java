@@ -5,7 +5,8 @@ import com.sap.sse.gwt.shared.DTO;
 public class BooleanResult implements DTO, Result {
     private boolean value;
 
-    public BooleanResult() {
+    @Deprecated // Used for GWT serialization only
+    BooleanResult() {
     }
 
     public BooleanResult(final boolean b) {
@@ -14,9 +15,5 @@ public class BooleanResult implements DTO, Result {
 
     public boolean getValue() {
         return value;
-    }
-
-    public void setValue(final Boolean newValue) {
-        value = newValue;
     }
 }

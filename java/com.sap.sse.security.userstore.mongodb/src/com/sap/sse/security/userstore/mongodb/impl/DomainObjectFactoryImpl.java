@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,13 +15,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.bson.types.Binary;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Updates;
 import com.sap.sse.common.Duration;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.TimedLock;
@@ -229,7 +227,6 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
             UserGroupProvider userGroupProvider) throws UserManagementException {
         Map<String, User> result = new HashMap<>();
         MongoCollection<org.bson.Document> userCollection = db.getCollection(CollectionNames.USERS.name());
-        dbMigrationAddEmailFlagToUsers(userCollection);
         try {
             for (Document o : userCollection.find()) {
                 User userWithProxyRoleUserQualifier = loadUserWithProxyRoleUserQualifiers(o, roleDefinitionsById,
@@ -242,27 +239,6 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
         }
         resolveRoleUserQualifiers(result);
         return result.values();
-    }
-
-    private void dbMigrationAddEmailFlagToUsers(MongoCollection<org.bson.Document> userCollection) {
-        try {
-            final List<String> usernames = new ArrayList<String>(); 
-            final String flagKey = FieldNames.User.DID_OPT_OUT_OF_FEATURE_AND_COMMUNITY_EMAILS.name();
-            final String usernameKey = FieldNames.User.NAME.name();
-            for (final Document o : userCollection.find()) {
-                final boolean hasFlag = o.containsKey(flagKey);
-                if(!hasFlag) {
-                    final String name = (String) o.get(usernameKey);
-                    usernames.add(name);
-                }
-            }
-            final Bson filter = Filters.in(usernameKey, usernames);
-            final Bson update = Updates.set(flagKey, false);
-            userCollection.updateMany(filter, update);
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error adding DID_OPT_OUT_OF_FEATURE_AND_COMMUNITY_EMAILS migration flag to users in MongoDB");
-            logger.log(Level.SEVERE, "dbMigrationAddEmailFlagToUsers", e);
-        }
     }
 
     private void resolveRoleUserQualifiers(Map<String, User> users) throws UserManagementException {
@@ -309,8 +285,8 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
         final String company = (String) userDBObject.get(FieldNames.User.COMPANY.name());
         final String localeRaw = (String) userDBObject.get(FieldNames.User.LOCALE.name());
         final Locale locale = localeRaw != null ? Locale.forLanguageTag(localeRaw) : null;
-        final Boolean didOptOutOfFeatureAndCommunityEmails = (boolean) userDBObject
-                .get(FieldNames.User.DID_OPT_OUT_OF_FEATURE_AND_COMMUNITY_EMAILS.name());
+        final Boolean didOptOutOfFeatureAndCommunityEmails = Optional.ofNullable((Boolean) userDBObject
+                .get(FieldNames.User.DID_OPT_OUT_OF_FEATURE_AND_COMMUNITY_EMAILS.name())).orElse(false);
         final Boolean emailValidated = (Boolean) userDBObject.get(FieldNames.User.EMAIL_VALIDATED.name());
         final String passwordResetSecret = (String) userDBObject.get(FieldNames.User.PASSWORD_RESET_SECRET.name());
         final String validationSecret = (String) userDBObject.get(FieldNames.User.VALIDATION_SECRET.name());
