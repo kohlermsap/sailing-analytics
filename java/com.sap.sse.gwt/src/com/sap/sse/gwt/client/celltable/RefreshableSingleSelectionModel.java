@@ -110,13 +110,16 @@ public class RefreshableSingleSelectionModel<T> extends SingleSelectionModel<T> 
                 dontcheckSelectionState = true;
                 final T selected = getSelectedObject();
                 if (selected != null) {
-                    clear();
+                    boolean found = false;
                     for (final T it : newObjects) {
-                        boolean isEqual = getEntityIdentityComparator() == null ? selected.equals(it) : getEntityIdentityComparator().representSameEntity(selected, it);
-                        if (isEqual) {
+                        found = getEntityIdentityComparator() == null ? selected.equals(it) : getEntityIdentityComparator().representSameEntity(selected, it);
+                        if (found) {
                             setSelected(it, true);
                             break;
                         }
+                    }
+                    if (!found) {
+                        setSelected(selected, false); // no element matching previously selected element in newObjects; de-select old element
                     }
                 }
                 SelectionChangeEvent.fire(this);

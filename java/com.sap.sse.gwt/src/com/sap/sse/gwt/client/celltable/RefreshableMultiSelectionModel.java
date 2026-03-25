@@ -135,25 +135,18 @@ public class RefreshableMultiSelectionModel<T> extends MultiSelectionModel<T>
                                                              // changes to the selection won't change this set anymore
                 final boolean isEmpty = selectedSet.isEmpty();
                 if (!isEmpty) {
-                    clear(); // FIXME bug6214: don't clear but use fine-grained setSelected(...) calls to adjust with minimal change
-                    if (getEntityIdentityComparator() == null) {
-                        for (T it : newObjects) {
-                            final boolean selected = selectedSet.contains(it);
-                            if (selected) {
-                                setSelected(it, true);
-                            }
+                    final Map<Object, T> selectedElementsByKey = new HashMap<>();
+                    for (final T selectedElement : selectedSet) {
+                        selectedElementsByKey.put(getKey(selectedElement), selectedElement);
+                    }
+                    for (T it : newObjects) {
+                        if (isSelected(it)) {
+                            setSelected(it, true); // this updates matching elements in the selection model
+                            selectedElementsByKey.remove(getKey(it));
                         }
-                    } else {
-                        final Map<EntityIdentityWrapper<T>, T> wrappedNewObjects = new HashMap<>();
-                        for (T it : newObjects) {
-                            wrappedNewObjects.put(new EntityIdentityWrapper<T>(it, getEntityIdentityComparator()), it);
-                        }
-                        for (final T selected : selectedSet) {
-                            T newSelectedElement = wrappedNewObjects.remove(new EntityIdentityWrapper<T>(selected, getEntityIdentityComparator()));
-                            if (newSelectedElement != null) {
-                                setSelected(newSelectedElement, true);
-                            }
-                        }
+                    }
+                    for (final T oldSelectedObjectForWhichNoNewObjectWithEqualKeyWasFound : selectedElementsByKey.values()) {
+                        setSelected(oldSelectedObjectForWhichNoNewObjectWithEqualKeyWasFound, false); // remove those with no match found from selection
                     }
                     SelectionChangeEvent.fire(this);
                 }
