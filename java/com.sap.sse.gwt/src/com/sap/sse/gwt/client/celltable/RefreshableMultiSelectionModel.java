@@ -89,7 +89,7 @@ public class RefreshableMultiSelectionModel<T> extends MultiSelectionModelWithSe
      */
     @Override
     public void setSelected(T item, boolean selected) {
-        if (getEntityIdentityComparator() == null || dontCheckSelectionState || item == null || getSelectedSet().isEmpty()) {
+        if (getEntityIdentityComparator() == null || dontCheckSelectionState || item == null || Util.isEmpty(getSelectedElements())) {
             super.setSelected(item, selected);
         } else {
             T wasSelectedBefore = null;

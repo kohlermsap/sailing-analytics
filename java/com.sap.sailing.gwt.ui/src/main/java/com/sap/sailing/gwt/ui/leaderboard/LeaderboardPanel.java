@@ -3367,7 +3367,7 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
     }
 
     private Iterable<LeaderboardRowDTO> getSelectedRows() {
-        return leaderboardSelectionModel.getSelectedSet();
+        return leaderboardSelectionModel.getSelectedElements();
     }
 
     @Override
