@@ -58,6 +58,7 @@ import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.MultiSelectionModel;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
+import com.sap.sse.gwt.client.celltable.RefreshableMultiSelectionModel;
 import com.sap.sailing.domain.common.DetailType;
 import com.sap.sailing.domain.common.LeaderboardNameConstants;
 import com.sap.sailing.domain.common.MaxPointsReason;
@@ -236,7 +237,7 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
 
     private final FlushableSortedCellTableWithStylableHeaders<LeaderboardRowDTO> leaderboardTable;
 
-    private final MultiSelectionModel<LeaderboardRowDTO> leaderboardSelectionModel;
+    private final RefreshableMultiSelectionModel<LeaderboardRowDTO> leaderboardSelectionModel;
 
     protected LeaderboardDTO leaderboard;
 
@@ -338,6 +339,13 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
      * the table selection to match the {@link #competitorSelectionProvider}.
      */
     private HandlerRegistration leaderboardAsTableSelectionModelRegistration;
+
+    /**
+     * Guard flag to prevent infinite recursion when synchronizing selection state between the selection model
+     * and the CompetitorSelectionProvider. Set to true when we're updating the selection model in response to
+     * CompetitorSelectionProvider changes to prevent the selectionChangeHandler from syncing back.
+     */
+    private boolean updatingSelectionFromProvider = false;
 
     private final FlowPanel contentPanel = new FlowPanel();
     protected final PaywallResolver paywallResolver;
@@ -524,12 +532,18 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
         leaderboardTable.ensureDebugId("LeaderboardCellTable");
         selectionCheckboxColumn = new LeaderboardSelectionCheckboxColumn(competitorSelectionProvider);
         leaderboardTable.setWidth("100%");
-        leaderboardSelectionModel = new MultiSelectionModel<LeaderboardRowDTO>();
-        // remember handler registration so we can temporarily remove it and re-add it to suspend selection events while
-        // we're actively changing it
+
+        // Use the SelectionCheckboxColumn's RefreshableMultiSelectionModel as THE single selection model
+        leaderboardSelectionModel = selectionCheckboxColumn.getSelectionModel();
+
+        // Set up handler to sync selection changes TO the CompetitorSelectionProvider
         selectionChangeHandler = new Handler() {
             @Override
             public void onSelectionChange(SelectionChangeEvent event) {
+                if (updatingSelectionFromProvider) {
+                    // Guard: don't sync back to provider if we're currently syncing FROM provider
+                    return;
+                }
                 List<CompetitorDTO> selection = new ArrayList<>();
                 for (LeaderboardRowDTO row : getSelectedRows()) {
                     selection.add(row.competitor);
@@ -2115,8 +2129,7 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
     }
 
     private class LeaderboardSelectionCheckboxColumn
-            extends com.sap.sse.gwt.client.celltable.SelectionCheckboxColumn<LeaderboardRowDTO>
-            implements CompetitorSelectionChangeListener {
+            extends com.sap.sse.gwt.client.celltable.SelectionCheckboxColumn<LeaderboardRowDTO> {
         protected LeaderboardSelectionCheckboxColumn(final CompetitorSelectionProvider competitorSelectionProvider) {
             super(style.getTableresources().cellTableStyle().cellTableCheckboxSelected(),
                     style.getTableresources().cellTableStyle().cellTableCheckboxDeselected(),
@@ -2132,47 +2145,14 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
                             return t.competitor.getIdAsString().hashCode();
                         }
                     }, getData(), leaderboardTable);
-            competitorSelectionProvider.addCompetitorSelectionChangeListener(this);
+            // Note: LeaderboardPanel is the ONLY listener that syncs selection state with CompetitorSelectionProvider.
+            // SelectionCheckboxColumn no longer needs to listen separately.
         }
 
         @Override
         public Boolean getValue(LeaderboardRowDTO row) {
-            return competitorSelectionProvider.isSelected(row.competitor);
-        }
-
-        @Override
-        public void competitorsListChanged(Iterable<CompetitorDTO> competitors) {
-        }
-
-        @Override
-        public void filterChanged(FilterSet<CompetitorDTO, ? extends Filter<CompetitorDTO>> oldFilterSet,
-                FilterSet<CompetitorDTO, ? extends Filter<CompetitorDTO>> newFilterSet) {
-        }
-
-        @Override
-        public void filteredCompetitorsListChanged(Iterable<CompetitorDTO> filteredCompetitors) {
-        }
-
-        /**
-         * Ensure that the checkbox is redrawn when the competitor selection changes
-         */
-        @Override
-        public void addedToSelection(CompetitorDTO competitor) {
-            final LeaderboardRowDTO row = getRow(competitor.getIdAsString());
-            if (row != null) {
-                getSelectionModel().setSelected(row, true);
-            }
-        }
-
-        /**
-         * Ensure that the checkbox is redrawn when the competitor selection changes
-         */
-        @Override
-        public void removedFromSelection(CompetitorDTO competitor) {
-            final LeaderboardRowDTO row = getRow(competitor.getIdAsString());
-            if (row != null) {
-                getSelectionModel().setSelected(row, false);
-            }
+            // Use the selection model as the source of truth for rendering
+            return getSelectionModel().isSelected(row);
         }
 
         @Override
@@ -2706,18 +2686,14 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
      */
     private void updateSelection(LeaderboardRowDTO row) {
         final boolean shallBeSelected = competitorSelectionProvider.isSelected(row.competitor);
-        if (leaderboardAsTableSelectionModelRegistration != null) {
-            // suspend selection events while actively adjusting the leaderboardSelectionModel to match the
-            // competitorSelectionProvider
-            leaderboardAsTableSelectionModelRegistration.removeHandler();
-            leaderboardAsTableSelectionModelRegistration = null;
+        updatingSelectionFromProvider = true;
+        try {
+            if (leaderboardSelectionModel.isSelected(row) != shallBeSelected) {
+                leaderboardSelectionModel.setSelected(row, shallBeSelected);
+            }
+        } finally {
+            updatingSelectionFromProvider = false;
         }
-        if (leaderboardSelectionModel.isSelected(row) != shallBeSelected) {
-            leaderboardSelectionModel.setSelected(row, shallBeSelected);
-        }
-        // register the selection change handler again
-        leaderboardAsTableSelectionModelRegistration = leaderboardTable.getSelectionModel()
-                .addSelectionChangeHandler(selectionChangeHandler);
     }
 
     /**
@@ -3393,7 +3369,12 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
     public void addedToSelection(CompetitorDTO competitor) {
         LeaderboardRowDTO row = getRow(competitor.getIdAsString());
         if (row != null) {
-            leaderboardSelectionModel.setSelected(row, true);
+            updatingSelectionFromProvider = true;
+            try {
+                leaderboardSelectionModel.setSelected(row, true);
+            } finally {
+                updatingSelectionFromProvider = false;
+            }
         }
     }
 
@@ -3401,7 +3382,12 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
     public void removedFromSelection(CompetitorDTO competitor) {
         LeaderboardRowDTO row = getRow(competitor.getIdAsString());
         if (row != null) {
-            leaderboardSelectionModel.setSelected(row, false);
+            updatingSelectionFromProvider = true;
+            try {
+                leaderboardSelectionModel.setSelected(row, false);
+            } finally {
+                updatingSelectionFromProvider = false;
+            }
         }
     }
 
