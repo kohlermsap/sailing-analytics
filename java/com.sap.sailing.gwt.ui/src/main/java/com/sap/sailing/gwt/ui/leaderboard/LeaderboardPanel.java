@@ -520,10 +520,8 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
         leaderboardTable.ensureDebugId("LeaderboardCellTable");
         selectionCheckboxColumn = new LeaderboardSelectionCheckboxColumn(competitorSelectionProvider);
         leaderboardTable.setWidth("100%");
-
         // Use the SelectionCheckboxColumn's RefreshableMultiSelectionModel as THE single selection model
         leaderboardSelectionModel = selectionCheckboxColumn.getSelectionModel();
-
         // Set up handler to sync selection changes TO the CompetitorSelectionProvider
         selectionChangeHandler = new Handler() {
             @Override
@@ -544,17 +542,14 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
         };
         leaderboardSelectionModel.addSelectionChangeHandler(selectionChangeHandler);
         leaderboardTable.setSelectionModel(leaderboardSelectionModel, selectionCheckboxColumn.getSelectionManager());
-
         SimplePanel mainPanel = new SimplePanel();
         leaderboardTable.getElement().getStyle().setMarginTop(10, Unit.PX);
         contentPanel.setStyleName(STYLE_LEADERBOARD_CONTENT);
         busyIndicator = new SimpleBusyIndicator(false, 0.8f);
         busyIndicator.ensureDebugId("BusyIndicator");
         busyStateChangeListeners = new HashSet<>();
-
-        //required to enforce proper margin layouting
+        // required to enforce proper margin layouting
         contentPanel.add(new Label());
-        
         // the information panel
         if (!isEmbedded) {
             toolbarPanel = createToolbarPanel();
