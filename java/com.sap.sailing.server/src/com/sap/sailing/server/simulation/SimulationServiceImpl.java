@@ -413,6 +413,9 @@ public class SimulationServiceImpl implements SimulationService {
             }
             logger.info("Simulation Get: Update Triggered: \"" + legIdentifier.toString() + "\"");
             cache.triggerUpdate(legIdentifier, null);
+            // FIXME bug6223: not a good idea to wait synchronously in a potential Jetty request-handling thread for the
+            // simulation to be computed; better return a "simulation in progress" status and let the client poll for
+            // results until they are available; otherwise, Jetty threads may clog up
             result = cache.get(legIdentifier, true); // take first simulation result that becomes available
         }
         if (result == null) {

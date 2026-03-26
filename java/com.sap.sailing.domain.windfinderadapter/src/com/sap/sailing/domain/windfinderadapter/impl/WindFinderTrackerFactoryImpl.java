@@ -163,6 +163,8 @@ public class WindFinderTrackerFactoryImpl implements WindFinderTrackerFactory {
         if (!lookupInCache || (result = reviewedSpotsCollectionsByIdCache.get().get(spotsCollectionId)) == null) {
             final ReviewedSpotsCollectionImpl finalResult = new ReviewedSpotsCollectionImpl(spotsCollectionId);
             result = finalResult;
+            // FIXME bug6223: the following is problematic: reviewedSpotsCollectionsByIdCache is a Future scheduled with the executor
+            // used here to schedule another task that is then waiting for the Future.
             executor.schedule(()->reviewedSpotsCollectionsByIdCache.get().put(spotsCollectionId, finalResult), /* delay */ 0, TimeUnit.MILLISECONDS);
         }
         return result;
