@@ -1,8 +1,6 @@
 package com.sap.sse.gwt.client.celltable;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.MultiSelectionModelWithSelectedIterable;
@@ -130,23 +128,16 @@ public class RefreshableMultiSelectionModel<T> extends MultiSelectionModelWithSe
         if (!dontCheckSelectionState) { // avoid endless recursions
             dontCheckSelectionState = true;
             try {
-                final Iterable<T> selectedElements = getSelectedElements(); // gets the selected set as a non-live copy, so later
-                                                                       // changes to the selection won't change this set anymore
-                final boolean isEmpty = Util.isEmpty(selectedElements);
-                if (!isEmpty) {
-                    final Map<Object, T> selectedElementsByKey = new HashMap<>();
-                    for (final T selectedElement : selectedElements) {
-                        selectedElementsByKey.put(getKey(selectedElement), selectedElement);
-                    }
+                if (!isEmpty()) {
                     for (T it : newObjects) {
-                        if (isSelected(it)) {
+                        if (isSelected(it)) { 
                             setSelected(it, true); // this updates matching elements in the selection model
-                            selectedElementsByKey.remove(getKey(it));
                         }
                     }
-                    for (final T oldSelectedObjectForWhichNoNewObjectWithEqualKeyWasFound : selectedElementsByKey.values()) {
-                        setSelected(oldSelectedObjectForWhichNoNewObjectWithEqualKeyWasFound, false); // remove those with no match found from selection
-                    }
+                    // elements that were selected before and that don't have a corresponding element in newObjects
+                    // will just be left alone; they will probably remain in selectedSet, and they were probably not in
+                    // newObjects because a filter removed them. But when they re-appear, e.g., because the filter is
+                    // removed, the elements will naturally be selected again.
                     SelectionChangeEvent.fire(this);
                 }
             } finally {

@@ -25,4 +25,8 @@ public class MultiSelectionModelWithSelectedIterable<T> extends MultiSelectionMo
     public Iterable<T> getSelectedElements() {
         return new ArrayList<>(selectedSet.values());
     }
+    
+    public boolean isEmpty() {
+        return selectedSet.isEmpty();
+    }
 }
