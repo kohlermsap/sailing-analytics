@@ -2,6 +2,7 @@ package com.sap.sse.gwt.client.async;
 
 import java.util.concurrent.TimeoutException;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.sap.sse.common.TimePoint;
@@ -19,6 +20,10 @@ import com.sap.sse.common.TimePoint;
  * actual service implementation, however, returns a {@code T} wrapped in an {@link RetryableActionResult} with that
  * {@code T} object inside, or instructions for retry in case no result could be obtained.
  * <p>
+ * 
+ * Actions of this type may also be used standalone, directly invoking the {@link #execute(AsyncCallback)} method
+ * with the client-side callback; the action then will carry out the retry behavior without the dropping/queueing
+ * logic provided otherwise by the {@link AsyncActionsExecutor}.<p>
  * 
  * When the {@link RetryableActionResult} specifies that it {@link RetryableActionResult#needsRetry() needs retry}, this
  * action automatically handles the retry logic. It honors the {@link RetryableActionResult#getDurationUntilNextRetry()}
@@ -66,9 +71,12 @@ public abstract class RetryableAsyncAction<T> implements AsyncAction<T> {
             if (result.needsRetry()) {
                 if (--remainingNumberOfRetries == 0) {
                     callback.onFailure(new TimeoutException("maximum number of retries reached: "+getMaximumNumberOfRetries()));
+                    GWT.log("maximum number of retries reached: "+getMaximumNumberOfRetries()+" on action of type "+this.getClass().getName());
                 } else if (TimePoint.now().after(getTimeout())) {
                     callback.onFailure(new TimeoutException("action timed out at "+getTimeout()));
+                    GWT.log("action of type "+this.getClass().getName()+" timed out");
                 } else {
+                    GWT.log("action of type "+this.getClass().getName()+" needs retry; scheduling to run again in "+result.getDurationUntilNextRetry());
                     Scheduler.get().scheduleFixedDelay(()->{
                         executeOnce(this);
                         return false; // schedule only once for now

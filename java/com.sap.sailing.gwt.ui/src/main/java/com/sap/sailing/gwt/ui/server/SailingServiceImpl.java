@@ -481,6 +481,7 @@ import com.sap.sse.common.impl.TimeRangeImpl;
 import com.sap.sse.common.media.MediaTagConstants;
 import com.sap.sse.common.media.MimeType;
 import com.sap.sse.gwt.client.ServerInfoDTO;
+import com.sap.sse.gwt.client.async.RetryableActionResult;
 import com.sap.sse.gwt.client.media.ImageDTO;
 import com.sap.sse.gwt.client.media.ImageResizingTaskDTO;
 import com.sap.sse.gwt.client.media.VideoDTO;
@@ -1643,7 +1644,7 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
     }
 
     @Override
-    public SimulatorResultsDTO getSimulatorResults(LegIdentifier legIdentifier) {
+    public RetryableActionResult<SimulatorResultsDTO> getSimulatorResults(LegIdentifier legIdentifier) {
         final DynamicTrackedRace trackedRace = getService().getTrackedRace(legIdentifier.getRaceIdentifier());
         if (trackedRace == null) {
             throw new IllegalArgumentException("Race for leg " + legIdentifier + " not found!");
@@ -1651,11 +1652,15 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
         SecurityUtils.getSubject()
                 .checkPermission(trackedRace.getIdentifier().getStringPermission(TrackedRaceActions.SIMULATOR));
         // get simulation-results from smart-future-cached simulation-service
-        final SimulatorResultsDTO result;
+        final RetryableActionResult<SimulatorResultsDTO> result;
         final SimulationService simulationService = getService().getSimulationService();
         final SimulationResults simulationResults;
-        if (simulationService == null || (simulationResults = simulationService.getSimulationResults(legIdentifier)) == null) {
-            result = null;
+        if (simulationService == null) {
+            result = RetryableActionResult.withResult(null);
+        } else if ((simulationResults = simulationService.getSimulationResults(legIdentifier)) == null) {
+            final Optional<Integer> simulationServiceSchedulerTasks = ThreadPoolUtil.INSTANCE.getQueueLength(ThreadPoolUtil.INSTANCE.getDefaultBackgroundTaskThreadPoolExecutor());
+            result = RetryableActionResult.retry(Duration.ONE_SECOND.times(simulationServiceSchedulerTasks.map(
+                    taskCount->Math.max(1, taskCount/100)).orElse(10)));
         } else {
             // prepare simulator-results-dto
             final Map<PathType, Path> paths = simulationResults.getPaths();
@@ -1680,12 +1685,12 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
                 rcDTO.coursePositions.waypointPositions = new ArrayList<Position>();
                 rcDTO.coursePositions.waypointPositions.add(simulationResults.getStartPosition());
                 rcDTO.coursePositions.waypointPositions.add(simulationResults.getEndPosition());
-                result = new SimulatorResultsDTO(simulationResults.getVersion().asMillis(),
+                result = RetryableActionResult.withResult(new SimulatorResultsDTO(simulationResults.getVersion().asMillis(),
                         legIdentifier.getOneBasedLegIndex(), simulationResults.getStartTime(),
                         simulationResults.getTimeStep(), simulationResults.getLegDuration(), rcDTO, pathDTOs,
-                        /* wind field */ null, /* notification message */ null);
+                        /* wind field */ null, /* notification message */ null));
             } else {
-                result = null;
+                result = RetryableActionResult.withResult(null);
             }
         }
         return result;
@@ -2885,14 +2890,7 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
                         // We're on a web server request thread. Try not to take too long for this,
                         // so don't wait for the latest results unless the cache doesn't have a valid
                         // result yet:
-                        Iterable<Maneuver> maneuvers = trackedRace.getManeuvers(competitor, from, to, /* waitForLatest */ false);
-                        if (maneuvers == null) {
-                            // FIXME bug6223: trackedRace.getManeuvers(...) may use a SmartFutureCache to produce results;
-                            // that, in turn, may have to wait for the background thread pool executor. This can block Jetty HTTP
-                            // request threads and eventually deplete Jetty's thread pool. We may wait for a response with a short
-                            // timeout, but then have to return quickly.
-                            maneuvers = trackedRace.getManeuvers(competitor, from, to, /* waitForLatest */ true);
-                        }
+                        final Iterable<Maneuver> maneuvers = trackedRace.getManeuvers(competitor, from, to, /* waitForLatest */ false);
                         return createManeuverDTOsForCompetitor(maneuvers, trackedRace, competitor);
                     });
                     executor.execute(future); // security checks happen before; no need to associate future with Subject
@@ -2901,7 +2899,8 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
             }
             for (Map.Entry<CompetitorDTO, Future<List<ManeuverDTO>>> competitorAndFuture : futures.entrySet()) {
                 try {
-                    result.put(competitorAndFuture.getKey(), competitorAndFuture.getValue().get());
+                    final List<ManeuverDTO> maneuversForCompetitor = competitorAndFuture.getValue().get();
+                    result.put(competitorAndFuture.getKey(), maneuversForCompetitor);
                 } catch (InterruptedException | ExecutionException e) {
                     throw new RuntimeException(e);
                 }

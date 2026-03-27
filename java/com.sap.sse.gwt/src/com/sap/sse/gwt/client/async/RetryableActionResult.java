@@ -1,7 +1,8 @@
 package com.sap.sse.gwt.client.async;
 
+import java.io.Serializable;
+
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.rpc.IsSerializable;
 import com.sap.sse.common.Duration;
 
 /**
@@ -21,7 +22,8 @@ import com.sap.sse.common.Duration;
  * @param <T>
  *            the actual result type; in other words, the type of the "payload"
  */
-public class RetryableActionResult<T> implements IsSerializable {
+public class RetryableActionResult<T> implements Serializable {
+    private static final long serialVersionUID = -927895877316370853L;
     private boolean needsRetry;
     private T result;
     private Duration durationUntilNextRetry;
@@ -30,14 +32,22 @@ public class RetryableActionResult<T> implements IsSerializable {
     RetryableActionResult() { // for GWT serialization only
     }
     
-    public RetryableActionResult(boolean needsRetry, T result, Duration durationUntilNextRetry) {
+    public static <T> RetryableActionResult<T> withResult(T result) {
+        return new RetryableActionResult<>(/* needs retry */ false, result, /* duration until next retry */ null);
+    }
+    
+    public static <T> RetryableActionResult<T> retry(Duration durationUntilNextRetry) {
+        return new RetryableActionResult<>(/* needs retry */ true, /* result */ null, durationUntilNextRetry);
+    }
+    
+    private RetryableActionResult(boolean needsRetry, T result, Duration durationUntilNextRetry) {
         super();
         this.needsRetry = needsRetry;
         this.result = result;
         this.durationUntilNextRetry = durationUntilNextRetry;
     }
 
-    boolean needsRetry() {
+    public boolean needsRetry() {
         return needsRetry;
     }
     
@@ -46,7 +56,7 @@ public class RetryableActionResult<T> implements IsSerializable {
      * 
      * @return the actual result of the service invocation; undefined if {@link #needsRetry()} returns {@code true}
      */
-    T get() {
+    public T get() {
         return result;
     }
     
@@ -55,7 +65,7 @@ public class RetryableActionResult<T> implements IsSerializable {
      * 
      * @return the duration that {@link AsyncActionsExecutor} shall wait before it tries to re-try the request
      */
-    Duration getDurationUntilNextRetry() {
+    public Duration getDurationUntilNextRetry() {
         return durationUntilNextRetry;
     }
 }
