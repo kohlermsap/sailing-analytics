@@ -1,6 +1,7 @@
 package com.sap.sailing.server.interfaces;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 
@@ -55,4 +56,6 @@ public interface SimulationService {
      * {@link SharedDomainFactory#getBoatClass(String)} method.
      */
     BoatClass getBoatClass(String name);
+
+    Optional<Integer> getTaskQueueSize();
 }

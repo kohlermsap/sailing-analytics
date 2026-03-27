@@ -76,7 +76,8 @@ public abstract class RetryableAsyncAction<T> implements AsyncAction<T> {
                     callback.onFailure(new TimeoutException("action timed out at "+getTimeout()));
                     GWT.log("action of type "+this.getClass().getName()+" timed out");
                 } else {
-                    GWT.log("action of type "+this.getClass().getName()+" needs retry; scheduling to run again in "+result.getDurationUntilNextRetry());
+                    GWT.log("action of type " + this.getClass().getName() + " needs retry; scheduling to run again in "
+                            + result.getDurationUntilNextRetry()+"; "+remainingNumberOfRetries+" retries left");
                     Scheduler.get().scheduleFixedDelay(()->{
                         executeOnce(this);
                         return false; // schedule only once for now

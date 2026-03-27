@@ -1658,7 +1658,7 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
         if (simulationService == null) {
             result = RetryableActionResult.withResult(null);
         } else if ((simulationResults = simulationService.getSimulationResults(legIdentifier)) == null) {
-            final Optional<Integer> simulationServiceSchedulerTasks = ThreadPoolUtil.INSTANCE.getQueueLength(ThreadPoolUtil.INSTANCE.getDefaultBackgroundTaskThreadPoolExecutor());
+            final Optional<Integer> simulationServiceSchedulerTasks = simulationService.getTaskQueueSize();
             result = RetryableActionResult.retry(Duration.ONE_SECOND.times(simulationServiceSchedulerTasks.map(
                     taskCount->Math.max(1, taskCount/100)).orElse(10)));
         } else {

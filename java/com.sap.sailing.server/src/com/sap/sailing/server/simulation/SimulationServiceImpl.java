@@ -70,6 +70,7 @@ import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.impl.MillisecondsDurationImpl;
 import com.sap.sse.concurrent.RunnableWithResultAndException;
 import com.sap.sse.util.SmartFutureCache;
+import com.sap.sse.util.ThreadPoolUtil;
 
 public class SimulationServiceImpl implements SimulationService {
     private static final Logger logger = Logger.getLogger(SimulationService.class.getName());
@@ -124,6 +125,20 @@ public class SimulationServiceImpl implements SimulationService {
     @Override
     public BoatClass getBoatClass(String name) {
         return racingEventService.getBaseDomainFactory().getBoatClass(name);
+    }
+
+    /**
+     * adds the {@link SmartFutureCache#getTaskQueueSize() queue size} of the
+     * {@link SmartFutureCache} underlying the simulator, and the queue size of the
+     * {@link #executor}.
+     */
+    @Override
+    public Optional<Integer> getTaskQueueSize() {
+        final Optional<Integer> queueLength = ThreadPoolUtil.INSTANCE.getQueueLength(scheduler);
+        final Optional<Integer> taskQueueSize = cache.getTaskQueueSize();
+        return taskQueueSize.flatMap(cacheQueueSize->
+                queueLength.map(schedulerQueueSize->
+                    Integer.valueOf(schedulerQueueSize+cacheQueueSize)));
     }
 
     @Override

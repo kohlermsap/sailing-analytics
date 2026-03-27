@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -98,7 +100,7 @@ public class SmartFutureCache<K, V, U extends UpdateInterval<U>> {
      * would occur. Remember that there may still be single-core machines, so the factor with which
      * <code>availableProcessors</code> is multiplied needs to be greater than one at least.
      */
-    private final static Executor recalculator = ThreadPoolUtil.INSTANCE.getDefaultBackgroundTaskThreadPoolExecutor();
+    private final static ScheduledExecutorService recalculator = ThreadPoolUtil.INSTANCE.getDefaultBackgroundTaskThreadPoolExecutor();
 
     private final CacheUpdater<K, V, U> cacheUpdateComputer;
     
@@ -400,6 +402,10 @@ public class SmartFutureCache<K, V, U extends UpdateInterval<U>> {
         this.locksForKeys = new ConcurrentHashMap<K, NamedReentrantReadWriteLock>();
         this.nameForLocks = nameForLocks;
         this.triggeredAndNotYetScheduled = new HashMap<>();
+    }
+    
+    public Optional<Integer> getTaskQueueSize() {
+        return ThreadPoolUtil.INSTANCE.getQueueLength(recalculator);
     }
     
     private NamedReentrantReadWriteLock getOrCreateLockForKey(K key) {
