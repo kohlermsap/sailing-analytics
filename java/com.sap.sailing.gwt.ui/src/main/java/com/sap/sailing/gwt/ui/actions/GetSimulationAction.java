@@ -32,6 +32,6 @@ public class GetSimulationAction extends RetryableAsyncAction<SimulatorResultsDT
 
     @Override
     protected int getMaximumNumberOfRetries() {
-        return 10;
+        return 100;
     }
 }
