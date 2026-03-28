@@ -6,10 +6,39 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.sap.sse.common.Duration;
 
 /**
- * A result returned by a {@link RetryableAsyncAction} that can be empty and may require re-trying. The service that
- * returned this result is then expected to provide instructions for retrying, in particular how long to wait until the
- * next retry. Use in conjunction with {@link RetryableAsyncAction}, such that the client specifies an
- * {@link AsyncCallback}{@code <T>} to the {@link AsyncActionsExecutor#execute(AsyncAction, AsyncCallback)} or
+ * Use this as the return type of a GWT RPC service method that may not have the correct answer to the request readily
+ * available, but may so after some longer-running computation. The service method can use this result type to inform
+ * the calling client that a valid response may be available at a later point in time, asking the client to re-try the
+ * request. For this, the service method constructs an instance of this type using the {@link #retry(Duration)} factory
+ * method, telling the duration after which the client may have more luck getting a valid response when trying the
+ * request again.
+ * <p>
+ * 
+ * If a valid result is available, the service method shall use {@link #withResult(Object)} to create and then return an
+ * instance with a valid result, telling the client that no more re-tries are required.
+ * <p>
+ * 
+ * This way, such a service method can always return some response quickly, as it should.
+ * <p>
+ * 
+ * Clients would usually call service methods returning objects of this type using a
+ * {@link RetryableAsyncAction}{@code <T>}, either directly invoking its
+ * {@link RetryableAsyncAction#execute(AsyncCallback)} method with an {@link AsyncCallback}{@code <T>} as callback, or
+ * as a "droppable" action, such that the client specifies an {@link AsyncCallback}{@code <T>} to the
+ * {@link AsyncActionsExecutor#execute(AsyncAction, AsyncCallback)} or
+ * {@link AsyncActionsExecutor#execute(AsyncAction, String, AsyncCallback)} method, whereas the actual RPC method to be
+ * invoked by the action has a result type of {@link RetryableActionResult}{@code <T>}.
+ * <p>
+ * 
+ * Clients can also call service methods using this as a return type directly, using an
+ * {@link AsyncCallback}{@code <RetryableActionResult<T>>} but they would have to handle any re-try and result
+ * extraction logic themselves, so this is not the recommended usage.
+ * <p>
+ * 
+ * The service that returns such a result is expected to either deliver the valid result, or to provide instructions for
+ * retrying, in particular how long to wait until the next retry. Use in conjunction with {@link RetryableAsyncAction},
+ * such that the client specifies an {@link AsyncCallback}{@code <T>} to the
+ * {@link AsyncActionsExecutor#execute(AsyncAction, AsyncCallback)} or
  * {@link AsyncActionsExecutor#execute(AsyncAction, String, AsyncCallback)} method, whereas the actual RPC method to be
  * invoked by the action has a result type of {@link RetryableActionResult}{@code <T>}.
  * <p>
