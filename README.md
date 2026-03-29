@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="azimuth_logo.png" alt="Sailing Analytics">
+</p>
+
 # Sailing Analytics
 
 ## About this Project
@@ -20,9 +24,9 @@ More background information is available in the project's Wiki which is currentl
 
 ## Quick Start with Docker Compose
 
-If you have built or obtained the ``ghcr.io/sap/sailing-analytics:latest`` multi-platform image (currently available for linux/amd64 and linux/arm64 architectures), try this:
+To run the latest release build (currently available for linux/amd64 and linux/arm64 architectures), try this:
 ```
-    cd docker
+    wget "https://github.com/SAP/sailing-analytics/raw/refs/heads/main/docker/docker-compose.yml"
     docker-compose up
 ```
 Based on the ``docker/docker-compose.yml`` definition you should end up with three running Docker containers:
@@ -30,13 +34,13 @@ Based on the ``docker/docker-compose.yml`` definition you should end up with thr
 - a RabbitMQ server, listening on default port
 - a Sailing Analytics server, listening for HTTP requests on port 8888 and for telnet connections to the OSGi console on port 14888
 
-Try a request to [``http://127.0.0.1:8888/index.html``](http://127.0.0.1:8888/index.html) or [``http://127.0.0.1:8888/gwt/status``](http://127.0.0.1:8888/gwt/status) to see if things worked.
+Try a request to [``http://127.0.0.1:8888/index.html``](http://127.0.0.1:8888/index.html) or [``http://127.0.0.1:8888/gwt/status``](http://127.0.0.1:8888/gwt/status) to see if things worked. The default login to your local administration console at [``http://127.0.0.1:8888/gwt/AdminConsole.html``](http://127.0.0.1:8888/gwt/AdminConsole.html) uses the user name ``admin`` with password ``admin``.
 
-To use Java 24, use the ``docker-compose-24.yml`` file instead:
+To use Java 25, use the ``docker-compose-25.yml`` file instead:
 
 ```
-    cd docker
-    docker-compose -f docker-compose-24.yml up
+    wget "https://github.com/SAP/sailing-analytics/raw/refs/heads/main/docker/docker-compose-25.yml"
+    docker-compose -f docker-compose-25.yml up
 ```
 
 ## Requirements
@@ -74,7 +78,7 @@ See [here](https://www.sapsailing.com/gwt/Home.html#/imprint/:) for a list of co
 
 ## Building and Running
 
-Builds usually run on [GitHub Actions](https://github.com/SAP/sailing-analytics/actions/workflows/release.yml) upon every push. A few repository secrets ensure that the build process has the permissions it needs. Pushes to the ``main``, ``docker-24`` and ``releases/*`` branches also publish a [release](https://github.com/SAP/sailing-analytics/releases) after a successful build.
+Builds usually run on [GitHub Actions](https://github.com/SAP/sailing-analytics/actions/workflows/release.yml) upon every push. A few repository secrets ensure that the build process has the permissions it needs. Pushes to the ``main``, ``docker-25`` and ``releases/*`` branches also publish a [release](https://github.com/SAP/sailing-analytics/releases) after a successful build.
 
 There are two options for building, detailed below; for both, you need to fulfill a few prerequisites.
 
@@ -164,13 +168,13 @@ Then, manually trigger the ``release`` workflow with default options. You find t
 
 Release builds will trigger the ``create-docker-image`` workflow which will produce a Docker image of your release and publish it as a "ghcr" package in your repository. Note that package names are computed from the repository name by converting the latter to all lowercase characters. If you want to use your packages in the docker-compose configurations from the ``docker/`` folder, make sure to adjust the package name so it points to your own fork's package registry.
 
-If you want automatic validation of your changes to the ``main`` branch also for newer Java versions, you can use the ``merge-main-into-docker-24`` workflow. It requires another secret:
+If you want automatic validation of your changes to the ``main`` branch also for newer Java versions, you can use the ``merge-main-into-docker-25`` workflow. It requires another secret:
 
 ```
 REPO_TOKEN_FOR_MERGE_AND_PUSH: {a-GitHub-token-enabled-for-push}
 ```
 
-The workflow will launch automatically after a release has been performed for the ``main`` branch and will try to merge the latest ``main`` branch into ``docker-24`` and pushing the merge result if the merge was successful. This will then trigger a build for the ``docker-24`` branch which, if successul, will in turn produce a release and a docker image for use with Java 24.
+The workflow will launch automatically after a release has been performed for the ``main`` branch and will try to merge the latest ``main`` branch into ``docker-25`` and pushing the merge result if the merge was successful. This will then trigger a build for the ``docker-25`` branch which, if successul, will in turn produce a release and a docker image for use with Java 24.
 
 ### Run a build locally
 
@@ -182,6 +186,7 @@ export AWS_S3_TEST_S3ACCESSKEY={key-for-your-S3-token}
 export GEONAMES_ORG_USERNAMES={comma-separated-list-of-geonames.org-usernames}
 export GOOGLE_MAPS_AUTHENTICATION_PARAMS=key={your-Google-Maps-API-key}
 export JAVA8_HOME={location-of-your-JDK8}
+export JAVA17_HOME={location-of-your-JDK17}
 export JAVA_HOME={location-of-your-JDK17-or-newer}
 ```
 

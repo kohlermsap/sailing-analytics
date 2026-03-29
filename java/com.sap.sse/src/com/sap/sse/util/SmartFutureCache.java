@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -98,7 +100,7 @@ public class SmartFutureCache<K, V, U extends UpdateInterval<U>> {
      * would occur. Remember that there may still be single-core machines, so the factor with which
      * <code>availableProcessors</code> is multiplied needs to be greater than one at least.
      */
-    private final static Executor recalculator = ThreadPoolUtil.INSTANCE.getDefaultBackgroundTaskThreadPoolExecutor();
+    private final static ScheduledExecutorService recalculator = ThreadPoolUtil.INSTANCE.getDefaultBackgroundTaskThreadPoolExecutor();
 
     private final CacheUpdater<K, V, U> cacheUpdateComputer;
     
@@ -402,6 +404,10 @@ public class SmartFutureCache<K, V, U extends UpdateInterval<U>> {
         this.triggeredAndNotYetScheduled = new HashMap<>();
     }
     
+    public Optional<Integer> getTaskQueueSize() {
+        return ThreadPoolUtil.INSTANCE.getQueueLength(recalculator);
+    }
+    
     private NamedReentrantReadWriteLock getOrCreateLockForKey(K key) {
         synchronized (locksForKeys) {
             NamedReentrantReadWriteLock result = locksForKeys.get(key);
@@ -666,11 +672,23 @@ public class SmartFutureCache<K, V, U extends UpdateInterval<U>> {
     }
     
     /**
-     * Fetches a value for <code>key</code> from the cache. If no {@link #triggerUpdate(Object, UpdateInterval)} for the <code>key</code>
-     * has ever happened, <code>null</code> will be returned. Otherwise, depending on <code>waitForLatest</code> the result is taken
-     * from the cache straight away (<code>waitForLatest==false</code>) or, if a re-calculation for the <code>key</code> is still
-     * ongoing, the result of that ongoing re-calculation is returned. When {@link #remove(Object)} has been called for the {@code key} and
-     * no update has finished computing since then, this method will also return {@code null} in case {@code waitForLatest} is {@code false}.
+     * Fetches a value for <code>key</code> from the cache. If no {@link #triggerUpdate(Object, UpdateInterval)} for the
+     * <code>key</code> has ever happened, <code>null</code> will be returned. Otherwise, depending on
+     * <code>waitForLatest</code> the result is taken from the cache straight away (<code>waitForLatest==false</code>)
+     * or, if a re-calculation for the <code>key</code> is still ongoing, the result of that ongoing re-calculation is
+     * returned. When {@link #remove(Object)} has been called for the {@code key} and no update has finished computing
+     * since then, this method will also return {@code null} in case {@code waitForLatest} is {@code false}.
+     * <p>
+     * 
+     * @param waitForLatest
+     *            if {@code true}, the call may block, waiting for a scheduled or ongoing task to complete. Note: the
+     *            tasks updating this cache are scheduled with the
+     *            {@link ThreadPoolUtil#getDefaultBackgroundTaskThreadPoolExecutor() default background thread pool}
+     *            which may contain many tasks during certain phases of the life cycle of the process; e.g., during
+     *            start-up of the ARCHIVE server, several hundred thousand tasks may be enqueued with that background
+     *            executor, so that it may take minutes or even hours until a task is actually picked up and run.
+     *            Therefore, no foreground / HTTP request thread should ever use {@code true} for this parameter. It
+     *            may otherwise block all of the HTTP request threads. See also bug 6223.
      */
     public V get(final K key, boolean waitForLatest) {
         final V value;

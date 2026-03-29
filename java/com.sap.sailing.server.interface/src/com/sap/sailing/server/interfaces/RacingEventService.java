@@ -59,7 +59,6 @@ import com.sap.sailing.domain.common.DataImportProgress;
 import com.sap.sailing.domain.common.DataImportSubProgress;
 import com.sap.sailing.domain.common.DetailType;
 import com.sap.sailing.domain.common.NoWindException;
-import com.sap.sailing.domain.common.Position;
 import com.sap.sailing.domain.common.RaceFetcher;
 import com.sap.sailing.domain.common.RegattaAndRaceIdentifier;
 import com.sap.sailing.domain.common.RegattaFetcher;
@@ -86,6 +85,7 @@ import com.sap.sailing.domain.leaderboard.RegattaLeaderboardWithOtherTieBreaking
 import com.sap.sailing.domain.leaderboard.ScoringScheme;
 import com.sap.sailing.domain.leaderboard.impl.DelegatingRegattaLeaderboardWithCompetitorElimination;
 import com.sap.sailing.domain.markpassinghash.MarkPassingRaceFingerprintRegistry;
+import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprintRegistry;
 import com.sap.sailing.domain.persistence.DomainObjectFactory;
 import com.sap.sailing.domain.persistence.MongoObjectFactory;
 import com.sap.sailing.domain.polars.PolarDataService;
@@ -113,6 +113,7 @@ import com.sap.sailing.domain.tracking.WindTracker;
 import com.sap.sailing.server.operationaltransformation.RemoveEvent;
 import com.sap.sse.common.Distance;
 import com.sap.sse.common.PairingListCreationException;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.TypeBasedServiceFinder;
 import com.sap.sse.common.TypeBasedServiceFinderFactory;
@@ -156,7 +157,8 @@ import com.sap.sse.shared.media.VideoDescriptor;
  * @author Axel Uhl (d043530)
  *
  */
-public interface RacingEventService extends TrackedRegattaRegistry, RegattaFetcher, RegattaRegistry, MarkPassingRaceFingerprintRegistry,
+public interface RacingEventService extends TrackedRegattaRegistry, RegattaFetcher, RegattaRegistry,
+        MarkPassingRaceFingerprintRegistry, ManeuverRaceFingerprintRegistry, 
         RaceFetcher, LeaderboardRegistry, EventResolver, LeaderboardGroupResolver, TrackerManager,
         Searchable<LeaderboardSearchResult, KeywordQueryWithOptionalEventQualification>,
         ReplicableWithObjectInputStream<RacingEventService, RacingEventServiceOperation<?>>, RaceLogAndTrackedRaceResolver,

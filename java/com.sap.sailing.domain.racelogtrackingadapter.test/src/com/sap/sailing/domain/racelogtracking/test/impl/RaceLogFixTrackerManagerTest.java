@@ -97,7 +97,7 @@ public class RaceLogFixTrackerManagerTest {
                 /* registrationLinkSecret */ UUID.randomUUID().toString()));
         trackedRace = new DynamicTrackedRaceImpl(regatta, race, Collections.<Sideline> emptyList(),
                 EmptyWindStore.INSTANCE, 0, 0, 0, /* useMarkPassingCalculator */ false, OneDesignRankingMetric::new,
-                mock(RaceLogAndTrackedRaceResolver.class), /* trackingConnectorInfo */ null, /* markPassingRaceFingerprintRegistry */ null);
+                mock(RaceLogAndTrackedRaceResolver.class), /* trackingConnectorInfo */ null, /* markPassingRaceFingerprintRegistry */ null, /* maneuverRaceFingerprintRegistry */ null);
     }
 
     /**

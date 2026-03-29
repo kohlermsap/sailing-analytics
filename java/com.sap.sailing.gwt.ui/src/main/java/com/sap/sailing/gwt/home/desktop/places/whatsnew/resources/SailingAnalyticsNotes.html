@@ -1,10 +1,57 @@
 
+
 <!DOCTYPE html>
 <html>
 <body>
 <div id="mainContent">
     <h4 class="articleHeadline" id="sailingAnalyticsHeadline">What's New - Sailing Analytics</h4>
       <div class="innerContent">
+         <h5 class="articleSubheadline">March 2026</h5>
+         <ul class="bulletList">
+            <li>Maneuver analysis now identifies track segments worth looking at with consistency.
+                Before, depending on fix arrival timing, analysis windows may have missed significant
+                course changes under special circumstances such as COG values changing in opposite
+                directions quickly. The changes also lead to the maneuver time points being closer
+                to the greatest angular speed during the maneuver for most cases.</li>
+            <li>Position fixes are considered for maneuver analysis now only after enough later fixes
+                (usually ten seconds) have been received to ensure that the older fixes don't change
+                their dampened COG/SOG values based on the newer fixes. This sacrifices short
+                maneuver calculation delays for better performance due to fewer re-calculations
+                and reliable results with no difference between live and replay analysis.</li>
+            <li>The polar data export service now allows clients to filter the result down to one or
+                more boat classes. See <a href="/polars/webservices/api/polar_data.html">https://sapsailing.com/polars/webservices/api/polar_data.html</a>
+                for more details.</li>
+            <li>For standard Low Point scoring (other than those scoring "wins" in the medal series), if
+                there are more than one medal races, there now is standard A8 tie breaking based on those multiple
+                medal races in case two competitors are equal on points and scored equal points in all
+                scoring medal races (other than carry-forward columns in the medal series). If that does
+                not break the tie (meaning the two competitors scored equal total points and equal medal
+                race score sums), tie breaking resorts to the regular A8 scheme which will break the
+                tie based on the scores of all races.</li>
+            <li>The simulator overlay in the "Race Board" will no longer wait synchronously for a simulation
+                result to be available as this may be a long-running calculation. However, if no calculation
+                for the respective leg has been started on the server yet, this will get triggered.
+                Time ticks on the race board's time line will attempt loading the simulation results again.
+                This way, the simulation overlay will show when ready while in playing mode or while moving
+                the time slider. Note, though, that compared to earlier versions the simulation results will
+                not be shown automatically when it was not available initially, unless the time slider is
+                touched or the simulation display is toggled.</li>
+         </ul>
+         <h5 class="articleSubheadline">December 2025</h5>
+         <ul class="bulletList">
+            <li>Added boat class Fareast 28R.</li>
+            <li>When no wind speed is measured at all, let the clustering into different tacks make
+                assumptions (e.g., 10kts true wind speed) for the wind direction estimation from the
+                courses over ground. This wind speed default assumption is then used to determine
+                average maneuver angles for the boat type in those wind speeds, which in turn helps
+                computing the minimum course difference required between the clusters for the different
+                tacks. All this helps to improve wind direction estimation results if no wind speed
+                is provided at all.</li>
+            <li>When a competitor receives a penalty that applies at race end, we now apply it at
+                blue flag down, or at the competitor's finish mark passing, whichever comes earlier.
+                So far, when a finish mark passing came after blue flag down, the penalty was displayed
+                only once the finish mark passing had been reached, which was not useful, e.g., for DNF.</li>
+         </ul>
          <h5 class="articleSubheadline">October 2025</h5>
          <ul class="bulletList">
             <li>Bug fix: the "Edit Mark Passings" panel showed only up to 15 waypoints.</li>

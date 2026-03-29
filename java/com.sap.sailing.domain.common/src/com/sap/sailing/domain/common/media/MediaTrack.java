@@ -35,7 +35,17 @@ public class MediaTrack implements Serializable, WithQualifiedObjectIdentifier {
      */
     @Deprecated
     public enum Status {
-        UNDEFINED('?'), CANNOT_PLAY('-'), NOT_REACHABLE('#'), REACHABLE('+');
+        @Deprecated
+        UNDEFINED('?'),
+        
+        @Deprecated
+        CANNOT_PLAY('-'),
+        
+        @Deprecated
+        NOT_REACHABLE('#'),
+        
+        @Deprecated
+        REACHABLE('+');
 
         private final char symbol;
 
@@ -43,6 +53,7 @@ public class MediaTrack implements Serializable, WithQualifiedObjectIdentifier {
             this.symbol = symbol;
         }
 
+        @Deprecated
         public String toString() {
             return String.valueOf(this.symbol);
         }

@@ -25,10 +25,10 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.sap.sailing.domain.common.ManeuverType;
-import com.sap.sailing.domain.common.Position;
 import com.sap.sailing.domain.common.RegattaAndRaceIdentifier;
 import com.sap.sailing.domain.common.dto.CompetitorDTO;
 import com.sap.sailing.domain.maneuverdetection.impl.ManeuverDetectorImpl;
+import com.sap.sailing.gwt.ui.actions.GetManeuversForCompetitorsAction;
 import com.sap.sailing.gwt.ui.client.ManeuverTypeFormatter;
 import com.sap.sailing.gwt.ui.client.NauticalSideFormatter;
 import com.sap.sailing.gwt.ui.client.NumberFormatterFactory;
@@ -38,11 +38,13 @@ import com.sap.sailing.gwt.ui.shared.ManeuverDTO;
 import com.sap.sailing.gwt.ui.shared.SpeedWithBearingDTO;
 import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Distance;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.TimeRange;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.Util.Triple;
 import com.sap.sse.common.impl.DegreeBearingImpl;
 import com.sap.sse.gwt.client.ErrorReporter;
+import com.sap.sse.gwt.client.async.AsyncActionsExecutor;
 import com.sap.sse.gwt.client.player.Timer.PlayStates;
 
 /**
@@ -88,9 +90,13 @@ public class ManeuverMarkersAndLossIndicators {
     
     /** The Map where the info overlays for a maneuver loss visualization are stored. */
     private final Map<Triple<String, Date, ManeuverType>, SmallTransparentInfoOverlay> maneuverLossInfoOverlayMap;
+    
+    private final AsyncActionsExecutor asyncActionsExecutor;
 
-    public ManeuverMarkersAndLossIndicators(RaceMap raceMap, SailingServiceAsync sailingService, ErrorReporter errorReporter, StringMessages stringMessages) {
+    public ManeuverMarkersAndLossIndicators(RaceMap raceMap, SailingServiceAsync sailingService,
+            ErrorReporter errorReporter, StringMessages stringMessages, AsyncActionsExecutor asyncActionsExecutor) {
         this.raceMap = raceMap;
+        this.asyncActionsExecutor = asyncActionsExecutor;
         this.sailingService = sailingService;
         this.errorReporter = errorReporter;
         this.stringMessages = stringMessages;
@@ -100,7 +106,8 @@ public class ManeuverMarkersAndLossIndicators {
     }
 
     public void getAndShowManeuvers(RegattaAndRaceIdentifier race, Map<CompetitorDTO, TimeRange> timeRange) {
-        sailingService.getManeuvers(race, timeRange, new AsyncCallback<Map<CompetitorDTO, List<ManeuverDTO>>>() {
+        asyncActionsExecutor.execute(new GetManeuversForCompetitorsAction(sailingService, race, timeRange),
+                new AsyncCallback<Map<CompetitorDTO, List<ManeuverDTO>>>() {
             @Override
             public void onFailure(Throwable caught) {
                 errorReporter.reportError("Error obtaining maneuvers: " + caught.getMessage(), true /*silentMode */);

@@ -235,7 +235,7 @@ fi
 rm $START_DIR/build.log
 
 if [[ "$@" == "clean" ]]; then
-    JAVA_HOME="${JAVA8_HOME}" ./gradlew clean
+    JAVA_HOME="${JAVA17_HOME}" ./gradlew clean
     if [[ $? != 0 ]]; then
         exit 100
     fi
@@ -671,7 +671,7 @@ if [[ "$@" == "build" ]] || [[ "$@" == "all" ]]; then
         PATH=$PATH:$ANDROID_HOME/platform-tools
         SDK_MANAGER="$ANDROID_HOME/cmdline-tools/8.0/bin/sdkmanager"
         if [ \! -x "$SDK_MANAGER" ]; then
-            SDK_MANAGER="$ANDROID_HOME/tools/bin/sdkmanager.bat"
+            SDK_MANAGER="$ANDROID_HOME/tools/bin/sdkmanager"
         fi
         echo "SDK_MANAGER=${SDK_MANAGER}"
         echo "cmdline-tools:"
@@ -693,11 +693,11 @@ if [[ "$@" == "build" ]] || [[ "$@" == "all" ]]; then
         # mobile_extra="-P -with-not-android-relevant -P with-mobile"
 
         echo "Building apps with Gradle..."
-        JAVA_HOME="${JAVA8_HOME}" ./gradlew build
+        JAVA_HOME="${JAVA17_HOME}" ./gradlew build
         if [[ ${PIPESTATUS[0]} != 0 ]]; then
             exit 100
         fi
-        JAVA_HOME="${JAVA8_HOME}" ./gradlew assemble
+        JAVA_HOME="${JAVA17_HOME}" ./gradlew assemble
         if [[ ${PIPESTATUS[0]} != 0 ]]; then
             exit 100
         fi
@@ -766,7 +766,7 @@ if [[ "$@" == "build" ]] || [[ "$@" == "all" ]]; then
 	    JAVA_HOME="${JAVA8_HOME}" `dirname $0`/install-gwt "${PROJECT_HOME}"
           else
             echo "Downloading and installing forked GWT version..."
-            `dirname $0`/install-gwt-from-fork-releases https://github.com/SAP/gwt-forward-serialization-rpc https://github.com/SAP/gwt-maven-plugin-forward-serialization-rpc 2.12.2 .
+            `dirname $0`/install-gwt-from-fork-releases https://github.com/SAP/gwt-forward-serialization-rpc https://github.com/SAP/gwt-maven-plugin-forward-serialization-rpc 2.12.4 .
           fi
         fi
         echo "Using following command: mvn $extra -DargLine=\"$APP_PARAMETERS\" -fae -s $MAVEN_SETTINGS $clean install"

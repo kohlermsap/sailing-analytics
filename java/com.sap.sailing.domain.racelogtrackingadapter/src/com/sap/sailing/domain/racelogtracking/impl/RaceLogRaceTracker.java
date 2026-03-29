@@ -60,6 +60,7 @@ import com.sap.sailing.domain.common.abstractlog.TimePointSpecificationFoundInLo
 import com.sap.sailing.domain.common.racelog.RaceLogRaceStatus;
 import com.sap.sailing.domain.common.racelog.tracking.RaceLogTrackingState;
 import com.sap.sailing.domain.common.racelog.tracking.RaceNotCreatedException;
+import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprintRegistry;
 import com.sap.sailing.domain.markpassinghash.MarkPassingRaceFingerprintRegistry;
 import com.sap.sailing.domain.racelog.RaceLogAndTrackedRaceResolver;
 import com.sap.sailing.domain.racelogtracking.RaceLogTrackingAdapter;
@@ -102,13 +103,16 @@ public class RaceLogRaceTracker extends AbstractRaceTrackerBaseImpl<RaceLogConne
     private final RaceLogAndTrackedRaceResolver raceLogResolver;
     private final TrackedRegattaRegistry trackedRegattaRegistry;
     private final MarkPassingRaceFingerprintRegistry markPassingRaceFingerprintRegistry;
+    private final ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry;
 
     private volatile DynamicTrackedRace trackedRace;
     private final RaceTrackingHandler raceTrackingHandler;
 
     public RaceLogRaceTracker(DynamicTrackedRegatta regatta, RaceLogConnectivityParams params, WindStore windStore,
             RaceLogAndTrackedRaceResolver raceLogResolver, RaceLogConnectivityParams connectivityParams,
-            TrackedRegattaRegistry trackedRegattaRegistry, RaceTrackingHandler raceTrackingHandler, MarkPassingRaceFingerprintRegistry markPassingRaceFingerprintRegistry) {
+            TrackedRegattaRegistry trackedRegattaRegistry, RaceTrackingHandler raceTrackingHandler,
+            MarkPassingRaceFingerprintRegistry markPassingRaceFingerprintRegistry,
+            ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry) {
         super(params);
         this.trackedRegattaRegistry = trackedRegattaRegistry;
         this.params = params;
@@ -116,6 +120,7 @@ public class RaceLogRaceTracker extends AbstractRaceTrackerBaseImpl<RaceLogConne
         this.trackedRegatta = regatta;
         this.raceLogResolver = raceLogResolver;
         this.markPassingRaceFingerprintRegistry = markPassingRaceFingerprintRegistry;
+        this.maneuverRaceFingerprintRegistry = maneuverRaceFingerprintRegistry;
         this.raceTrackingHandler = raceTrackingHandler;
         // add log listeners
         for (AbstractLog<?, ?> log : params.getLogHierarchy()) {
@@ -355,7 +360,7 @@ public class RaceLogRaceTracker extends AbstractRaceTrackerBaseImpl<RaceLogConne
                     boatClass.getApproximateManeuverDurationInMilliseconds(), null, /*useMarkPassingCalculator*/ true, raceLogResolver,
                     /* Not needed because the RaceTracker is not active on a replica */ Optional.empty(),
                     new TrackingConnectorInfoImpl(RaceLogTrackingAdapter.NAME, RaceLogTrackingAdapter.DEFAULT_URL, /* no webUrl */ null),
-                    markPassingRaceFingerprintRegistry);
+                    markPassingRaceFingerprintRegistry, maneuverRaceFingerprintRegistry);
             notifyRaceCreationListeners();
             logger.info(String.format("Started tracking race-log race (%s)", raceLog));
             // this wakes up all waiting race handles

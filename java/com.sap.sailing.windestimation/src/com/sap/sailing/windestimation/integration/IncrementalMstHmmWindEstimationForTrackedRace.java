@@ -1,5 +1,7 @@
 package com.sap.sailing.windestimation.integration;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,10 +11,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executor;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sap.sailing.domain.base.Competitor;
-import com.sap.sailing.domain.common.Position;
 import com.sap.sailing.domain.common.Wind;
 import com.sap.sailing.domain.common.WindSource;
 import com.sap.sailing.domain.common.WindSourceType;
@@ -29,6 +31,7 @@ import com.sap.sailing.windestimation.aggregator.hmm.GraphLevelInference;
 import com.sap.sailing.windestimation.aggregator.msthmm.DistanceAndDurationAwareWindTransitionProbabilitiesCalculator;
 import com.sap.sailing.windestimation.aggregator.msthmm.MstBestPathsCalculator;
 import com.sap.sailing.windestimation.aggregator.msthmm.MstBestPathsCalculatorImpl;
+import com.sap.sailing.windestimation.aggregator.msthmm.MstGraphExportHelper;
 import com.sap.sailing.windestimation.aggregator.msthmm.MstGraphLevel;
 import com.sap.sailing.windestimation.aggregator.msthmm.MstManeuverGraphGenerator.MstManeuverGraphComponents;
 import com.sap.sailing.windestimation.data.ManeuverWithEstimatedType;
@@ -39,6 +42,7 @@ import com.sap.sailing.windestimation.windinference.MiddleCourseBasedTwdCalculat
 import com.sap.sailing.windestimation.windinference.PolarsBasedTwsCalculatorImpl;
 import com.sap.sailing.windestimation.windinference.WindTrackCalculator;
 import com.sap.sailing.windestimation.windinference.WindTrackCalculatorImpl;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.Util.Triple;
@@ -181,6 +185,16 @@ public class IncrementalMstHmmWindEstimationForTrackedRace implements Incrementa
                 mstManeuverGraphGenerator.add(competitor, newManeuverSpot, trackTimeInfo);
             }
             graphComponents = mstManeuverGraphGenerator.parseGraph();
+            if (logger.isLoggable(Level.FINE)) {
+                try {
+                    final String canonicalTmpPath = File.createTempFile("maneuverExport_", ".json").getCanonicalPath();
+                    logger.fine("Exporting the maneuver graph to file after updating it with new maneuver spots for competitor "+competitor
+                            +"; visualize by running com.sap.sailing.windestimation.lab/python/mst_graph_visualizer_graphviz.py "+canonicalTmpPath+" output.pdf");
+                    MstGraphExportHelper.exportToFile(graphComponents, mstManeuverGraphGenerator.getTransitionProbabilitiesCalculator(), canonicalTmpPath);
+                } catch (IOException e) {
+                    logger.log(Level.WARNING, "Exporting the maneuver graph to file failed", e);
+                }
+            }
             if (graphComponents != null) {
                 Iterable<GraphLevelInference<MstGraphLevel>> bestPath = bestPathsCalculator.getBestNodes(graphComponents);
                 for (GraphLevelInference<MstGraphLevel> inference : bestPath) {

@@ -38,17 +38,17 @@
      -->
     <tycho-version>4.0.12</tycho-version>
     <toolchains-version>3.2.0</toolchains-version>
-    <gwt.version>2.12.2</gwt.version>
+    <gwt.version>2.12.4</gwt.version>
     <!-- gwt-maven-plugin is typically in sync with the GWT version. But sometimes versions need extra time after a new GWT release. -->
-    <gwt.plugin.version>2.12.2</gwt.plugin.version>
-    <gwt.minVersion>2.12.2</gwt.minVersion>
+    <gwt.plugin.version>2.12.4</gwt.plugin.version>
+    <gwt.minVersion>2.12.4</gwt.minVersion>
     <gwt.workers>2</gwt.workers>
     <p2-target>race-analysis-p2-remote</p2-target><!--can be overidden through p2-target.local profile -->
     <!-- QUESTION: Which properties or settings are system dependent and differ across different machines/environments? QUESTION:
     Can we move the system property -Dmongo.dbName to "parameters.mongodb"? If so the IP of the host would be the same for all
     profiles. -->
     <parameters.common>
-      -Dfile.encoding=UTF-8 -Dmongo.dbName=winddbTest -DspatialWind=true -Xss100m -Dgwt.rpc.version=9 -Dgoogle.maps.authenticationparams=key=AIzaSyD1Se4tIkt-wglccbco3S7twaHiG20hR9E
+      -Dfile.encoding=UTF-8 -Dmongo.dbName=winddbTest -DspatialWind=true -Xss100m -Dgwt.rpc.version=9 -Dgoogle.maps.authenticationparams=key=AIzaSyD1Se4tIkt-wglccbco3S7twaHiG20hR9E -Digtimi.base.url=http://127.0.0.1:8888
     </parameters.common>
     <parameters.vm-settings>
       -ea -Xmx8192m -XX:+UseG1GC

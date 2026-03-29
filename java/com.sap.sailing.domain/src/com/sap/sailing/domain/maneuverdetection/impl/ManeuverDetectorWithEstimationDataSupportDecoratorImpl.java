@@ -9,11 +9,8 @@ import com.sap.sailing.domain.base.Mark;
 import com.sap.sailing.domain.base.SpeedWithBearingWithConfidence;
 import com.sap.sailing.domain.base.Waypoint;
 import com.sap.sailing.domain.common.ManeuverType;
-import com.sap.sailing.domain.common.Position;
-import com.sap.sailing.domain.common.SpeedWithBearing;
 import com.sap.sailing.domain.common.Wind;
 import com.sap.sailing.domain.common.WindSourceType;
-import com.sap.sailing.domain.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sailing.domain.common.tracking.GPSFixMoving;
 import com.sap.sailing.domain.maneuverdetection.CompleteManeuverCurveWithEstimationData;
 import com.sap.sailing.domain.maneuverdetection.ManeuverCurveWithUnstableCourseAndSpeedWithEstimationData;
@@ -33,10 +30,13 @@ import com.sap.sailing.domain.tracking.impl.NonCachingMarkPositionAtTimePointCac
 import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Distance;
 import com.sap.sse.common.Duration;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.Speed;
+import com.sap.sse.common.SpeedWithBearing;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.impl.DegreeBearingImpl;
+import com.sap.sse.common.impl.KnotSpeedWithBearingImpl;
 
 /**
  * A decorator which adds support for management of estimation data for wind estimation to an existing maneuver detector
