@@ -15,7 +15,7 @@ import com.sap.sse.gwt.client.async.AsyncAction;
  * @author Christopher Ronnewinkel (D036654)
  * 
  */
-public class GetSimulationAction implements AsyncAction<SimulatorResultsDTO> {
+public class GetSimulationAction extends RetryableAsyncAction<SimulatorResultsDTO> {
     private final SailingServiceAsync sailingService;
     private final LegIdentifier legIdentifier;
     
@@ -25,7 +25,12 @@ public class GetSimulationAction implements AsyncAction<SimulatorResultsDTO> {
     }
 
     @Override
-    public void execute(AsyncCallback<SimulatorResultsDTO> callback) {
+    public void executeOnce(AsyncCallback<RetryableActionResult<SimulatorResultsDTO>> callback) {
         sailingService.getSimulatorResults(legIdentifier, callback);
+    }
+
+    @Override
+    protected int getMaximumNumberOfRetries() {
+        return 100;
     }
 }

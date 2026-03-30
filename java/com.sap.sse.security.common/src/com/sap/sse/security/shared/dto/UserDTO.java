@@ -40,8 +40,7 @@ public class UserDTO extends
     }
 
     /**
-     * @param groups
-     *            may be {@code null} which is equivalent to passing an empty groups collection
+     * @param groups may be {@code null} which is equivalent to passing an empty groups collection
      */
     public UserDTO(String name, String email, String fullName, String company, String locale, boolean emailValidated,
             boolean didOptOutOfFeatureAndCommunityEmails, List<AccountDTO> accounts, Iterable<RoleWithSecurityDTO> roles,

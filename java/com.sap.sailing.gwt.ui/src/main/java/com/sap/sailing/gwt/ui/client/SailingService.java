@@ -108,6 +108,7 @@ import com.sap.sse.common.Util.Triple;
 import com.sap.sse.common.impl.KilometersPerHourSpeedImpl;
 import com.sap.sse.common.impl.KnotSpeedImpl;
 import com.sap.sse.common.impl.SecondsDurationImpl;
+import com.sap.sse.gwt.client.async.RetryableActionResult;
 import com.sap.sse.gwt.client.replication.RemoteReplicationService;
 import com.sap.sse.security.shared.HasPermissions;
 import com.sap.sse.security.shared.TypeRelativeObjectIdentifier;
@@ -152,7 +153,7 @@ public interface SailingService extends RemoteService, RemoteReplicationService 
     BearingWithConfidenceDTO getManeuverAngle(BoatClassDTO boatClass, ManeuverType maneuverType, Speed windSpeed)
             throws NotEnoughDataHasBeenAddedException, UnauthorizedException;
 
-    SimulatorResultsDTO getSimulatorResults(LegIdentifier legIdentifier) throws UnauthorizedException;
+    RetryableActionResult<SimulatorResultsDTO> getSimulatorResults(LegIdentifier legIdentifier) throws UnauthorizedException;
 
     RaceboardDataDTO getRaceboardData(String regattaName, String raceName, String leaderboardName,
             String leaderboardGroupName, UUID leaderboardGroupId, UUID eventId) throws UnauthorizedException;
