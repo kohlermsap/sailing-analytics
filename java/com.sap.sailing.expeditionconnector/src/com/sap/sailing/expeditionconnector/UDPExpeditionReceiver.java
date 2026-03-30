@@ -131,7 +131,7 @@ public class UDPExpeditionReceiver extends UDPReceiver<ExpeditionMessage, Expedi
         }
         final DoubleVectorFix fix = new DoubleVectorFixImpl(msg.getTimePoint(), vector);
         if (fix.hasValidData()) {
-            deviceRegistry.getSensorFixStore().storeFix(sensorDeviceIdentifier, fix);
+            deviceRegistry.getSensorFixStore().storeFix(sensorDeviceIdentifier, fix, /* filterByRegattaAndEventEndDate */ false);
         }
     }
 
@@ -142,7 +142,7 @@ public class UDPExpeditionReceiver extends UDPReceiver<ExpeditionMessage, Expedi
     private void tryToProduceAndStoreGpsFix(ExpeditionMessage msg, ExpeditionGpsDeviceIdentifier gpsDeviceIdentifier) {
         final GPSFixMoving fix = msg.getGPSFixMoving();
         if (fix != null) {
-            deviceRegistry.getSensorFixStore().storeFix(gpsDeviceIdentifier, fix);
+            deviceRegistry.getSensorFixStore().storeFix(gpsDeviceIdentifier, fix, /* filterByRegattaAndEventEndDate */ false);
         }
     }
 

@@ -547,7 +547,7 @@ public class ImportMasterDataOperation extends
 
     private void storeFixes(SensorFixStore store, DeviceIdentifier device, final Collection<Timed> fixesToAddAsBatch) {
         try {
-            store.storeFixes(device, fixesToAddAsBatch, /* returnManeuverUpdate */ false, /* returnLiveDelay */ false);
+            store.storeFixes(device, fixesToAddAsBatch, /* returnManeuverUpdate */ false, /* returnLiveDelay */ false, /* filterByRegattaAndEventEndDate */ true);
             fixesToAddAsBatch.clear();
         } catch (NoCorrespondingServiceRegisteredException e) {
             logger.severe("Failed to store race log tracking fixes while importing.");

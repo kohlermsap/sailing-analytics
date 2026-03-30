@@ -54,12 +54,12 @@ public enum EmptySensorFixStore implements SensorFixStore {
     }
 
     @Override
-    public <FixT extends Timed> void storeFix(DeviceIdentifier device, FixT fix) {
+    public <FixT extends Timed> void storeFix(DeviceIdentifier device, FixT fix, boolean filterByRegattaAndEventEndDate) {
     }
 
     @Override
     public <FixT extends Timed> Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> storeFixes(DeviceIdentifier device,
-            Iterable<FixT> fixes, boolean returnManeuverUpdate, boolean returnLiveDelay) {
+            Iterable<FixT> fixes, boolean returnManeuverUpdate, boolean returnLiveDelay, boolean filterByRegattaAndEventEndDate) {
         return Collections.emptySet();
     }
 

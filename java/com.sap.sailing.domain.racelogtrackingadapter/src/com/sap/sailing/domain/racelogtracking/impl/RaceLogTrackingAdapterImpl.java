@@ -283,7 +283,7 @@ public class RaceLogTrackingAdapterImpl implements RaceLogTrackingAdapter {
                 UUID.randomUUID(), mark, device, timePoint, timePoint);
         log.add(mapping);
         try {
-            service.getSensorFixStore().storeFix(device, gpsFix);
+            service.getSensorFixStore().storeFix(device, gpsFix, /* filterByRegattaAndEventEndDate */ false);
         } catch (NoCorrespondingServiceRegisteredException e) {
             logger.log(Level.WARNING, "Could not ping mark " + mark);
         }

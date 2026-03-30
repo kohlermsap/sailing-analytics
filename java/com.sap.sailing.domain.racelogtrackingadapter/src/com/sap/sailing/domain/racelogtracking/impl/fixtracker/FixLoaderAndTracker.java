@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sap.sailing.domain.abstractlog.race.RaceLogEvent;
 import com.sap.sailing.domain.abstractlog.regatta.MappingEventVisitor;
 import com.sap.sailing.domain.abstractlog.regatta.RegattaLog;
 import com.sap.sailing.domain.abstractlog.regatta.RegattaLogEventVisitor;
@@ -30,8 +31,14 @@ import com.sap.sailing.domain.abstractlog.regatta.events.RegattaLogDeviceMapping
 import com.sap.sailing.domain.abstractlog.regatta.events.RegattaLogDeviceMarkMappingEvent;
 import com.sap.sailing.domain.base.Boat;
 import com.sap.sailing.domain.base.Competitor;
+import com.sap.sailing.domain.base.Event;
+import com.sap.sailing.domain.base.EventListener;
+import com.sap.sailing.domain.base.Fleet;
 import com.sap.sailing.domain.base.Mark;
+import com.sap.sailing.domain.base.RaceColumn;
+import com.sap.sailing.domain.base.RaceColumnListener;
 import com.sap.sailing.domain.base.Regatta;
+import com.sap.sailing.domain.base.Venue;
 import com.sap.sailing.domain.common.DeviceIdentifier;
 import com.sap.sailing.domain.common.RegattaAndRaceIdentifier;
 import com.sap.sailing.domain.common.TrackedRaceStatusEnum;
@@ -39,6 +46,14 @@ import com.sap.sailing.domain.common.tracking.DoubleVectorFix;
 import com.sap.sailing.domain.common.tracking.GPSFix;
 import com.sap.sailing.domain.common.tracking.GPSFixMoving;
 import com.sap.sailing.domain.common.tracking.SensorFix;
+import com.sap.sailing.domain.leaderboard.EventResolver;
+import com.sap.sailing.domain.leaderboard.FlexibleLeaderboard;
+import com.sap.sailing.domain.leaderboard.Leaderboard;
+import com.sap.sailing.domain.leaderboard.LeaderboardGroup;
+import com.sap.sailing.domain.leaderboard.LeaderboardGroupListener;
+import com.sap.sailing.domain.leaderboard.RegattaLeaderboard;
+import com.sap.sailing.domain.leaderboard.ResultDiscardingRule;
+import com.sap.sailing.domain.racelog.RaceLogIdentifier;
 import com.sap.sailing.domain.racelog.tracking.FixReceivedListener;
 import com.sap.sailing.domain.racelog.tracking.SensorFixMapper;
 import com.sap.sailing.domain.racelog.tracking.SensorFixStore;
@@ -175,6 +190,27 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
     
     private AtomicBoolean stopRequested = new AtomicBoolean(false);
     
+    private final EventResolver eventResolver;
+    
+    /**
+     * Caches the result of {@link #getEvents()} (which tells the events to which the {@link #trackedRace} is connected)
+     * in the pair's {@link Pair#getB() second component} and remembers the result of
+     * {@link EventResolver#getAllEvents()} from the time point when the cache contents were computed; gets invalidated
+     * by any change to the leaderboard groups of any of the events in the cache, or when the {@link #trackedRace} is
+     * attached or detached from any of the leaderboard columns of any of those leaderboards contained in any of those
+     * leaderboard groups, or if the set of leaderboards in one of those leaderboard groups changes, or if the set of
+     * all events known by the {@link #eventResolver} changes.
+     */
+    private Pair<Iterable<Event>, Iterable<Event>> eventsCache;
+    
+    /**
+     * Subscribed to {@link EventResolver#getAllEvents() all events} returned from the {@link #eventResolver} the last
+     * time the {@link #eventsCache} was filled. Those are the ones kept in the {@link Pair#getA() first component} of
+     * the {@link #eventsCache}. Subscribes recursively to all the {@link LeaderboardGroup}s inside those events, and
+     * inside those to their {@link Leaderboard}s.
+     */
+    private EventResolverListener eventResolverListener;
+    
     private final AbstractRaceChangeListener raceChangeListener = new AbstractRaceChangeListener() {
         @Override
         public void startOfTrackingChanged(TimePoint oldStartOfTracking, TimePoint newStartOfTracking) {
@@ -206,7 +242,9 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
     
     private final FixReceivedListener<Timed> listener = new FixReceivedListener<Timed>() {
         @Override
-        public Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> fixReceived(DeviceIdentifier device, Timed fix, boolean returnManeuverChanges, boolean returnLiveDelay) {
+        public Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> fixReceived(DeviceIdentifier device,
+                Timed fix, boolean returnManeuverChanges, boolean returnLiveDelay,
+                boolean filterByRegattaAndEventEndDate) {
             final Set<RegattaAndRaceIdentifier> maneuverChanged = new HashSet<>();
             final Map<RegattaAndRaceIdentifier, Duration> delayToLive = new HashMap<>();
             if (!preemptiveStopRequested.get() && trackedRace.getStartOfTracking() != null) {
@@ -238,7 +276,8 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
                                     SensorFixMapper<SensorFix, DynamicSensorFixTrack<Competitor, SensorFix>, Competitor> mapper = sensorFixMapperFactory
                                             .createCompetitorMapper((Class<? extends RegattaLogDeviceMappingEvent<?>>) event.getClass());
                                     DynamicSensorFixTrack<Competitor, SensorFix> track = mapper.getTrack(trackedRace, competitor);
-                                    if (track != null && trackedRace.isWithinStartAndEndOfTracking(fix.getTimePoint())) { // TODO bug6229: during an MDI also look at event/regatta end date if set
+                                    if (track != null && trackedRace.isWithinStartAndEndOfTracking(fix.getTimePoint())
+                                            && (!filterByRegattaAndEventEndDate || !excludedByRegattaOrEventsEndDates(fix.getTimePoint()))) {
                                         mapper.addFix(track, (DoubleVectorFix) fix);
                                         if (returnLiveDelay) {
                                             delayToLive.put(trackedRace.getRaceIdentifier(), new MillisecondsDurationImpl(trackedRace.getDelayToLiveInMillis()));
@@ -330,7 +369,8 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
                                                                     .getLastFixAtOrBefore(startOfTracking);
                                                             forceFix = (fixBeforeStartOfTracking == null
                                                                     || fixBeforeStartOfTracking.getTimePoint().before(timePoint));
-                                                        } else if (endOfTracking != null && timePoint.after(endOfTracking)) {
+                                                        } else if (endOfTracking != null && timePoint.after(endOfTracking)
+                                                                && (!filterByRegattaAndEventEndDate || !excludedByRegattaOrEventsEndDates(fix.getTimePoint()))) {
                                                             // check if it is closer to the end of the tracking interval
                                                             GPSFix fixAfterEndOfTracking = markTrack
                                                                     .getFirstFixAtOrAfter(endOfTracking);
@@ -351,7 +391,9 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
                                             markTrack.unlockAfterRead();
                                         }
                                     }
-                                    trackedRace.recordFix(mark, (GPSFix) fix, /* only when in tracking interval */ !forceFix);
+                                    if (!filterByRegattaAndEventEndDate || !excludedByRegattaOrEventsEndDates(fix.getTimePoint())) {
+                                        trackedRace.recordFix(mark, (GPSFix) fix, /* only when in tracking interval */ !forceFix);
+                                    }
                                     if (returnLiveDelay) {
                                         delayToLive.put(trackedRace.getRaceIdentifier(), new MillisecondsDurationImpl(trackedRace.getDelayToLiveInMillis()));
                                     }
@@ -379,6 +421,166 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
         }
     };
 
+    private class EventResolverListener implements EventResolver.Listener, EventListener, LeaderboardGroupListener, RaceColumnListener {
+        private static final long serialVersionUID = 5441115548861230410L;
+
+        private void invalidateCache() {
+            for (final Event oneOfOldAllEvents : eventsCache.getA()) {
+                removeAsListenerFrom(oneOfOldAllEvents);
+            }
+            eventsCache = null;
+        }
+        
+        private void removeAsListenerFrom(Event oneOfOldAllEvents) {
+            oneOfOldAllEvents.removeEventListener(this);
+            for (final LeaderboardGroup leaderboardGroup : oneOfOldAllEvents.getLeaderboardGroups()) {
+                leaderboardGroup.removeLeaderboardGroupListener(this);
+                for (final Leaderboard leaderboard : leaderboardGroup.getLeaderboards()) {
+                    leaderboard.removeRaceColumnListener(this);
+                }
+            }
+        }
+
+        public void addAsListenerTo(Event event) {
+            event.addEventListener(this);
+            for (final LeaderboardGroup leaderboardGroup : event.getLeaderboardGroups()) {
+                leaderboardGroup.addLeaderboardGroupListener(this);
+                for (final Leaderboard leaderboard : leaderboardGroup.getLeaderboards()) {
+                    leaderboard.addRaceColumnListener(this);
+                }
+            }
+        }
+
+        @Override
+        public void trackedRaceLinked(RaceColumn raceColumn, Fleet fleet, TrackedRace trackedRace) {
+            if (trackedRace == FixLoaderAndTracker.this.trackedRace) {
+                invalidateCache();
+            }
+        }
+
+        @Override
+        public void trackedRaceUnlinked(RaceColumn raceColumn, Fleet fleet, TrackedRace trackedRace) {
+            if (trackedRace == FixLoaderAndTracker.this.trackedRace) {
+                invalidateCache();
+            }
+        }
+
+        @Override
+        public void isMedalRaceChanged(RaceColumn raceColumn, boolean newIsMedalRace) {
+        }
+
+        @Override
+        public void isFleetsCanRunInParallelChanged(RaceColumn raceColumn, boolean newIsFleetsCanRunInParallel) {
+        }
+
+        @Override
+        public void isStartsWithZeroScoreChanged(RaceColumn raceColumn, boolean newIsStartsWithZeroScore) {
+        }
+
+        @Override
+        public void isFirstColumnIsNonDiscardableCarryForwardChanged(RaceColumn raceColumn,
+                boolean firstColumnIsNonDiscardableCarryForward) {
+        }
+
+        @Override
+        public void hasSplitFleetContiguousScoringChanged(RaceColumn raceColumn,
+                boolean hasSplitFleetContiguousScoring) {
+        }
+
+        @Override
+        public void hasCrossFleetMergedRankingChanged(RaceColumn raceColumn, boolean hasCrossFleetMergedRanking) {
+        }
+
+        @Override
+        public void oneAlwaysStaysOneChanged(RaceColumn raceColumn, boolean oneAlwaysStaysOne) {
+        }
+
+        @Override
+        public void raceColumnAddedToContainer(RaceColumn raceColumn) {
+            invalidateCache();
+        }
+
+        @Override
+        public void raceColumnRemovedFromContainer(RaceColumn raceColumn) {
+            invalidateCache();
+        }
+
+        @Override
+        public void raceColumnMoved(RaceColumn raceColumn, int newIndex) {
+        }
+
+        @Override
+        public void raceColumnNameChanged(RaceColumn raceColumn, String oldName, String newName) {
+        }
+
+        @Override
+        public void factorChanged(RaceColumn raceColumn, Double oldFactor, Double newFactor) {
+        }
+
+        @Override
+        public void competitorDisplayNameChanged(Competitor competitor, String oldDisplayName, String displayName) {
+        }
+
+        @Override
+        public void resultDiscardingRuleChanged(ResultDiscardingRule oldDiscardingRule,
+                ResultDiscardingRule newDiscardingRule) {
+        }
+
+        @Override
+        public void maximumNumberOfDiscardsChanged(Integer oldMaximumNumberOfDiscards,
+                Integer newMaximumNumberOfDiscards) {
+        }
+
+        @Override
+        public void raceLogEventAdded(RaceColumn raceColumn, RaceLogIdentifier raceLogIdentifier, RaceLogEvent event) {
+        }
+
+        /**
+         * This listener is transient and not to be serialized to a replica. The handling of fixes happens on the
+         * primary instance of a replica set only.
+         */
+        @Override
+        public boolean isTransient() {
+            return true;
+        }
+
+        @Override
+        public void leaderboardAdded(LeaderboardGroup group, Leaderboard leaderboard) {
+            invalidateCache();
+            leaderboard.addRaceColumnListener(this);
+        }
+
+        @Override
+        public void leaderboardRemoved(LeaderboardGroup group, Leaderboard leaderboard) {
+            invalidateCache();
+            leaderboard.removeRaceColumnListener(this);
+        }
+
+        @Override
+        public void eventAdded(Event event) {
+            invalidateCache();
+            event.addEventListener(this);
+        }
+
+        @Override
+        public void eventRemoved(Event event) {
+            invalidateCache();
+            event.removeEventListener(this);
+        }
+
+        @Override
+        public void leaderboardGroupAdded(Event event, LeaderboardGroup leaderboardGroup) {
+            invalidateCache();
+            leaderboardGroup.addLeaderboardGroupListener(this);
+        }
+
+        @Override
+        public void leaderboardGroupRemoved(Event event, LeaderboardGroup leaderboardGroup) {
+            invalidateCache();
+            leaderboardGroup.removeLeaderboardGroupListener(this);
+        }
+    }
+    
     /**
      * @param comp
      *            The resolved competitor for wich a gpsfix was just recorded.
@@ -402,10 +604,12 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
     }
 
     public FixLoaderAndTracker(DynamicTrackedRace trackedRace, SensorFixStore sensorFixStore,
-            SensorFixMapperFactory sensorFixMapperFactory, boolean removeOutliersFromCompetitorTracks) {
+            SensorFixMapperFactory sensorFixMapperFactory, EventResolver eventResolver, boolean removeOutliersFromCompetitorTracks) {
         this.sensorFixStore = sensorFixStore;
         this.sensorFixMapperFactory = sensorFixMapperFactory;
         this.trackedRace = trackedRace;
+        this.eventResolver = eventResolver;
+        this.eventResolverListener = new EventResolverListener();
         this.removeOutliersFromCompetitorTracks = removeOutliersFromCompetitorTracks;
         startTracking();
     }
@@ -440,6 +644,62 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
                 }
             }
         }
+    }
+    
+    /**
+     * Finds the {@link Regatta} and zero or more {@link Event}s to which the {@link #trackedRace} belongs and checks
+     * their {@link Regatta#getEndDate() regatta end date} and {@link Event#getEndDate() event end dates}. If an end
+     * date is not set, this is ignored and does not lead to the time point being considered "excluded." If multiple
+     * events are found, the time point must be excluded for all of them in order to be considered excluded. In other
+     * words: if one event considers this time point "in" or doesn't define an end date that would explicitly exclude
+     * it, the time point is implicitly considered "in" overall.
+     */
+    private boolean excludedByRegattaOrEventsEndDates(TimePoint timePoint) {
+        return (getRegatta() != null && getRegatta().getEndDate() != null && timePoint.after(getRegatta().getEndDate()))
+            || !Util.isEmpty(Util.filter(getEvents(), event->event.getEndDate() == null || !timePoint.after(event.getEndDate())));
+    }
+    
+    private Regatta getRegatta() {
+        return trackedRace.getTrackedRegatta().getRegatta();
+    }
+    
+    private Iterable<Event> getEvents() {
+        final Iterable<Event> result;
+        if (eventsCache != null) {
+             result = eventsCache.getB();
+        } else {
+            final Regatta regatta = getRegatta();
+            final Iterable<Event> allEvents = eventResolver.getAllEvents();
+            for (final Event event : allEvents) {
+                eventResolverListener.addAsListenerTo(event); // removal happens upon invalidation by the listener itself
+            }
+            result = Util.filter(eventResolver.getAllEvents(), event->isEventContainsRegatta(event, regatta));
+            eventsCache = new Pair<>(allEvents, result);
+        }
+        return result;
+    }
+
+    /**
+     * For a {@code true} answer, the {@code event} must have a {@link Venue#getCourseAreas() course area} that
+     * matches that of the {@code regatta} and where that event then has a leaderboard group with a
+     * {@link RegattaLeaderboard} that refers to the {@code regatta}, or otherwise another type of leaderboard
+     * such as a {@link FlexibleLeaderboard} that has the {@link #trackedRace} attached.
+     */
+    private boolean isEventContainsRegatta(Event event, Regatta regatta) {
+        boolean result = false;
+        if (Util.containsAny(event.getVenue().getCourseAreas(), regatta.getCourseAreas())) {
+            for (final LeaderboardGroup leaderboardGroup : event.getLeaderboardGroups()) {
+                for (final Leaderboard leaderboard : leaderboardGroup.getLeaderboards()) {
+                    if ((leaderboard instanceof RegattaLeaderboard && ((RegattaLeaderboard) leaderboard).getRegatta() == regatta)
+                            ||
+                        (leaderboard.hasTrackedRace(trackedRace))) {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -766,6 +1026,7 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
             }
         }
         sensorFixStore.removeListener(listener);
+        eventResolver.removeEventResolverListener(eventResolverListener);
     }
 
     private void startTracking() {

@@ -11,6 +11,7 @@ import com.sap.sailing.domain.abstractlog.race.impl.BaseRaceLogEventVisitor;
 import com.sap.sailing.domain.abstractlog.race.tracking.RaceLogDenoteForTrackingEvent;
 import com.sap.sailing.domain.abstractlog.race.tracking.analyzing.impl.RaceLogTrackingStateAnalyzer;
 import com.sap.sailing.domain.common.racelog.tracking.RaceLogTrackingState;
+import com.sap.sailing.domain.leaderboard.EventResolver;
 import com.sap.sailing.domain.racelog.tracking.SensorFixStore;
 import com.sap.sailing.domain.racelogsensortracking.SensorFixMapperFactory;
 import com.sap.sailing.domain.tracking.DynamicTrackedRace;
@@ -68,8 +69,12 @@ public class RaceLogFixTrackerManager implements TrackingDataLoader {
         }
     };
 
+    private final EventResolver eventResolver;
+
     public RaceLogFixTrackerManager(DynamicTrackedRace trackedRace, SensorFixStore sensorFixStore,
-            SensorFixMapperFactory sensorFixMapperFactory, boolean removeOutliersFromCompetitorTracks) {
+            SensorFixMapperFactory sensorFixMapperFactory, boolean removeOutliersFromCompetitorTracks,
+            EventResolver eventResolver) {
+        this.eventResolver = eventResolver;
         this.removeOutliersFromCompetitorTracks = removeOutliersFromCompetitorTracks;
         this.trackedRace = trackedRace;
         this.sensorFixStore = sensorFixStore;
@@ -130,7 +135,7 @@ public class RaceLogFixTrackerManager implements TrackingDataLoader {
     private synchronized void startTrackerIfNotAlreadyStarted() {
         if (tracker == null) {
             logger.fine("Starting fix tracker for TrackedRace: " + trackedRace.getRaceIdentifier());
-            tracker = new FixLoaderAndTracker(trackedRace, sensorFixStore, sensorFixMapperFactory, removeOutliersFromCompetitorTracks);
+            tracker = new FixLoaderAndTracker(trackedRace, sensorFixStore, sensorFixMapperFactory, eventResolver, removeOutliersFromCompetitorTracks);
         }
     }
 

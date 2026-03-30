@@ -65,14 +65,23 @@ public interface SensorFixStore {
      *            the device to store the fix for. Must not be <code>null</code>.
      * @param fix
      *            The fix to store. Must not be <code>null</code>.
+     * @param filterByRegattaAndEventEndDate
+     *            if {@code true}, then when forwarding this fix to this store's
+     *            {@link #addListener(FixReceivedListener, DeviceIdentifier) listeners}, this parameter is passed on to
+     *            {@link FixReceivedListener#fixReceived(DeviceIdentifier, Timed, boolean, boolean, boolean)}. It leads
+     *            to the fix's {@link Timed#getTimePoint() time point} being matched against the end date of any regatta
+     *            and event that this listener is responsible for; then, fixes that are newer than these end dates are
+     *            dropped and not recorded
      */
-    <FixT extends Timed> void storeFix(DeviceIdentifier device, FixT fix);
+    <FixT extends Timed> void storeFix(DeviceIdentifier device, FixT fix, boolean filterByRegattaAndEventEndDate);
 
     /**
      * Saves a batch of fixes for the given device and informs all registered listeners about the new fix.
      * 
      * @param device
      *            the device to store the fix for. Must not be <code>null</code>.
+     * @param fixes
+     *            The fixes to store. Must not be <code>null</code>.
      * @param returnManeuverUpdate
      *            if {@code true}, all listeners to which this fix is forwarded shall check whether the fix feeds into a
      *            competitor's track in the scope of a race where for that competitor the maneuver list has changed
@@ -83,8 +92,13 @@ public interface SensorFixStore {
      *            if {@code true} then all listeners to which the fix is forwarded shall check to which races the fix
      *            maps and report the live delay for all those races as the third component of the resulting
      *            {@link Triple}s.
-     * @param fixes
-     *            The fixes to store. Must not be <code>null</code>.
+     * @param filterByRegattaAndEventEndDate
+     *            if {@code true}, then when forwarding this fix to this store's
+     *            {@link #addListener(FixReceivedListener, DeviceIdentifier) listeners}, this parameter is passed on to
+     *            {@link FixReceivedListener#fixReceived(DeviceIdentifier, Timed, boolean, boolean, boolean)}. It leads
+     *            to the fix's {@link Timed#getTimePoint() time point} being matched against the end date of any regatta
+     *            and event that this listener is responsible for; then, fixes that are newer than these end dates are
+     *            dropped and not recorded
      * @return An {@link Iterable} with {@link RegattaAndRaceIdentifier}s in their first component is returned that will
      *         contain races with new maneuvers which were not available at the last time the given device stored a fix
      *         in case the {@code returnManeuverUpdate} parameter was set to {@code true}, and all races with their live
@@ -93,11 +107,11 @@ public interface SensorFixStore {
      *         identifiers if the device mapping is currently ambiguous.
      */
     <FixT extends Timed> Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> storeFixes(
-            DeviceIdentifier device, Iterable<FixT> fixes, boolean returnManeuverUpdate, boolean returnLiveDelay);
+            DeviceIdentifier device, Iterable<FixT> fixes, boolean returnManeuverUpdate, boolean returnLiveDelay, boolean filterByRegattaAndEventEndDate);
 
     /**
      * Listeners are notified, whenever a {@link GPSFix} submitted by the {@code device}
-     * is stored through the {@link #storeFix(DeviceIdentifier, GPSFix)} method.
+     * is stored through the {@link #storeFix(DeviceIdentifier, GPSFix, boolean)} method.
      */
     void addListener(FixReceivedListener<? extends Timed> listener, DeviceIdentifier device);
 

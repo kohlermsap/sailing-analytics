@@ -40,6 +40,6 @@ public class PositionRelatedReportToGPSFixConverter {
     public void ingestFixesToStore(SensorFixStore store, FRIReport fixesReceived) {
         final SmartphoneImeiIdentifier deviceIdentifier = getDeviceIdentifier(fixesReceived);
         final Iterable<GPSFix> fixes = Util.map(Arrays.asList(fixesReceived.getPositionRelatedReports()), this::createGPSFixFromPositionRelatedReport);
-        store.storeFixes(deviceIdentifier, fixes, /* returnManeuverUpdate */ false, /* returnLiveDelay */ false);
+        store.storeFixes(deviceIdentifier, fixes, /* returnManeuverUpdate */ false, /* returnLiveDelay */ false, /* filterByRegattaAndEventEndDate */ false);
     }
 }

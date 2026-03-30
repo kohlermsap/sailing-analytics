@@ -36,14 +36,14 @@ public class AwsSensorFixStore implements SensorFixStore {
     }
 
     @Override
-    public <FixT extends Timed> void storeFix(DeviceIdentifier device, FixT fix) {
+    public <FixT extends Timed> void storeFix(DeviceIdentifier device, FixT fix, boolean filterByRegattaAndEventEndDate) {
         // TODO Auto-generated method stub
         
     }
 
     @Override
     public <FixT extends Timed> Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> storeFixes(
-            DeviceIdentifier device, Iterable<FixT> fixes, boolean returnManeuverUpdate, boolean returnLiveDelay) {
+            DeviceIdentifier device, Iterable<FixT> fixes, boolean returnManeuverUpdate, boolean returnLiveDelay, boolean filterByRegattaAndEventEndDate) {
         // TODO Auto-generated method stub
         return null;
     }

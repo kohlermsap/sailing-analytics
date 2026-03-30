@@ -42,7 +42,7 @@ public class GPSFixStoreListenerTest extends AbstractGPSFixStoreTest {
                     barrier.await(100, TimeUnit.MILLISECONDS);
                     // During iteration in the main thread this causes a modification that makes the iterator throw a
                     // ConcurrentModificationException on next()
-                    store.addListener((DeviceIdentifier device, GPSFixMoving fix, boolean returnManeuverChanges, boolean returnLiveDelay) -> {
+                    store.addListener((DeviceIdentifier device, GPSFixMoving fix, boolean returnManeuverChanges, boolean returnLiveDelay, boolean filterByRegattaAndEventEndDate) -> {
                         return null;
                     }, device);
                     barrier.await(100, TimeUnit.MILLISECONDS);
@@ -54,7 +54,7 @@ public class GPSFixStoreListenerTest extends AbstractGPSFixStoreTest {
         };
         thread.start();
         try {
-            store.storeFix(device, createFix(100, 10, 20, 30, 40));
+            store.storeFix(device, createFix(100, 10, 20, 30, 40), /* filterByRegattaAndEventEndDate */ false);
         } finally {
             // This ensures that the thread is terminated when the test finishes
             // JUnit may behave crazy if there are additional tests running after the test finished
@@ -71,7 +71,7 @@ public class GPSFixStoreListenerTest extends AbstractGPSFixStoreTest {
         }
 
         @Override
-        public Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> fixReceived(DeviceIdentifier device, GPSFixMoving fix, boolean returnManeuverChanges, boolean returnLiveDelay) {
+        public Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> fixReceived(DeviceIdentifier device, GPSFixMoving fix, boolean returnManeuverChanges, boolean returnLiveDelay, boolean filterByRegattaAndEventEndDate) {
             try {
                 barrier.await(100, TimeUnit.MILLISECONDS);
             } catch (TimeoutException e) {

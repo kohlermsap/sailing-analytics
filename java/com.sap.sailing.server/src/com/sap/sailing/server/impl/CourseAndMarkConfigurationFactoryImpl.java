@@ -553,7 +553,7 @@ public class CourseAndMarkConfigurationFactoryImpl implements CourseAndMarkConfi
                     // TODO check if we can use com.sap.sailing.domain.racelogtracking.impl.RaceLogTrackingAdapterImpl.pingMark(RegattaLog, Mark, GPSFix, RacingEventService)
                     final PingDeviceIdentifierImpl pingIdentifier = new PingDeviceIdentifierImpl(UUID.randomUUID());
                     sensorFixStore.storeFix(pingIdentifier,
-                            new GPSFixImpl(position[0], timePointForDefinitionOfMarksAndDeviceMappings));
+                            new GPSFixImpl(position[0], timePointForDefinitionOfMarksAndDeviceMappings), /* filterByRegattaAndEventEndDate */ false);
                     regatta.getRegattaLog()
                             .add(new RegattaLogDeviceMarkMappingEventImpl(
                                     timePointForDefinitionOfMarksAndDeviceMappings, author, mark, pingIdentifier,

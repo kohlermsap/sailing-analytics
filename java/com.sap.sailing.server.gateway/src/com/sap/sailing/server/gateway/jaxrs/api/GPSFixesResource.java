@@ -64,7 +64,7 @@ public class GPSFixesResource extends AbstractSailingServerResource {
         List<GPSFixMoving> fixes = data.getB();
         JSONObject answer = new JSONObject();
         try {
-            Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> racesWithManeuverChangedAndLiveDelay = getService().getSensorFixStore().storeFixes(device, fixes, returnManeuverUpdate, returnLiveDelay);
+            Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> racesWithManeuverChangedAndLiveDelay = getService().getSensorFixStore().storeFixes(device, fixes, returnManeuverUpdate, returnLiveDelay, /* filterByRegattaAndEventEndDate */ false);
             if (!Util.isEmpty(racesWithManeuverChangedAndLiveDelay)) {
                 JSONArray changed = new JSONArray();
                 answer.put("maneuverchanged", changed);
