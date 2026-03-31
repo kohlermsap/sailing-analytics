@@ -1,10 +1,34 @@
 
+
 <!DOCTYPE html>
 <html>
 <body>
 <div id="mainContent">
     <h4 class="articleHeadline" id="sailingAnalyticsHeadline">What's New - Sailing Analytics</h4>
       <div class="innerContent">
+         <h5 class="articleSubheadline">March 2026</h5>
+         <ul class="bulletList">
+            <li>Maneuver analysis now identifies track segments worth looking at with consistency.
+                Before, depending on fix arrival timing, analysis windows may have missed significant
+                course changes under special circumstances such as COG values changing in opposite
+                directions quickly. The changes also lead to the maneuver time points being closer
+                to the greatest angular speed during the maneuver for most cases.</li>
+            <li>Position fixes are considered for maneuver analysis now only after enough later fixes
+                (usually ten seconds) have been received to ensure that the older fixes don't change
+                their dampened COG/SOG values based on the newer fixes. This sacrifices short
+                maneuver calculation delays for better performance due to fewer re-calculations
+                and reliable results with no difference between live and replay analysis.</li>
+            <li>The polar data export service now allows clients to filter the result down to one or
+                more boat classes. See <a href="/polars/webservices/api/polar_data.html">https://sapsailing.com/polars/webservices/api/polar_data.html</a>
+                for more details.</li>
+            <li>For standard Low Point scoring (other than those scoring "wins" in the medal series), if
+                there are more than one medal races, there now is standard A8 tie breaking based on those multiple
+                medal races in case two competitors are equal on points and scored equal points in all
+                scoring medal races (other than carry-forward columns in the medal series). If that does
+                not break the tie (meaning the two competitors scored equal total points and equal medal
+                race score sums), tie breaking resorts to the regular A8 scheme which will break the
+                tie based on the scores of all races.</li>
+         </ul>
          <h5 class="articleSubheadline">December 2025</h5>
          <ul class="bulletList">
             <li>Added boat class Fareast 28R.</li>

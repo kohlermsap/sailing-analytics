@@ -37,8 +37,6 @@ import com.sap.sailing.domain.common.dto.PairingListTemplateDTO;
 import com.sap.sailing.domain.common.dto.PersonDTO;
 import com.sap.sailing.domain.common.dto.RaceColumnDTO;
 import com.sap.sailing.domain.common.dto.TagDTO;
-import com.sap.sailing.domain.common.impl.KilometersPerHourSpeedImpl;
-import com.sap.sailing.domain.common.impl.KnotSpeedImpl;
 import com.sap.sailing.domain.common.orc.ImpliedWindSource;
 import com.sap.sailing.domain.common.orc.ORCCertificate;
 import com.sap.sailing.domain.common.orc.ORCPerformanceCurveLegTypes;
@@ -104,6 +102,8 @@ import com.sap.sse.common.TimeRange;
 import com.sap.sse.common.Util;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.Util.Triple;
+import com.sap.sse.common.impl.KilometersPerHourSpeedImpl;
+import com.sap.sse.common.impl.KnotSpeedImpl;
 import com.sap.sse.common.impl.SecondsDurationImpl;
 import com.sap.sse.gwt.client.replication.RemoteReplicationServiceAsync;
 import com.sap.sse.pairinglist.PairingList;
@@ -221,11 +221,14 @@ public interface SailingServiceAsync extends RemoteReplicationServiceAsync {
 
     void getRacesOfSwissTimingEvent(String eventJsonUrl, AsyncCallback<SwissTimingEventRecordDTO> asyncCallback);
 
-    void getDouglasPoints(RegattaAndRaceIdentifier raceIdentifier, Map<CompetitorDTO, TimeRange> competitorTimeRanges,
-            double meters, AsyncCallback<Map<CompetitorDTO, List<GPSFixDTOWithSpeedWindTackAndLegType>>> callback);
+    void getDouglasPoints(RegattaAndRaceIdentifier raceIdentifier, Map<String, TimeRange> competitorIdsAsStringsAndTimeRanges,
+            AsyncCallback<Map<CompetitorDTO, List<GPSFixDTOWithSpeedWindTackAndLegType>>> callback);
 
-    void getManeuvers(RegattaAndRaceIdentifier raceIdentifier, Map<CompetitorDTO, TimeRange> competitorTimeRanges,
-            AsyncCallback<Map<CompetitorDTO, List<ManeuverDTO>>> callback);
+    /**
+     * @param callback the {@link String} used as map key is the competitor ID as string
+     */
+    void getManeuvers(RegattaAndRaceIdentifier raceIdentifier, Map<String, TimeRange> competitorIdsAsStringsAndTimeRanges,
+            AsyncCallback<Map<String, List<ManeuverDTO>>> callback);
 
     void getLeaderboardGroups(boolean withGeoLocationData, AsyncCallback<List<LeaderboardGroupDTO>> callback);
 

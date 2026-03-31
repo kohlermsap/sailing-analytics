@@ -3,7 +3,6 @@ package com.sap.sailing.windestimation;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.sap.sailing.domain.common.Position;
 import com.sap.sailing.domain.tracking.WindWithConfidence;
 import com.sap.sailing.windestimation.aggregator.ManeuverClassificationsAggregator;
 import com.sap.sailing.windestimation.data.CompetitorTrackWithEstimationData;
@@ -14,6 +13,7 @@ import com.sap.sailing.windestimation.model.classifier.maneuver.ManeuverClassifi
 import com.sap.sailing.windestimation.model.classifier.maneuver.ManeuverWithProbabilisticTypeClassification;
 import com.sap.sailing.windestimation.preprocessing.PreprocessingPipeline;
 import com.sap.sailing.windestimation.windinference.WindTrackCalculator;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.Util.Pair;;
 

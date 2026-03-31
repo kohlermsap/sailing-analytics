@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="azimuth_logo.png" alt="Sailing Analytics">
+</p>
+
 # Sailing Analytics
 
 ## About this Project

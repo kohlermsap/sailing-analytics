@@ -17,8 +17,6 @@ import java.util.zip.ZipInputStream;
 import com.sap.sailing.domain.common.Wind;
 import com.sap.sailing.domain.common.WindSource;
 import com.sap.sailing.domain.common.WindSourceType;
-import com.sap.sailing.domain.common.impl.DegreePosition;
-import com.sap.sailing.domain.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sailing.domain.common.impl.WindImpl;
 import com.sap.sailing.domain.common.impl.WindSourceWithAdditionalID;
 import com.sap.sailing.domain.common.tracking.DoubleVectorFix;
@@ -30,6 +28,8 @@ import com.sap.sailing.server.trackfiles.impl.BaseBravoDataImporterImpl;
 import com.sap.sse.common.Util;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.impl.DegreeBearingImpl;
+import com.sap.sse.common.impl.DegreePosition;
+import com.sap.sse.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
 
 public class BravoWindImporter extends AbstractWindImporter {

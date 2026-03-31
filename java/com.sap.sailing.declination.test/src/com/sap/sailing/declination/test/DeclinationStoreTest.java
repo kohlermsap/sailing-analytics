@@ -31,12 +31,12 @@ import com.sap.sailing.declination.Declination;
 import com.sap.sailing.declination.impl.DeclinationImporter;
 import com.sap.sailing.declination.impl.DeclinationRecordImpl;
 import com.sap.sailing.declination.impl.DeclinationStore;
-import com.sap.sailing.domain.common.Position;
-import com.sap.sailing.domain.common.impl.DegreePosition;
 import com.sap.sailing.domain.common.quadtree.QuadTree;
 import com.sap.sse.common.Bearing;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.impl.DegreeBearingImpl;
+import com.sap.sse.common.impl.DegreePosition;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
 
 public abstract class DeclinationStoreTest<I extends DeclinationImporter> extends AbstractDeclinationTest<I> {

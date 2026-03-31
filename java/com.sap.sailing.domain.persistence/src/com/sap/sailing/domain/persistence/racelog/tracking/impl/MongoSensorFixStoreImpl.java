@@ -132,7 +132,8 @@ public class MongoSensorFixStoreImpl extends MongoFixHandler implements MongoSen
     public <FixT extends Timed> void loadFixes(Consumer<FixT> consumer, DeviceIdentifier device, TimePoint from,
             TimePoint to, boolean inclusive, BooleanSupplier isPreemptiveStopped, Consumer<Double> progressConsumer)
                     throws NoCorrespondingServiceRegisteredException, TransformationException {
-        loadFixes(consumer, device, from, to, inclusive, isPreemptiveStopped, progressConsumer, true, false);
+        loadFixes(consumer, device, from, to, inclusive, isPreemptiveStopped, progressConsumer,
+                /* ascending */ true, /* only one result */ false);
     }
 
     private <FixT extends Timed> boolean loadFixes(Consumer<FixT> consumer, DeviceIdentifier device, TimePoint from,

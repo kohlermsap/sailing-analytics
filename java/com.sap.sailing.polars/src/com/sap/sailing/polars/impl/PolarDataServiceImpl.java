@@ -23,9 +23,6 @@ import com.sap.sailing.domain.common.LegType;
 import com.sap.sailing.domain.common.ManeuverType;
 import com.sap.sailing.domain.common.PolarSheetGenerationSettings;
 import com.sap.sailing.domain.common.Tack;
-import com.sap.sailing.domain.common.confidence.BearingWithConfidence;
-import com.sap.sailing.domain.common.confidence.impl.BearingWithConfidenceImpl;
-import com.sap.sailing.domain.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sailing.domain.common.impl.PolarSheetGenerationSettingsImpl;
 import com.sap.sailing.domain.common.polars.NotEnoughDataHasBeenAddedException;
 import com.sap.sailing.domain.common.tracking.GPSFixMoving;
@@ -44,7 +41,10 @@ import com.sap.sailing.polars.regression.impl.IncrementalAnyOrderLeastSquaresImp
 import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Speed;
 import com.sap.sse.common.Util.Pair;
+import com.sap.sse.common.confidence.BearingWithConfidence;
+import com.sap.sse.common.confidence.impl.BearingWithConfidenceImpl;
 import com.sap.sse.common.impl.DegreeBearingImpl;
+import com.sap.sse.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sse.datamining.data.ClusterGroup;
 import com.sap.sse.datamining.shared.GroupKey;
 import com.sap.sse.replication.interfaces.impl.AbstractReplicableWithObjectInputStream;
@@ -74,6 +74,13 @@ public class PolarDataServiceImpl extends AbstractReplicableWithObjectInputStrea
         resetState();
     }
 
+    public PolarDataServiceImpl filterToBoatClasses(Iterable<BoatClass> boatClassesToFilterTo) {
+        final PolarDataMiner filteredPolarDataMiner = polarDataMiner.filterToBoatClasses(boatClassesToFilterTo);
+        final PolarDataServiceImpl filteredService = new PolarDataServiceImpl();
+        filteredService.polarDataMiner = filteredPolarDataMiner;
+        return filteredService;
+    }
+    
     @Override
     public void resetState() {
         PolarSheetGenerationSettings settings = PolarSheetGenerationSettingsImpl.createBackendPolarSettings();

@@ -6,22 +6,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import com.sap.sailing.domain.common.Mile;
-import com.sap.sailing.domain.common.Position;
-import com.sap.sailing.domain.common.SpeedWithBearing;
-import com.sap.sailing.domain.common.impl.DegreePosition;
-import com.sap.sailing.domain.common.impl.KnotSpeedWithBearingImpl;
-import com.sap.sailing.domain.common.impl.MeterDistance;
-import com.sap.sailing.domain.common.impl.NauticalMileDistance;
 import com.sap.sailing.domain.common.tracking.GPSFix;
 import com.sap.sailing.domain.common.tracking.impl.CompactionNotPossibleException;
 import com.sap.sailing.domain.common.tracking.impl.VeryCompactGPSFixImpl;
 import com.sap.sailing.domain.common.tracking.impl.VeryCompactGPSFixMovingImpl;
 import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Distance;
+import com.sap.sse.common.Mile;
+import com.sap.sse.common.Position;
+import com.sap.sse.common.SpeedWithBearing;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.impl.DegreeBearingImpl;
+import com.sap.sse.common.impl.DegreePosition;
+import com.sap.sse.common.impl.KnotSpeedWithBearingImpl;
+import com.sap.sse.common.impl.MeterDistance;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
+import com.sap.sse.common.impl.NauticalMileDistance;
 
 public class PositionTest {
     @Test

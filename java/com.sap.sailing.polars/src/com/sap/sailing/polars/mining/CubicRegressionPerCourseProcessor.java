@@ -18,11 +18,13 @@ import com.sap.sailing.domain.common.Tack;
 import com.sap.sailing.domain.common.polars.NotEnoughDataHasBeenAddedException;
 import com.sap.sailing.domain.polars.PolarsChangedListener;
 import com.sap.sse.common.Speed;
+import com.sap.sse.common.Util;
 import com.sap.sse.datamining.components.AdditionalResultDataBuilder;
 import com.sap.sse.datamining.components.Processor;
 import com.sap.sse.datamining.factories.GroupKeyFactory;
 import com.sap.sse.datamining.impl.components.GroupedDataEntry;
 import com.sap.sse.datamining.shared.GroupKey;
+import com.sap.sse.datamining.shared.impl.GenericGroupKey;
 
 /**
  * Groups incoming fixes by boatclass and legtype into {@link AngleAndSpeedRegression} instances and
@@ -45,6 +47,40 @@ public class CubicRegressionPerCourseProcessor implements
      */
     private transient ConcurrentMap<BoatClass, Set<PolarsChangedListener>> listeners;
 
+    public CubicRegressionPerCourseProcessor filterToBoatClasses(Iterable<BoatClass> boatClasses) {
+        final Set<BoatClass> allowedBoatClasses = Util.asSet(boatClasses);
+        final CubicRegressionPerCourseProcessor filteredProcessor = new CubicRegressionPerCourseProcessor();
+        for (final Map.Entry<GroupKey, AngleAndSpeedRegression> entry : regressions.entrySet()) {
+            GroupKey key = entry.getKey();
+            BoatClass boatClass = extractBoatClass(key);
+            if (boatClass != null && allowedBoatClasses.contains(boatClass)) {
+                filteredProcessor.regressions.put(key, entry.getValue());
+            }
+        }
+        return filteredProcessor;
+    }
+
+    private BoatClass extractBoatClass(GroupKey key) {
+        final BoatClass result;
+        if (key.hasSubKeys()) {
+            // In the compound key, BoatClass is the second dimension (index 1)
+            GroupKey boatClassKey = key.getKeys().get(1);
+            if (boatClassKey instanceof GenericGroupKey) {
+                Object value = ((GenericGroupKey<?>) boatClassKey).getValue();
+                if (value instanceof BoatClass) {
+                    result = (BoatClass) value;
+                } else {
+                    result = null;
+                }
+            } else {
+                result = null;
+            }
+        } else {
+            result = null;
+        }
+        return result;
+    }
+    
     @Override
     public boolean canProcessElements() {
         return true;
@@ -109,7 +145,6 @@ public class CubicRegressionPerCourseProcessor implements
 
     private GroupKey createGroupKey(final BoatClass boatClass, final LegType legType) {
         LegTypePolarClusterKey key = new LegTypePolarClusterKey() {
-
             @Override
             public BoatClass getBoatClass() {
                 return boatClass;
