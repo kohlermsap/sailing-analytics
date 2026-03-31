@@ -222,11 +222,14 @@ public interface SailingServiceAsync extends RemoteReplicationServiceAsync {
 
     void getRacesOfSwissTimingEvent(String eventJsonUrl, AsyncCallback<SwissTimingEventRecordDTO> asyncCallback);
 
-    void getDouglasPoints(RegattaAndRaceIdentifier raceIdentifier, Map<CompetitorDTO, TimeRange> competitorTimeRanges,
+    void getDouglasPoints(RegattaAndRaceIdentifier raceIdentifier, Map<String, TimeRange> competitorIdsAsStringsAndTimeRanges,
             AsyncCallback<Map<CompetitorDTO, List<GPSFixDTOWithSpeedWindTackAndLegType>>> callback);
 
-    void getManeuvers(RegattaAndRaceIdentifier raceIdentifier, Map<CompetitorDTO, TimeRange> competitorTimeRanges,
-            AsyncCallback<Map<CompetitorDTO, List<ManeuverDTO>>> callback);
+    /**
+     * @param callback the {@link String} used as map key is the competitor ID as string
+     */
+    void getManeuvers(RegattaAndRaceIdentifier raceIdentifier, Map<String, TimeRange> competitorIdsAsStringsAndTimeRanges,
+            AsyncCallback<Map<String, List<ManeuverDTO>>> callback);
 
     void getLeaderboardGroups(boolean withGeoLocationData, AsyncCallback<List<LeaderboardGroupDTO>> callback);
 
