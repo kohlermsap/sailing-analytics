@@ -11,11 +11,18 @@ import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.Util;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
 
-
 /**
  * A executor class making the actual remote call for an {@link AsyncAction}. The class is managing the number of
  * executed actions in order to prevent a server overload. If the amount of actions to be executed exceeds a defined
- * threshold the execution of those actions will be dropped.
+ * threshold the execution of those actions will be dropped.<p>
+ * 
+ * Use {@link RetryableAsyncAction} for calling service methods that return results of type
+ * {@link RetryableActionResult} for automatic re-try behavior. This can be useful when calling
+ * service methods that have to execute long-running calculations before being able to respond
+ * with a useful answer, such as long-running simulator request or lists of maneuvers. It is important
+ * for GWT RPC service methods to not block the calling thread but return swiftly; and if no valid
+ * response is available, then asking the client to retry after some time is the next best thing to
+ * do.
  * 
  * @author c5163874, Simon Marcel Pamies
  */

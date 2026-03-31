@@ -105,6 +105,7 @@ import com.sap.sse.common.Util.Triple;
 import com.sap.sse.common.impl.KilometersPerHourSpeedImpl;
 import com.sap.sse.common.impl.KnotSpeedImpl;
 import com.sap.sse.common.impl.SecondsDurationImpl;
+import com.sap.sse.gwt.client.async.RetryableActionResult;
 import com.sap.sse.gwt.client.replication.RemoteReplicationServiceAsync;
 import com.sap.sse.pairinglist.PairingList;
 import com.sap.sse.pairinglist.PairingListTemplate;
@@ -178,7 +179,7 @@ public interface SailingServiceAsync extends RemoteReplicationServiceAsync {
     void getManeuverAngle(BoatClassDTO boatClass, ManeuverType maneuverType, Speed windSpeed,
             AsyncCallback<BearingWithConfidenceDTO> callback);
 
-    void getSimulatorResults(LegIdentifier legIdentifier, AsyncCallback<SimulatorResultsDTO> callback);
+    void getSimulatorResults(LegIdentifier legIdentifier, AsyncCallback<RetryableActionResult<SimulatorResultsDTO>> callback);
 
     void getRaceTimesInfo(RegattaAndRaceIdentifier raceIdentifier, AsyncCallback<RaceTimesInfoDTO> callback);
 

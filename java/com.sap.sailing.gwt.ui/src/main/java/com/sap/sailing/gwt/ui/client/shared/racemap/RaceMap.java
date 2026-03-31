@@ -700,7 +700,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
         this.courseAreaCirclesToShow = new HashMap<>();
         this.shareLinkAction = shareLinkAction;
         this.paywallResolver = paywallResolver;
-        this.maneuverMarkersAndLossIndicators = new ManeuverMarkersAndLossIndicators(this, sailingService, errorReporter, stringMessages);
+        this.maneuverMarkersAndLossIndicators = new ManeuverMarkersAndLossIndicators(this, sailingService, errorReporter, stringMessages, asyncActionsExecutor);
         this.showHeaderPanel = showHeaderPanel;
         this.quickFlagDataProvider = quickFlagDataProvider;
         this.raceMapLifecycle = raceMapLifecycle;
