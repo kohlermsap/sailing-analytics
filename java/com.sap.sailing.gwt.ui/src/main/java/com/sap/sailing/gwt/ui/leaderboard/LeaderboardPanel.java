@@ -39,6 +39,7 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.text.shared.AbstractSafeHtmlRenderer;
 import com.google.gwt.user.cellview.client.Column;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.SafeHtmlHeader;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
@@ -244,6 +245,7 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
     protected Iterable<DetailType> availableDetailTypes;
 
     private final SelectionCheckboxColumn<LeaderboardRowDTO> selectionCheckboxColumn;
+    private final Header<Boolean> selectionCheckboxColumnHeader;
 
     /**
      * Passed to the {@link ManeuverCountRaceColumn}. Modifications to this list will modify the column's children list
@@ -518,6 +520,7 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
         });
         leaderboardTable.ensureDebugId("LeaderboardCellTable");
         selectionCheckboxColumn = new LeaderboardSelectionCheckboxColumn(competitorSelectionProvider);
+        selectionCheckboxColumnHeader = selectionCheckboxColumn.createHeader();
         leaderboardTable.setWidth("100%");
         // Use the SelectionCheckboxColumn's RefreshableMultiSelectionModel as THE single selection model
         leaderboardSelectionModel = selectionCheckboxColumn.getSelectionModel();
@@ -3129,7 +3132,7 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
         if (getLeaderboardTable().getColumnCount() > selectionCheckboxColumnIndex) {
             if (showSelectionCheckbox) {
                 if (getLeaderboardTable().getColumn(selectionCheckboxColumnIndex) != selectionCheckboxColumn) {
-                    insertColumn(selectionCheckboxColumnIndex, selectionCheckboxColumn);
+                    insertSelectionCheckboxColumn(selectionCheckboxColumnIndex);
                 } // else, the column is needed and is already in place
             } else {
                 if (getLeaderboardTable().getColumn(selectionCheckboxColumnIndex) == selectionCheckboxColumn) {
@@ -3138,10 +3141,17 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
             }
         } else {
             if (showSelectionCheckbox) {
-                insertColumn(selectionCheckboxColumnIndex, selectionCheckboxColumn);
+                insertSelectionCheckboxColumn(selectionCheckboxColumnIndex);
             }
         }
         return indexOfNextColumn;
+    }
+
+    private void insertSelectionCheckboxColumn(int beforeIndex) {
+        removeColumnStyles(beforeIndex);
+        getLeaderboardTable().insertColumn(beforeIndex, selectionCheckboxColumn, selectionCheckboxColumnHeader,
+                /* comparator */ null, selectionCheckboxColumn.getPreferredSortingOrder().isAscending());
+        addColumnStyles(beforeIndex);
     }
 
     /**

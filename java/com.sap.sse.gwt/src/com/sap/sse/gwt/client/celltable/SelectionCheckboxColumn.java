@@ -16,6 +16,7 @@ import com.google.gwt.view.client.DefaultSelectionEventManager.SelectAction;
 import com.google.gwt.view.client.ListDataProvider;
 import com.sap.sse.common.InvertibleComparator;
 import com.sap.sse.common.SortingOrder;
+import com.sap.sse.common.Util;
 import com.sap.sse.common.impl.InvertibleComparatorAdapter;
 import com.sap.sse.gwt.client.controls.BetterCheckboxCell;
 
@@ -103,9 +104,10 @@ public class SelectionCheckboxColumn<T> extends AbstractSortableColumnWithMinMax
             }
         });
         selectionModel.addSelectionChangeHandler(e -> {
-            if (selectionModel.getSelectedSet().isEmpty()) {
+            final int selected = Util.size(selectionModel.getSelectedElements());
+            if (selected == 0) {
                 selectAllCell.setViewData(/* key */ selectAllHeader.getValue(), false);
-            } else if (selectionModel.getSelectedSet().size() == listDataProvider.getList().size()) {
+            } else if (selected == listDataProvider.getList().size()) {
                 selectAllCell.setViewData(/* key */ selectAllHeader.getValue(), true);
             }
         });
