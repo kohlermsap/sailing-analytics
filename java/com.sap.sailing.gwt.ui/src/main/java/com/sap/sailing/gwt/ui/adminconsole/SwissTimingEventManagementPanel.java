@@ -285,11 +285,7 @@ public class SwissTimingEventManagementPanel extends AbstractEventManagementPane
         raceStatusColumn.setSortable(true);
         regattaNameColumn.setSortable(true);
         seriesNameColumn.setSortable(true);
-        final RefreshableMultiSelectionModel<SwissTimingRaceRecordDTO> selectionModel =
-                new RefreshableMultiSelectionModel<SwissTimingRaceRecordDTO>(
-                        entityIdentityComparator,
-                        filterablePanelEvents.getAllListDataProvider()
-                );
+        final RefreshableMultiSelectionModel<SwissTimingRaceRecordDTO> selectionModel = selectionColumn.getSelectionModel();
         raceTable.setSelectionModel(selectionModel);
         final Header<Boolean> selectAllHeader = selectionColumn.createHeader();
         raceTable.addColumn(selectionColumn, selectAllHeader);
