@@ -237,8 +237,7 @@ public abstract class TableWrapper<T, S extends RefreshableSelectionModel<T>, SM
             selectionCheckboxColumn = new SelectionCheckboxColumn<T>(
                     getTableRes().cellTableStyle().cellTableCheckboxSelected(),
                     getTableRes().cellTableStyle().cellTableCheckboxDeselected(),
-                    getTableRes().cellTableStyle().cellTableCheckboxColumnCell(), entityIdentityComparator, dataProvider,
-                    table);
+                    getTableRes().cellTableStyle().cellTableCheckboxColumnCell(), entityIdentityComparator, dataProvider);
             columnSortHandler.setComparator(selectionCheckboxColumn, selectionCheckboxColumn.getComparator());
             @SuppressWarnings("unchecked")
             final S typedSelectionModel = (S) selectionCheckboxColumn.getSelectionModel();

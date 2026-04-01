@@ -200,7 +200,7 @@ public class CourseTemplatePanel extends FlowPanel implements FilterablePanelPro
                     public int hashCode(CourseTemplateDTO t) {
                         return t.getUuid().hashCode();
                     }
-                }, filterableCourseTemplatePanel.getAllListDataProvider(), courseTemplateTable);
+                }, filterableCourseTemplatePanel.getAllListDataProvider());
         final Header<Boolean> selectAllHeader = checkColumn.createHeader();
         courseTemplateTable.addColumn(checkColumn, selectAllHeader);
         courseTemplateTable.setColumnWidth(checkColumn, 40, Unit.PX);

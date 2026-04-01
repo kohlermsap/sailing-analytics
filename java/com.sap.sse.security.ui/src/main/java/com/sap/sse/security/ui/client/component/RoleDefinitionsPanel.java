@@ -177,7 +177,7 @@ public class RoleDefinitionsPanel extends VerticalPanel {
                     public int hashCode(RoleDefinitionDTO t) {
                         return t.getId().hashCode();
                     }
-                }, filterablePanelRoleDefinitions.getAllListDataProvider(), table);
+                }, filterablePanelRoleDefinitions.getAllListDataProvider());
         final ListHandler<RoleDefinitionDTO> columnSortHandler = new ListHandler<>(rolesListDataProvider.getList());
         table.addColumnSortHandler(columnSortHandler);
         final TextColumn<RoleDefinitionDTO> roleDefinitionUUidColumn = new AbstractSortableTextColumn<RoleDefinitionDTO>(

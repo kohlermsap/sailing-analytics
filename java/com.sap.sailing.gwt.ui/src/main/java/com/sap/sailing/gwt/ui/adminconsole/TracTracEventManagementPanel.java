@@ -333,7 +333,7 @@ public class TracTracEventManagementPanel extends AbstractEventManagementPanel i
                     public int hashCode(TracTracRaceRecordDTO t) {
                         return t.id.hashCode();
                     }
-                }, racesFilterablePanel.getAllListDataProvider(), racesTable);
+                }, racesFilterablePanel.getAllListDataProvider());
         final Header<Boolean> selectAllHeader = selectionCheckboxColumn.createHeader();
         racesTable.addColumn(selectionCheckboxColumn, selectAllHeader);
         racesTable.addColumn(regattaNameColumn, stringMessages.event());

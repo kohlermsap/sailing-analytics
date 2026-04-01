@@ -400,7 +400,7 @@ public abstract class AbstractLeaderboardConfigPanel extends FormPanel
                 tableResources.cellTableStyle().cellTableCheckboxSelected(),
                 tableResources.cellTableStyle().cellTableCheckboxDeselected(),
                 tableResources.cellTableStyle().cellTableCheckboxColumnCell(),
-                new NameBasedStrippedLeaderboardDTOEntityIdentityComparator(), listDataProvider, leaderboardTable);
+                new NameBasedStrippedLeaderboardDTOEntityIdentityComparator(), listDataProvider);
         final Header<Boolean> selectAllHeader = selectionCheckboxColumn.createHeader();
         leaderboardTable.addColumn(selectionCheckboxColumn, selectAllHeader);
         return selectionCheckboxColumn;

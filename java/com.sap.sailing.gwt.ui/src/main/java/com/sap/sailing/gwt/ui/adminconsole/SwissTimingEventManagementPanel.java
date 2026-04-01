@@ -236,10 +236,10 @@ public class SwissTimingEventManagementPanel extends AbstractEventManagementPane
                 return object.regattaName;
             }
         };
-        SelectionCheckboxColumn<SwissTimingRaceRecordDTO> selectionColumn = new SelectionCheckboxColumn<SwissTimingRaceRecordDTO>(
+        SelectionCheckboxColumn<SwissTimingRaceRecordDTO> raceTableSelectionColumn = new SelectionCheckboxColumn<SwissTimingRaceRecordDTO>(
                 tableRes.cellTableStyle().cellTableCheckboxSelected(),
                 tableRes.cellTableStyle().cellTableCheckboxDeselected(),
-                tableRes.cellTableStyle().cellTableCheckboxColumnCell(), entityIdentityComparator, raceList, raceTable);
+                tableRes.cellTableStyle().cellTableCheckboxColumnCell(), entityIdentityComparator, raceList);
 
         TextColumn<SwissTimingRaceRecordDTO> seriesNameColumn = new TextColumn<SwissTimingRaceRecordDTO>() {
             @Override
@@ -285,10 +285,10 @@ public class SwissTimingEventManagementPanel extends AbstractEventManagementPane
         raceStatusColumn.setSortable(true);
         regattaNameColumn.setSortable(true);
         seriesNameColumn.setSortable(true);
-        final RefreshableMultiSelectionModel<SwissTimingRaceRecordDTO> selectionModel = selectionColumn.getSelectionModel();
+        final RefreshableMultiSelectionModel<SwissTimingRaceRecordDTO> selectionModel = raceTableSelectionColumn.getSelectionModel();
         raceTable.setSelectionModel(selectionModel);
-        final Header<Boolean> selectAllHeader = selectionColumn.createHeader();
-        raceTable.addColumn(selectionColumn, selectAllHeader);
+        final Header<Boolean> selectAllHeader = raceTableSelectionColumn.createHeader();
+        raceTable.addColumn(raceTableSelectionColumn, selectAllHeader);
         raceTable.addColumn(regattaNameColumn, stringConstants.regatta());
         raceTable.addColumn(seriesNameColumn, stringConstants.series());
         raceTable.addColumn(raceNameColumn, stringConstants.name());

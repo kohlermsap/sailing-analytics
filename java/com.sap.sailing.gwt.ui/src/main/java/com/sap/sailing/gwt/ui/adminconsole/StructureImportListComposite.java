@@ -58,7 +58,7 @@ public class StructureImportListComposite extends RegattaListComposite {
                     public int hashCode(RegattaDTO t) {
                         return t.getRegattaIdentifier().hashCode();
                     }
-                }, regattaListDataProvider, table);
+                }, regattaListDataProvider);
 
         ListHandler<RegattaDTO> columnSortHandler = new ListHandler<RegattaDTO>(regattaListDataProvider.getList());
         table.addColumnSortHandler(columnSortHandler);

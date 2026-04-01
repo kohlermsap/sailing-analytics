@@ -152,7 +152,7 @@ public class MarkTemplatePanel extends FlowPanel implements FilterablePanelProvi
                     public int hashCode(MarkTemplateDTO t) {
                         return t.getUuid().hashCode();
                     }
-                }, filterableMarkTemplates.getAllListDataProvider(), markTemplateTable);
+                }, filterableMarkTemplates.getAllListDataProvider());
         Header<Boolean> selectAllHeader = checkColumn.createHeader();
         markTemplateTable.addColumn(checkColumn, selectAllHeader);
         markTemplateTable.setColumnWidth(checkColumn, 40, Unit.PX);

@@ -52,7 +52,6 @@ public class SelectionCheckboxColumn<T> extends AbstractSortableColumnWithMinMax
     private final EventTranslator<T> selectionEventTranslator;
     private final RefreshableMultiSelectionModel<T> selectionModel;
     private final ListDataProvider<T> listDataProvider;
-    private final Flushable display;
 
     /**
      * @param selectedCheckboxCSSClass
@@ -65,26 +64,23 @@ public class SelectionCheckboxColumn<T> extends AbstractSortableColumnWithMinMax
      *            {@link EntityIdentityComparator} to create a {@link RefreshableMultiSelectionModel}
      * @param listDataProvider
      *            {@link ListDataProvider} to create a {@link RefreshableMultiSelectionModel}
-     * @param display
-     *            {@link Flushable} to redraw the selected elements on the display
      */
     public SelectionCheckboxColumn(String selectedCheckboxCSSClass, String deselectedCheckboxCSSClass,
             String checkboxColumnCellCSSClass, EntityIdentityComparator<T> entityIdentityComparator,
-            ListDataProvider<T> listDataProvider, Flushable display) {
+            ListDataProvider<T> listDataProvider) {
         this(new BetterCheckboxCell(selectedCheckboxCSSClass, deselectedCheckboxCSSClass), checkboxColumnCellCSSClass,
-                entityIdentityComparator, listDataProvider, display);
+                entityIdentityComparator, listDataProvider);
     }
     
     private SelectionCheckboxColumn(BetterCheckboxCell checkboxCell, String checkboxColumnCellCSSClass,
-            EntityIdentityComparator<T> entityIdentityComparator, ListDataProvider<T> listDataProvider,
-            Flushable display) {
+            EntityIdentityComparator<T> entityIdentityComparator, ListDataProvider<T> listDataProvider) {
         super(checkboxCell, SortingOrder.DESCENDING);
-        this.display = display;
         this.listDataProvider = listDataProvider;
         this.cell = checkboxCell;
         this.checkboxColumnCellCSSClass = checkboxColumnCellCSSClass;
         this.selectionEventTranslator = createSelectionEventTranslator();
-        this.selectionModel = createSelectionModel(entityIdentityComparator);
+        final EntityIdentityComparator<T> entityIdentityComparator1 = entityIdentityComparator;
+        this.selectionModel = new RefreshableMultiSelectionModel<T>(entityIdentityComparator1, listDataProvider);
         this.setSortable(false);
     }
     
@@ -131,31 +127,6 @@ public class SelectionCheckboxColumn<T> extends AbstractSortableColumnWithMinMax
         return selectionModel;
     }
 
-    /**
-     * Clients should use the {@link RefreshableMultiSelectionModel} returned by this method for the {@link CellTable}
-     * to which they add this column. If they do so, the {@link Flushable#flush()} method will be
-     * triggered correctly for all selection changes. Otherwise, clients or subclasses are responsible to issue the
-     * necessary calls to {@link Flushable#flush()} after selection changes.
-     */
-    private RefreshableMultiSelectionModel<T> createSelectionModel(final EntityIdentityComparator<T> entityIdentityComparator) {
-        return new RefreshableMultiSelectionModel<T>(entityIdentityComparator, listDataProvider) {
-            @Override
-            public void clear() {
-                super.clear();
-                display.flush();
-            }
-
-            @Override
-            public void setSelected(T item, boolean selected) {
-                boolean wasSelected = isSelected(item);
-                super.setSelected(item, selected);
-                if (wasSelected != selected) {
-                    display.flush();
-                }
-            }
-        };
-    }
-    
     /**
      * @return a selection event translator that works nicely with
      *         {@link DefaultSelectionEventManager#createCustomManager(EventTranslator)} to ensure that this selection

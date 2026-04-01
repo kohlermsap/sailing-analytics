@@ -311,7 +311,7 @@ public class IgtimiDevicesPanel extends FlowPanel implements FilterablePanelProv
                     public int hashCode(IgtimiDeviceWithSecurityDTO t) {
                         return 7482 ^ (int) t.getId();
                     }
-                }, filterDevicesPanel.getAllListDataProvider(), table);
+                }, filterDevicesPanel.getAllListDataProvider());
         final ListHandler<IgtimiDeviceWithSecurityDTO> columnSortHandler = new ListHandler<>(filteredDevices.getList());
         table.addColumnSortHandler(columnSortHandler);
         columnSortHandler.setComparator(devicesSelectionCheckboxColumn, devicesSelectionCheckboxColumn.getComparator());
@@ -465,7 +465,7 @@ public class IgtimiDevicesPanel extends FlowPanel implements FilterablePanelProv
                     public int hashCode(IgtimiDataAccessWindowWithSecurityDTO t) {
                         return 7482 ^ (int) t.getId();
                     }
-                }, filterDataAccessWindowsPanel.getAllListDataProvider(), table);
+                }, filterDataAccessWindowsPanel.getAllListDataProvider());
         final ListHandler<IgtimiDataAccessWindowWithSecurityDTO> columnSortHandler = new ListHandler<>(filteredDAWs.getList());
         table.addColumnSortHandler(columnSortHandler);
         columnSortHandler.setComparator(dawsSelectionCheckboxColumn, dawsSelectionCheckboxColumn.getComparator());

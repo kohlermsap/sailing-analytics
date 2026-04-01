@@ -186,7 +186,7 @@ public class RegattaListComposite extends Composite {
                     public int hashCode(RegattaDTO t) {
                         return t.getRegattaIdentifier().hashCode();
                     }
-                }, filterablePanelRegattas.getAllListDataProvider(), table);
+                }, filterablePanelRegattas.getAllListDataProvider());
         ListHandler<RegattaDTO> columnSortHandler = new ListHandler<RegattaDTO>(regattaListDataProvider.getList());
         table.addColumnSortHandler(columnSortHandler);
         columnSortHandler.setComparator(regattaSelectionCheckboxColumn, regattaSelectionCheckboxColumn.getComparator());

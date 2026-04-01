@@ -183,7 +183,7 @@ public class MarkPropertiesPanel extends FlowPanel implements FilterablePanelPro
                     public int hashCode(MarkPropertiesDTO t) {
                         return t.getUuid().hashCode();
                     }
-                }, filterableMarkProperties.getAllListDataProvider(), markPropertiesTable);
+                }, filterableMarkProperties.getAllListDataProvider());
         final Header<Boolean> selectAllHeader = checkColumn.createHeader();
         markPropertiesTable.addColumn(checkColumn, selectAllHeader);
         markPropertiesTable.setColumnWidth(checkColumn, 40, Unit.PX);

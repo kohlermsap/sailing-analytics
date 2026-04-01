@@ -236,7 +236,7 @@ public class LeaderboardGroupConfigPanel extends AbstractRegattaPanel
                     public int hashCode(StrippedLeaderboardDTO t) {
                         return t.getName().hashCode();
                     }
-                }, leaderboardsFilterablePanel.getAllListDataProvider(), leaderboardsTable);
+                }, leaderboardsFilterablePanel.getAllListDataProvider());
         refreshableLeaderboardsSelectionModel = leaderboardTableSelectionColumn.getSelectionModel();
         leaderboardsTable.setSelectionModel(refreshableLeaderboardsSelectionModel, leaderboardTableSelectionColumn.getSelectionManager());
         leaderboardsFilterablePanel.getTextBox().ensureDebugId("LeaderboardsFilterTextBox");
@@ -385,7 +385,7 @@ public class LeaderboardGroupConfigPanel extends AbstractRegattaPanel
                             public int hashCode(StrippedLeaderboardDTO t) {
                                 return t.getName().hashCode();
                             }
-                        }, groupDetailsProvider, groupDetailsTable);
+                        }, groupDetailsProvider);
         final Header<Boolean> groupDetailsSelectAllHeader = groupDetailsTableSelectionColumn.createHeader();
         groupDetailsTable.setWidth("100%");
         groupDetailsTable.addColumn(groupDetailsTableSelectionColumn, groupDetailsSelectAllHeader);
@@ -596,7 +596,7 @@ public class LeaderboardGroupConfigPanel extends AbstractRegattaPanel
                     public int hashCode(LeaderboardGroupDTO t) {
                         return t.getId().hashCode();
                     }
-                }, groupsFilterablePanel.getAllListDataProvider(), groupsTable);
+                }, groupsFilterablePanel.getAllListDataProvider());
         final Header<Boolean> groupsSelectAllHeader = leaderboardTableSelectionColumn.createHeader();
         groupsTable.setWidth("100%");
         groupsTable.addColumn(leaderboardTableSelectionColumn, groupsSelectAllHeader);

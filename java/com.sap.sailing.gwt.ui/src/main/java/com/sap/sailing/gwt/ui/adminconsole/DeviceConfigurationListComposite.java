@@ -125,7 +125,7 @@ public class DeviceConfigurationListComposite extends Composite  {
                             public int hashCode(DeviceConfigurationWithSecurityDTO t) {
                                 return t.id == null ? 0 : t.id.hashCode();
                             }
-                        }, configurationsDataProvider, table);
+                        }, configurationsDataProvider);
         final Header<Boolean> selectAllHeader = checkColumn.createHeader();
         table.addColumn(checkColumn, selectAllHeader);
         refreshableConfigurationSelectionModel = checkColumn.getSelectionModel();

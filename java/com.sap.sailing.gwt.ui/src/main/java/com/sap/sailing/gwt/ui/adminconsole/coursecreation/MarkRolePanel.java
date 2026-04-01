@@ -186,7 +186,7 @@ public class MarkRolePanel extends FlowPanel implements FilterablePanelProvider<
                     public int hashCode(MarkRoleDTO t) {
                         return t.getUuid().hashCode();
                     }
-                }, filterableMarkRoles.getAllListDataProvider(), markRolesTable);
+                }, filterableMarkRoles.getAllListDataProvider());
         final Header<Boolean> selectAllHeader = checkColumn.createHeader();
         markRolesTable.addColumn(checkColumn, selectAllHeader);
         markRolesTable.setColumnWidth(checkColumn, 40, Unit.PX);

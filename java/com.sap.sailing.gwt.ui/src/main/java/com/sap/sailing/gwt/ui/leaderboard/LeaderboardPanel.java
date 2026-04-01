@@ -2126,7 +2126,7 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
                         public int hashCode(LeaderboardRowDTO t) {
                             return t.competitor.getIdAsString().hashCode();
                         }
-                    }, getData(), leaderboardTable);
+                    }, getData());
             // Note: LeaderboardPanel is the ONLY listener that syncs selection state with CompetitorSelectionProvider.
             // SelectionCheckboxColumn no longer needs to listen separately.
         }

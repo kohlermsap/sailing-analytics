@@ -230,7 +230,7 @@ public class EventListComposite extends Composite {
                     public int hashCode(EventDTO t) {
                         return t.id.hashCode();
                     }
-                }, filterTextbox.getAllListDataProvider(),table);
+                }, filterTextbox.getAllListDataProvider());
         AnchorCell anchorCell = new AnchorCell();
         ListHandler<EventDTO> listHandler = new ListHandler<EventDTO>(eventListDataProvider.getList());
         final TextColumn<EventDTO> eventUUidColumn = new AbstractSortableTextColumn<EventDTO>(

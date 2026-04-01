@@ -203,7 +203,7 @@ public class SwissTimingReplayConnectorPanel extends AbstractEventManagementPane
                     public int hashCode(SwissTimingReplayRaceDTO t) {
                         return t.race_id.hashCode();
                     }
-                }, filterablePanelEvents.getAllListDataProvider(), raceTable);
+                }, filterablePanelEvents.getAllListDataProvider());
         checkColumn.setSortable(false);
         final Header<Boolean> selectAllHeader = checkColumn.createHeader();
         raceTable.setSelectionModel(checkColumn.getSelectionModel());
