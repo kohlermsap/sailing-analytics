@@ -232,6 +232,7 @@ public class RaceLogRaceTracker extends AbstractRaceTrackerBaseImpl<RaceLogConne
                 (trackingTimes == null || trackingTimes.getB() == null || trackingTimes.getB().getTimePoint() == null)) {
             // seems the first time tracking for this race is stopped; enter "now" as end of tracking
             // into the race log
+            // FIXME bug 6228: do this only when stopping tracking happened on explicit user request, but not just because the server as a whole is stopped/restarted!
             raceLog.add(new RaceLogEndOfTrackingEventImpl(MillisecondsTimePoint.now(), raceLogEventAuthor, raceLog.getCurrentPassId()));
         }
         // remove listeners on logs
