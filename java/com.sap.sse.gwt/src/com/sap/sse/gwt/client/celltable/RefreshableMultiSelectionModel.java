@@ -1,14 +1,12 @@
 package com.sap.sse.gwt.client.celltable;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import com.google.gwt.view.client.ListDataProvider;
-import com.google.gwt.view.client.MultiSelectionModel;
+import com.google.gwt.view.client.MultiSelectionModelWithSelectedIterable;
 import com.google.gwt.view.client.ProvidesKey;
 import com.google.gwt.view.client.SelectionChangeEvent;
+import com.sap.sse.common.Util;
 
 /**
  * This {@link RefreshableMultiSelectionModel} implements the {@link RefreshableSelectionModel} interface. So it
@@ -27,7 +25,7 @@ import com.google.gwt.view.client.SelectionChangeEvent;
  * @param <T>
  *            the type of entries
  */
-public class RefreshableMultiSelectionModel<T> extends MultiSelectionModel<T>
+public class RefreshableMultiSelectionModel<T> extends MultiSelectionModelWithSelectedIterable<T>
         implements RefreshableSelectionModel<T> {
     final EntityIdentityComparator<T> comp;
     private boolean dontCheckSelectionState = false;
@@ -72,7 +70,7 @@ public class RefreshableMultiSelectionModel<T> extends MultiSelectionModel<T>
      * @return <code>true</code> if the list of visible items does not contain every item of the current selected item set.
      */
     public boolean itemIsSelectedButNotVisible(List<T> visibleItemList) {
-        for (T item : getSelectedSet()) {
+        for (T item : getSelectedElements()) {
             if (!visibleItemList.contains(item)) {
                 return true;
             }
@@ -89,20 +87,19 @@ public class RefreshableMultiSelectionModel<T> extends MultiSelectionModel<T>
      */
     @Override
     public void setSelected(T item, boolean selected) {
-        if (comp == null || dontCheckSelectionState || item == null || getSelectedSet().isEmpty()) {
+        if (getEntityIdentityComparator() == null || dontCheckSelectionState || item == null || Util.isEmpty(getSelectedElements())) {
             super.setSelected(item, selected);
         } else {
             T wasSelectedBefore = null;
-            Set<T> selectedSet = getSelectedSet();
-            for (T it : selectedSet) {
-                if (comp.representSameEntity(it, item)) {
+            for (T it : getSelectedElements()) {
+                if (getEntityIdentityComparator().representSameEntity(it, item)) {
                     wasSelectedBefore = it;
                     break;
                 }
             }
             if (wasSelectedBefore != null) {
                 super.setSelected(wasSelectedBefore, false);
-                isSelected(item); // triggers the deleting of the wasSelectedBefrore element in super class
+                isSelected(item); // triggers the deleting of the wasSelectedBefore element in super class
                 super.setSelected(item, selected);
             } else {
                 super.setSelected(item, selected);
@@ -131,30 +128,16 @@ public class RefreshableMultiSelectionModel<T> extends MultiSelectionModel<T>
         if (!dontCheckSelectionState) { // avoid endless recursions
             dontCheckSelectionState = true;
             try {
-                final Set<T> selectedSet = getSelectedSet(); // gets the selected set as a non-live copy, so later
-                                                             // changes to the selection won't change this set anymore
-                final boolean isEmpty = selectedSet.isEmpty();
-                if (!isEmpty) {
-                    clear();
-                    if (comp == null) {
-                        for (T it : newObjects) {
-                            final boolean selected = selectedSet.contains(it);
-                            if (selected) {
-                                setSelected(it, true);
-                            }
-                        }
-                    } else {
-                        final Map<EntityIdentityWrapper<T>, T> wrappedNewObjects = new HashMap<>();
-                        for (T it : newObjects) {
-                            wrappedNewObjects.put(new EntityIdentityWrapper<T>(it, comp), it);
-                        }
-                        for (final T selected : selectedSet) {
-                            T newSelectedElement = wrappedNewObjects.remove(new EntityIdentityWrapper<T>(selected, comp));
-                            if (newSelectedElement != null) {
-                                setSelected(newSelectedElement, true);
-                            }
+                if (!isEmpty()) {
+                    for (T it : newObjects) {
+                        if (isSelected(it)) { 
+                            setSelected(it, true); // this updates matching elements in the selection model
                         }
                     }
+                    // elements that were selected before and that don't have a corresponding element in newObjects
+                    // will just be left alone; they will probably remain in selectedSet, and they were probably not in
+                    // newObjects because a filter removed them. But when they re-appear, e.g., because the filter is
+                    // removed, the elements will naturally be selected again.
                     SelectionChangeEvent.fire(this);
                 }
             } finally {

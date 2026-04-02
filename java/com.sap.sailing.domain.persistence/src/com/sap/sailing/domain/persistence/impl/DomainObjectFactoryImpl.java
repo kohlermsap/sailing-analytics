@@ -3358,7 +3358,7 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
         final String typeName =  maneuverDoc.getString(FieldNames.TYPE.name());
         final ManeuverType type = ManeuverType.valueOf(typeName);
         final String newTackName =  maneuverDoc.getString(FieldNames.TACK.name());
-        final Tack newTack = Tack.valueOf(newTackName);
+        final Tack newTack = newTackName==null?null:Tack.valueOf(newTackName);
         final int waypointIndex = maneuverDoc.getInteger(FieldNames.INDEX_OF_PASSED_WAYPOINT.name());
         final double positionLatRad = maneuverDoc.getDouble(FieldNames.POSITION_LAT_RAD.name());
         final double positionLngRad = maneuverDoc.getDouble(FieldNames.POSITION_LNG_RAD.name());
