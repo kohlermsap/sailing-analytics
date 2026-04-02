@@ -228,11 +228,13 @@ public class RaceLogRaceTracker extends AbstractRaceTrackerBaseImpl<RaceLogConne
     protected void onStop(boolean preemptive, boolean willBeRemoved) {
         RaceLog raceLog = params.getRaceLog();
         final Pair<TimePointSpecificationFoundInLog, TimePointSpecificationFoundInLog> trackingTimes = new TrackingTimesFinder(raceLog).analyze();
-        if (!trackedRegatta.getRegatta().isControlTrackingFromStartAndFinishTimes() &&
+        // if willBeRemoved is true, this is probably a replication start or a server shut-down and not
+        // just a user stopping the tracking of a single race; therefore, don't capture the current time
+        // as the end-of-tracking if willBeRemoved==true. See also bug6228
+        if (!willBeRemoved && !trackedRegatta.getRegatta().isControlTrackingFromStartAndFinishTimes() &&
                 (trackingTimes == null || trackingTimes.getB() == null || trackingTimes.getB().getTimePoint() == null)) {
             // seems the first time tracking for this race is stopped; enter "now" as end of tracking
             // into the race log
-            // FIXME bug 6228: do this only when stopping tracking happened on explicit user request, but not just because the server as a whole is stopped/restarted!
             raceLog.add(new RaceLogEndOfTrackingEventImpl(MillisecondsTimePoint.now(), raceLogEventAuthor, raceLog.getCurrentPassId()));
         }
         // remove listeners on logs
