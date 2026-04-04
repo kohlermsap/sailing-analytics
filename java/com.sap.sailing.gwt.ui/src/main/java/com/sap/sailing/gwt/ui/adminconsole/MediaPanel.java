@@ -21,25 +21,20 @@ import com.google.gwt.cell.client.FieldUpdater;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.cellview.client.AbstractCellTable;
-import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.view.client.CellPreviewEvent;
-import com.google.gwt.view.client.DefaultSelectionEventManager;
-import com.google.gwt.view.client.DefaultSelectionEventManager.SelectAction;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
@@ -69,10 +64,10 @@ import com.sap.sse.gwt.client.ErrorReporter;
 import com.sap.sse.gwt.client.Notification;
 import com.sap.sse.gwt.client.Notification.NotificationType;
 import com.sap.sse.gwt.client.async.MarkedAsyncCallback;
-import com.sap.sse.gwt.client.celltable.BaseCelltable;
 import com.sap.sse.gwt.client.celltable.EntityIdentityComparator;
+import com.sap.sse.gwt.client.celltable.FlushableCellTable;
 import com.sap.sse.gwt.client.celltable.RefreshableMultiSelectionModel;
-import com.sap.sse.gwt.client.controls.BetterCheckboxCell;
+import com.sap.sse.gwt.client.celltable.SelectionCheckboxColumn;
 import com.sap.sse.gwt.client.dialog.DataEntryDialog.DialogCallback;
 import com.sap.sse.gwt.client.panels.AbstractFilterablePanel;
 import com.sap.sse.gwt.client.panels.LabeledAbstractFilterablePanel;
@@ -103,7 +98,7 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
     private final ErrorReporter errorReporter;
     private final StringMessages stringMessages;
     private final UserService userService;
-    private CellTable<MediaTrackWithSecurityDTO> mediaTracksTable;
+    private FlushableCellTable<MediaTrackWithSecurityDTO> mediaTracksTable;
     private ListDataProvider<MediaTrackWithSecurityDTO> mediaTrackListDataProvider = new ListDataProvider<>();
     private Date latestDate;
     private RefreshableMultiSelectionModel<MediaTrackWithSecurityDTO> refreshableSelectionModel;
@@ -163,6 +158,15 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
             }
         });
         multiURLChange.setEnabled(false);
+        final Button removeButton = buttonAndFilterPanel.addRemoveAction(stringMessages.remove(), new Command() {
+            @Override
+            public void execute() {
+                for (final MediaTrackWithSecurityDTO track : refreshableSelectionModel.getSelectedSet()) {
+                    removeMediaTrack(track);
+                }
+            }
+        });
+        removeButton.setEnabled(false);
         Label lblFilterRaces = new Label(stringMessages.filterMediaByName() + ":");
         lblFilterRaces.setWordWrap(false);
         buttonAndFilterPanel.addUnsecuredWidget(lblFilterRaces);
@@ -195,13 +199,27 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
         refreshableSelectionModel.addSelectionChangeHandler(new Handler() {
             @Override
             public void onSelectionChange(SelectionChangeEvent event) {
+                final Set<MediaTrackWithSecurityDTO> selected = refreshableSelectionModel.getSelectedSet();
+                final int count = selected.size();
                 boolean canUpdateAll = true;
-                for (MediaTrackWithSecurityDTO track : refreshableSelectionModel.getSelectedSet()) {
+                boolean canDeleteAll = true;
+                for (MediaTrackWithSecurityDTO track : selected) {
                     if (!userService.hasPermission(track, DefaultActions.UPDATE)) {
                         canUpdateAll = false;
                     }
+                    if (!userService.hasPermission(track, DefaultActions.DELETE)) {
+                        canDeleteAll = false;
+                    }
                 }
-                multiURLChange.setEnabled(!refreshableSelectionModel.getSelectedSet().isEmpty() && canUpdateAll);
+                final boolean multiUrlEnabled = count > 0 && canUpdateAll;
+                multiURLChange.setEnabled(multiUrlEnabled);
+                multiURLChange.setText(count > 0
+                        ? stringMessages.multiUrlChangeMediaTrack() + " (" + count + ")"
+                        : stringMessages.multiUrlChangeMediaTrack());
+                removeButton.setEnabled(count > 0 && canDeleteAll);
+                removeButton.setText(count > 0
+                        ? stringMessages.remove() + " (" + count + ")"
+                        : stringMessages.remove());
             }
         });
     }
@@ -226,58 +244,10 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
     }
 
     private void createMediaTracksTable(final UserService userService) {
-        // Create a CellTable.
-        // Set a key provider that provides a unique key for each contact. If key is
-        // used to identify contacts when fields (such as the name and address)
-        // change.
-        mediaTracksTable = new BaseCelltable<>(1000, tableResources);
+        mediaTracksTable = new FlushableCellTable<>(1000, tableResources);
         mediaTracksTable.setWidth("100%");
-        // Attach a column sort handler to the ListDataProvider to sort the list.
-        ListHandler<MediaTrackWithSecurityDTO> sortHandler = new ListHandler<>(mediaTrackListDataProvider.getList());
+        final ListHandler<MediaTrackWithSecurityDTO> sortHandler = new ListHandler<>(mediaTrackListDataProvider.getList());
         mediaTracksTable.addColumnSortHandler(sortHandler);
-        // Add a selection model so we can select cells.
-        refreshableSelectionModel = new RefreshableMultiSelectionModel<>(
-                new EntityIdentityComparator<MediaTrackWithSecurityDTO>() {
-            @Override
-                    public boolean representSameEntity(MediaTrackWithSecurityDTO dto1, MediaTrackWithSecurityDTO dto2) {
-                return dto1.dbId.equals(dto2.dbId);
-            }
-            @Override
-                    public int hashCode(MediaTrackWithSecurityDTO t) {
-                return t.dbId.hashCode();
-            }
-        }, filterableMediaTracks.getAllListDataProvider());
-        mediaTracksTable.setSelectionModel(refreshableSelectionModel,
-                DefaultSelectionEventManager.createCustomManager(
-                        new DefaultSelectionEventManager.CheckboxEventTranslator<MediaTrackWithSecurityDTO>() {
-                    @Override
-                    public boolean clearCurrentSelection(CellPreviewEvent<MediaTrackWithSecurityDTO> event) {
-                        return !isCheckboxColumn(event.getColumn());
-                    }
-
-                    @Override
-                    public SelectAction translateSelectionEvent(
-                                    CellPreviewEvent<MediaTrackWithSecurityDTO> event) {
-                        NativeEvent nativeEvent = event.getNativeEvent();
-                        if (BrowserEvents.CLICK.equals(nativeEvent.getType())) {
-                            if (nativeEvent.getCtrlKey()) {
-                                MediaTrackWithSecurityDTO value = event.getValue();
-                                refreshableSelectionModel.setSelected(value, !refreshableSelectionModel.isSelected(value));
-                                return SelectAction.IGNORE;
-                            }
-                            if (!refreshableSelectionModel.getSelectedSet().isEmpty() && !isCheckboxColumn(event.getColumn())) {
-                                return SelectAction.DEFAULT;
-                            }
-                        }
-                        return SelectAction.TOGGLE;
-                    }
-
-                    private boolean isCheckboxColumn(int columnIndex) {
-                        return columnIndex == 0;
-                    }
-                }));
-
-        // Initialize the columns.
         initTableColumns(sortHandler, userService);
         mediaTrackListDataProvider.addDataDisplay(mediaTracksTable);
         add(mediaTracksTable);
@@ -290,17 +260,25 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
      */
     private void initTableColumns(final ListHandler<MediaTrackWithSecurityDTO> sortHandler,
             final UserService userService) {
-        Column<MediaTrackWithSecurityDTO, Boolean> checkColumn = new Column<MediaTrackWithSecurityDTO, Boolean>(
-                new BetterCheckboxCell(tableResources.cellTableStyle().cellTableCheckboxSelected(),
-                        tableResources.cellTableStyle().cellTableCheckboxDeselected())) {
-            @Override
-            public Boolean getValue(MediaTrackWithSecurityDTO object) {
-                // Get the value from the selection model.
-                return refreshableSelectionModel.isSelected(object);
-            }
-        };
-        mediaTracksTable.addColumn(checkColumn, SafeHtmlUtils.fromSafeConstant("<br/>"));
+        final SelectionCheckboxColumn<MediaTrackWithSecurityDTO> checkColumn = new SelectionCheckboxColumn<>(
+                tableResources.cellTableStyle().cellTableCheckboxSelected(),
+                tableResources.cellTableStyle().cellTableCheckboxDeselected(),
+                tableResources.cellTableStyle().cellTableCheckboxColumnCell(),
+                new EntityIdentityComparator<MediaTrackWithSecurityDTO>() {
+                    @Override
+                    public boolean representSameEntity(MediaTrackWithSecurityDTO dto1, MediaTrackWithSecurityDTO dto2) {
+                        return dto1.dbId.equals(dto2.dbId);
+                    }
+                    @Override
+                    public int hashCode(MediaTrackWithSecurityDTO t) {
+                        return t.dbId.hashCode();
+                    }
+                }, filterableMediaTracks.getAllListDataProvider());
+        refreshableSelectionModel = checkColumn.getSelectionModel();
+        final Header<Boolean> selectAllHeader = checkColumn.createHeader();
+        mediaTracksTable.addColumn(checkColumn, selectAllHeader);
         mediaTracksTable.setColumnWidth(checkColumn, 40, Unit.PX);
+        mediaTracksTable.setSelectionModel(refreshableSelectionModel, checkColumn.getSelectionManager());
         // db id
         Column<MediaTrackWithSecurityDTO, String> dbIdColumn = new Column<MediaTrackWithSecurityDTO, String>(
                 new TextCell()) {
