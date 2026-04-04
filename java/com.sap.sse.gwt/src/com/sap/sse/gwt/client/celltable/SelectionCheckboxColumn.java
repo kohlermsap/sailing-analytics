@@ -41,16 +41,16 @@ import com.sap.sse.gwt.client.controls.BetterCheckboxCell;
  * <code>&lt;div&gt;</code> element representing a selected or deselected element.
  * <p>
  * Column header: There are two ways to provide a header for this column:
- * <ul>
- * 1.{@link #createHeader()} returns a live select-all/deselect-all {@link Header} backed by a {@link CheckboxCell}.
+ * <ol>
+ * <li>{@link #createHeader()} returns a live select-all/deselect-all {@link Header} backed by a {@link CheckboxCell}.
  * It ticks when all rows are selected and unticks as soon as all rows are deselected. Clicking it selects or deselects
  * all rows in the {@link ListDataProvider}. This header must be passed explicitly to the table's
  * {@code addColumn(Column, Header)} or {@code insertColumn(int, Column, Header, ...)} call — it is not
- * returned by {@link #getHeader()}.
- * 2.{@link #getHeader()} returns a static checkmark (&#x2713;) header. It serves as a fallback default if no
+ * returned by {@link #getHeader()}.</li>
+ * <li>{@link #getHeader()} returns a static checkmark (&#x2713;) header. It serves as a fallback default if no
  * select-all behavior is needed, but is not currently used by any caller — {@link #createHeader()} is the
- * preferred choice for all existing usages.
- * </ul>
+ * preferred choice for all existing usages.</li>
+ * </ol>
  *
  * @author Axel Uhl (D043530)
  * @author Lukas Furmanek
