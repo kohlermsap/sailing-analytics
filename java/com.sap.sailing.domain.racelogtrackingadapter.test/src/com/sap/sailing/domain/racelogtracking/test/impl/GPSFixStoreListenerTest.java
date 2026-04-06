@@ -54,7 +54,7 @@ public class GPSFixStoreListenerTest extends AbstractGPSFixStoreTest {
         };
         thread.start();
         try {
-            store.storeFix(device, createFix(100, 10, 20, 30, 40), /* filterByRegattaAndEventEndDate */ false);
+            store.storeFix(device, createFix(100, 10, 20, 30, 40));
         } finally {
             // This ensures that the thread is terminated when the test finishes
             // JUnit may behave crazy if there are additional tests running after the test finished

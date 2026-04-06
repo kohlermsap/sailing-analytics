@@ -417,15 +417,15 @@ public class SensorFixStoreAndLoadTest {
     }
 
     private void addBravoFixes() {
-        store.storeFix(device, createBravoDoubleVectorFixWithRideHeight(FIX_TIMESTAMP, FIX_RIDE_HEIGHT.getMeters()), /* filterByRegattaAndEventEndDate */ false);
-        store.storeFix(device, createBravoDoubleVectorFixWithRideHeight(FIX_TIMESTAMP2, FIX_RIDE_HEIGHT2.getMeters()), /* filterByRegattaAndEventEndDate */ false);
-        store.storeFix(device, createBravoDoubleVectorFixWithRideHeight(FIX_TIMESTAMP3, FIX_RIDE_HEIGHT3.getMeters()), /* filterByRegattaAndEventEndDate */ false);
+        store.storeFix(device, createBravoDoubleVectorFixWithRideHeight(FIX_TIMESTAMP, FIX_RIDE_HEIGHT.getMeters()));
+        store.storeFix(device, createBravoDoubleVectorFixWithRideHeight(FIX_TIMESTAMP2, FIX_RIDE_HEIGHT2.getMeters()));
+        store.storeFix(device, createBravoDoubleVectorFixWithRideHeight(FIX_TIMESTAMP3, FIX_RIDE_HEIGHT3.getMeters()));
     }
 
     private void addMoreBravoFixes() {
-        store.storeFix(device, createBravoDoubleVectorFixWithRideHeight(FIX_TIMESTAMP + 1, FIX_RIDE_HEIGHT.getMeters()), /* filterByRegattaAndEventEndDate */ false);
-        store.storeFix(device, createBravoDoubleVectorFixWithRideHeight(FIX_TIMESTAMP2 + 1, FIX_RIDE_HEIGHT2.getMeters()), /* filterByRegattaAndEventEndDate */ false);
-        store.storeFix(device, createBravoDoubleVectorFixWithRideHeight(FIX_TIMESTAMP3 + 1, FIX_RIDE_HEIGHT3.getMeters()), /* filterByRegattaAndEventEndDate */ false);
+        store.storeFix(device, createBravoDoubleVectorFixWithRideHeight(FIX_TIMESTAMP + 1, FIX_RIDE_HEIGHT.getMeters()));
+        store.storeFix(device, createBravoDoubleVectorFixWithRideHeight(FIX_TIMESTAMP2 + 1, FIX_RIDE_HEIGHT2.getMeters()));
+        store.storeFix(device, createBravoDoubleVectorFixWithRideHeight(FIX_TIMESTAMP3 + 1, FIX_RIDE_HEIGHT3.getMeters()));
     }
 
     private FixLoaderAndTracker createFixLoaderAndTracker() {
@@ -477,7 +477,7 @@ public class SensorFixStoreAndLoadTest {
     }
     
     private void addTestFixes() {
-        store.storeFix(deviceTest, createTestDoubleVectorFixWithTestValue(FIX_TIMESTAMP, FIX_TEST_VALUE), /* filterByRegattaAndEventEndDate */ false);
+        store.storeFix(deviceTest, createTestDoubleVectorFixWithTestValue(FIX_TIMESTAMP, FIX_TEST_VALUE));
     }
     
     private DoubleVectorFix createTestDoubleVectorFixWithTestValue(long timestamp, double testValue) {

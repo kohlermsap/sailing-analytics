@@ -205,7 +205,7 @@ public class MongoSensorFixStoreImpl extends MongoFixHandler implements MongoSen
      */
     @Override
     public <FixT extends Timed> Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> storeFixes(DeviceIdentifier device,
-            Iterable<FixT> fixes, boolean returnManeuverChanges, boolean returnLiveDelay, boolean filterByRegattaAndEventEndDate) {
+            Iterable<FixT> fixes, boolean returnManeuverChanges, boolean returnLiveDelay) {
         final Set<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> racesWithManeuverChangesOrLiveDelay = new HashSet<>();
         if (!Util.isEmpty(fixes)) {
             try {
@@ -236,18 +236,18 @@ public class MongoSensorFixStoreImpl extends MongoFixHandler implements MongoSen
             } catch (TransformationException e) {
                 logger.log(Level.WARNING, "Could not store fix in MongoDB", e);
             }
-            Util.addAll(notifyListeners(device, fixes, returnManeuverChanges, returnLiveDelay, filterByRegattaAndEventEndDate), racesWithManeuverChangesOrLiveDelay);
+            Util.addAll(notifyListeners(device, fixes, returnManeuverChanges, returnLiveDelay), racesWithManeuverChangesOrLiveDelay);
         }
         return racesWithManeuverChangesOrLiveDelay;
     }
 
     @Override
-    public <FixT extends Timed> void storeFix(DeviceIdentifier device, FixT fix, boolean filterByRegattaAndEventEndDate) {
-        storeFixes(device, Collections.singletonList(fix), /* returnManeuverUpdate */ false, /* returnLiveDelay */ false, /* filterByRegattaAndEventEndDate */ false);
+    public <FixT extends Timed> void storeFix(DeviceIdentifier device, FixT fix) {
+        storeFixes(device, Collections.singletonList(fix), /* returnManeuverUpdate */ false, /* returnLiveDelay */ false);
     }
 
     private <FixT extends Timed> Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> notifyListeners(DeviceIdentifier device,
-            Iterable<FixT> fixes, boolean returnManeuverChanges, boolean returnLiveDelay, boolean filterByRegattaAndEventEndDate) {
+            Iterable<FixT> fixes, boolean returnManeuverChanges, boolean returnLiveDelay) {
         final Set<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> raceWithChangedManeuver = new HashSet<>();
         @SuppressWarnings({ "unchecked", "rawtypes" })
         final Map<DeviceIdentifier, Set<FixReceivedListener<FixT>>> listenersWithFixType = (Map) listeners;

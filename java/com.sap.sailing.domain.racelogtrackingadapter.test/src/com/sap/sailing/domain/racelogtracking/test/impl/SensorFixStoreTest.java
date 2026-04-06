@@ -388,7 +388,7 @@ public class SensorFixStoreTest {
 
     private DoubleVectorFix addBravoFix(DeviceIdentifier device, long timestamp, double rideHeight) {
         DoubleVectorFix fix = createBravoDoubleVectorFixWithRideHeight(timestamp, rideHeight);
-        store.storeFix(device, fix, /* filterByRegattaAndEventEndDate */ false);
+        store.storeFix(device, fix);
         return fix;
     }
 

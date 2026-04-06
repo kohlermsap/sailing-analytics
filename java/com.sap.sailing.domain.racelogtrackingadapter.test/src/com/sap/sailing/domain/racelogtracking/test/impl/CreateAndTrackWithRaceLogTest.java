@@ -165,9 +165,9 @@ public class CreateAndTrackWithRaceLogTest extends RaceLogTrackingTestHelper {
     private void addFixes0(DeviceIdentifier dev1) throws TransformationException,
             NoCorrespondingServiceRegisteredException {
         sensorFixStore.storeFix(dev1, new GPSFixMovingImpl(new DegreePosition(0, 0), t(5), new KnotSpeedWithBearingImpl(
-                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null), /* filterByRegattaAndEventEndDate */ false);
+                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null));
         sensorFixStore.storeFix(dev1, new GPSFixMovingImpl(new DegreePosition(0, 0), t(15), new KnotSpeedWithBearingImpl(
-                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null), /* filterByRegattaAndEventEndDate */ false);
+                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null));
     }
 
     private void addFixes1(TrackedRace race, Competitor comp1, DeviceIdentifier dev1) throws TransformationException,
@@ -176,9 +176,9 @@ public class CreateAndTrackWithRaceLogTest extends RaceLogTrackingTestHelper {
         testSize(race.getTrack(comp1), 1);
         // further fix arrives in race
         sensorFixStore.storeFix(dev1, new GPSFixMovingImpl(new DegreePosition(0, 0), t(7), new KnotSpeedWithBearingImpl(
-                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null), /* filterByRegattaAndEventEndDate */ false);
+                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null));
         sensorFixStore.storeFix(dev1, new GPSFixMovingImpl(new DegreePosition(0, 0), t(14), new KnotSpeedWithBearingImpl(
-                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null), /* filterByRegattaAndEventEndDate */ false); // outside mapping range
+                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null)); // outside mapping range
         testSize(race.getTrack(comp1), 2);
     }
 
@@ -188,7 +188,7 @@ public class CreateAndTrackWithRaceLogTest extends RaceLogTrackingTestHelper {
         testSize(race.getTrack(comp1), 4);
         // add another fix in new mapping range
         sensorFixStore.storeFix(dev1, new GPSFixMovingImpl(new DegreePosition(0, 0), t(18), new KnotSpeedWithBearingImpl(
-                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null), /* filterByRegattaAndEventEndDate */ false);
+                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null));
         testSize(race.getTrack(comp1), 5);
     }
 
@@ -196,7 +196,7 @@ public class CreateAndTrackWithRaceLogTest extends RaceLogTrackingTestHelper {
             NoCorrespondingServiceRegisteredException {
         // stop tracking, then no more fixes arrive at race
         sensorFixStore.storeFix(dev1, new GPSFixMovingImpl(new DegreePosition(0, 0), t(8), new KnotSpeedWithBearingImpl(
-                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null), /* filterByRegattaAndEventEndDate */ false);
+                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null));
         testSize(race.getTrack(comp1), 5);
     }
 
