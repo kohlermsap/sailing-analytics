@@ -24,6 +24,7 @@ import com.google.gwt.text.shared.SafeHtmlRenderer;
 import com.google.gwt.user.cellview.client.AbstractCellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -310,7 +311,7 @@ public class IgtimiDevicesPanel extends FlowPanel implements FilterablePanelProv
                     public int hashCode(IgtimiDeviceWithSecurityDTO t) {
                         return 7482 ^ (int) t.getId();
                     }
-                }, filterDevicesPanel.getAllListDataProvider(), table);
+                }, filterDevicesPanel.getAllListDataProvider());
         final ListHandler<IgtimiDeviceWithSecurityDTO> columnSortHandler = new ListHandler<>(filteredDevices.getList());
         table.addColumnSortHandler(columnSortHandler);
         columnSortHandler.setComparator(devicesSelectionCheckboxColumn, devicesSelectionCheckboxColumn.getComparator());
@@ -374,8 +375,8 @@ public class IgtimiDevicesPanel extends FlowPanel implements FilterablePanelProv
                 .create(userService.getUserManagementWriteService(), type, roleDefinition -> refreshDevices(), stringMessages);
         actionColumn.addAction(DefaultActionsImagesBarCell.ACTION_CHANGE_ACL, DefaultActions.CHANGE_ACL,
                 configACL::openDialog);
-        // add columns to table:
-        table.addColumn(devicesSelectionCheckboxColumn, devicesSelectionCheckboxColumn.getHeader());
+        final Header<Boolean> devicesSelectAllHeader = devicesSelectionCheckboxColumn.createHeader();
+        table.addColumn(devicesSelectionCheckboxColumn, devicesSelectAllHeader);
         table.addColumn(deviceIdColumn, stringMessages.id());
         table.addColumn(deviceNameColumn, stringMessages.name());
         table.addColumn(deviceSerialNumberColumn, stringMessages.serialNumber());
@@ -464,7 +465,7 @@ public class IgtimiDevicesPanel extends FlowPanel implements FilterablePanelProv
                     public int hashCode(IgtimiDataAccessWindowWithSecurityDTO t) {
                         return 7482 ^ (int) t.getId();
                     }
-                }, filterDataAccessWindowsPanel.getAllListDataProvider(), table);
+                }, filterDataAccessWindowsPanel.getAllListDataProvider());
         final ListHandler<IgtimiDataAccessWindowWithSecurityDTO> columnSortHandler = new ListHandler<>(filteredDAWs.getList());
         table.addColumnSortHandler(columnSortHandler);
         columnSortHandler.setComparator(dawsSelectionCheckboxColumn, dawsSelectionCheckboxColumn.getComparator());
@@ -491,8 +492,8 @@ public class IgtimiDevicesPanel extends FlowPanel implements FilterablePanelProv
                 .create(userService.getUserManagementWriteService(), type, roleDefinition -> refreshDataAccessWindows(), stringMessages);
         actionColumn.addAction(DefaultActionsImagesBarCell.ACTION_CHANGE_ACL, DefaultActions.CHANGE_ACL,
                 configACL::openDialog);
-        // add columns to table:
-        table.addColumn(dawsSelectionCheckboxColumn, dawsSelectionCheckboxColumn.getHeader());
+        final Header<Boolean> dawSelectAllHeader = dawsSelectionCheckboxColumn.createHeader();
+        table.addColumn(dawsSelectionCheckboxColumn, dawSelectAllHeader);
         table.addColumn(dawIdColumn, stringMessages.id());
         table.addColumn(dawSerialNumberColumn, stringMessages.serialNumber());
         table.addColumn(dawFromColumn, stringMessages.from());

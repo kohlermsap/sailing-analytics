@@ -99,7 +99,6 @@ public class RefreshableMultiSelectionModel<T> extends MultiSelectionModelWithSe
             }
             if (wasSelectedBefore != null) {
                 super.setSelected(wasSelectedBefore, false);
-                isSelected(item); // triggers the deleting of the wasSelectedBefore element in super class
                 super.setSelected(item, selected);
             } else {
                 super.setSelected(item, selected);
