@@ -81,6 +81,7 @@ import com.sap.sse.security.ui.client.component.EditOwnershipDialog;
 import com.sap.sse.security.ui.client.component.EditOwnershipDialog.DialogConfig;
 import com.sap.sse.security.ui.client.component.SecuredDTOOwnerColumn;
 import com.sap.sse.security.ui.client.component.editacl.EditACLDialog;
+import com.google.gwt.user.cellview.client.Header;
 
 /**
  * A composite showing the list of all sailing events  
@@ -229,7 +230,7 @@ public class EventListComposite extends Composite {
                     public int hashCode(EventDTO t) {
                         return t.id.hashCode();
                     }
-                }, filterTextbox.getAllListDataProvider(),table);
+                }, filterTextbox.getAllListDataProvider());
         AnchorCell anchorCell = new AnchorCell();
         ListHandler<EventDTO> listHandler = new ListHandler<EventDTO>(eventListDataProvider.getList());
         final TextColumn<EventDTO> eventUUidColumn = new AbstractSortableTextColumn<EventDTO>(
@@ -372,7 +373,8 @@ public class EventListComposite extends Composite {
         configureTableColumnSortHandler(listHandler, eventSelectionCheckboxColumn,
                 eventNameColumn, venueNameColumn, startEndDateColumn, isPublicColumn, courseAreasColumn,
                 leaderboardGroupsColumn, groupColumn, userColumn);
-        table.addColumn(eventSelectionCheckboxColumn, eventSelectionCheckboxColumn.getHeader());
+        final Header<Boolean> selectAllHeader = eventSelectionCheckboxColumn.createHeader();
+        table.addColumn(eventSelectionCheckboxColumn, selectAllHeader);
         table.addColumn(eventNameColumn, stringMessages.event());
         table.addColumn(venueNameColumn, stringMessages.venue());
         table.addColumn(startEndDateColumn, stringMessages.from() + "/" + stringMessages.to());

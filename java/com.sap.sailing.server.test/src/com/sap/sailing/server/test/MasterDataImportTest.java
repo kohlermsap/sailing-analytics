@@ -372,7 +372,7 @@ public class MasterDataImportTest {
         regatta.getRegattaLog().add(mappingEvent);
         GPSFix gpsFix = new GPSFixMovingImpl(new DegreePosition(54.333, 10.133), logTimePoint2,
                 new KnotSpeedWithBearingImpl(10, new DegreeBearingImpl(90)), /* optionalTrueHeading */ null);
-        sourceService.getSensorFixStore().storeFix(deviceIdentifier, gpsFix, /* filterByRegattaAndEventEndDate */ false);
+        sourceService.getSensorFixStore().storeFix(deviceIdentifier, gpsFix);
         // test to check that batch-import of fixes works as intended
         DeviceIdentifier deviceBatch1 = addDeviceMappingWithFixes(sourceService, regatta, competitor, logTimePoint, logTimePoint3, logTimePoint4, "x", 4999);
         DeviceIdentifier deviceBatch2 = addDeviceMappingWithFixes(sourceService, regatta, competitor, logTimePoint, logTimePoint3, logTimePoint4, "y", 5000);
@@ -388,7 +388,7 @@ public class MasterDataImportTest {
         fixData[BravoSensorDataMetadata.RIDE_HEIGHT_PORT_HULL.getColumnIndex()] = rideHeightValue;
         fixData[BravoSensorDataMetadata.RIDE_HEIGHT_STBD_HULL.getColumnIndex()] = rideHeightValue;
         DoubleVectorFixImpl doubleVectorFix = new DoubleVectorFixImpl(logTimePoint2, fixData);
-        sourceService.getSensorFixStore().storeFix(deviceIdentifier2, doubleVectorFix, /* filterByRegattaAndEventEndDate */ false);
+        sourceService.getSensorFixStore().storeFix(deviceIdentifier2, doubleVectorFix);
         // Set score correction
         double scoreCorrection = 12.0;
         leaderboard.getScoreCorrection().correctScore(competitor, raceColumn, scoreCorrection);
@@ -537,8 +537,7 @@ public class MasterDataImportTest {
             fixesToSave.add(new GPSFixMovingImpl(new DegreePosition(54.333, 10.133), logTimePoint.plus(i),
                     new KnotSpeedWithBearingImpl(10, new DegreeBearingImpl(90)), /* optionalTrueHeading */ null));
         }
-        sourceService.getSensorFixStore().storeFixes(deviceIdentifier, fixesToSave, /* returnManeuverUpdate */ false, /* returnLiveDelay */ false,
-                /* filterByRegattaAndEventEndDate */ true);
+        sourceService.getSensorFixStore().storeFixes(deviceIdentifier, fixesToSave, /* returnManeuverUpdate */ false, /* returnLiveDelay */ false);
         return deviceIdentifier;
     }
     

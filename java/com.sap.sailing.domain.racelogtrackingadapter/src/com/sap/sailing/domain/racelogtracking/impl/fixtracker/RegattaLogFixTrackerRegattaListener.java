@@ -97,8 +97,7 @@ public class RegattaLogFixTrackerRegattaListener extends AbstractTrackedRegattaA
                         if (added) {
                             RaceLogFixTrackerManager trackerManager = new RaceLogFixTrackerManager(
                                     (DynamicTrackedRace) trackedRace, racingEventServiceTracker.getInitializedService(0).getSensorFixStore(),
-                                    sensorFixMapperFactory, /* removeOutliersFromCompetitorTracks */ true,
-                                    /* eventResolver */ racingEventServiceTracker.getInitializedService(0));
+                                    sensorFixMapperFactory, /* removeOutliersFromCompetitorTracks */ true);
                             RaceLogFixTrackerManager oldInstance = dataTrackers.put(raceIdentifier, trackerManager);
                             if (oldInstance != null) {
                                 oldInstance.stop(/* preemptive */ true, /* willBeRemoved */ false);

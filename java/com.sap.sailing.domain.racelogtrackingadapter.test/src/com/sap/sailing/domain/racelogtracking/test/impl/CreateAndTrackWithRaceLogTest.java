@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
@@ -39,7 +38,6 @@ import com.sap.sailing.domain.base.BoatClass;
 import com.sap.sailing.domain.base.Competitor;
 import com.sap.sailing.domain.base.CompetitorWithBoat;
 import com.sap.sailing.domain.base.DomainFactory;
-import com.sap.sailing.domain.base.Event;
 import com.sap.sailing.domain.base.Fleet;
 import com.sap.sailing.domain.base.RaceColumn;
 import com.sap.sailing.domain.base.Regatta;
@@ -54,7 +52,6 @@ import com.sap.sailing.domain.common.CompetitorRegistrationType;
 import com.sap.sailing.domain.common.DeviceIdentifier;
 import com.sap.sailing.domain.common.racelog.tracking.NotDenotedForRaceLogTrackingException;
 import com.sap.sailing.domain.common.tracking.impl.GPSFixMovingImpl;
-import com.sap.sailing.domain.leaderboard.EventResolver;
 import com.sap.sailing.domain.leaderboard.RegattaLeaderboard;
 import com.sap.sailing.domain.leaderboard.impl.HighPoint;
 import com.sap.sailing.domain.persistence.MongoObjectFactory;
@@ -97,18 +94,6 @@ public class CreateAndTrackWithRaceLogTest extends RaceLogTrackingTestHelper {
     private RaceLogTrackingAdapter adapter;
     private Regatta regatta;
     private SensorFixStore sensorFixStore;
-    private final EventResolver dummyEventResolver = new EventResolver() {
-        @Override
-        public Event getEvent(Serializable id) {
-            return null;
-        }
-
-        @Override
-        public Iterable<Event> getAllEvents() {
-            return Collections.emptySet();
-        }
-    };
-
     private long time = 0;
 
     @BeforeEach
@@ -180,9 +165,9 @@ public class CreateAndTrackWithRaceLogTest extends RaceLogTrackingTestHelper {
     private void addFixes0(DeviceIdentifier dev1) throws TransformationException,
             NoCorrespondingServiceRegisteredException {
         sensorFixStore.storeFix(dev1, new GPSFixMovingImpl(new DegreePosition(0, 0), t(5), new KnotSpeedWithBearingImpl(
-                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null), /* filterByRegattaAndEventEndDate */ false);
+                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null));
         sensorFixStore.storeFix(dev1, new GPSFixMovingImpl(new DegreePosition(0, 0), t(15), new KnotSpeedWithBearingImpl(
-                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null), /* filterByRegattaAndEventEndDate */ false);
+                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null));
     }
 
     private void addFixes1(TrackedRace race, Competitor comp1, DeviceIdentifier dev1) throws TransformationException,
@@ -191,9 +176,9 @@ public class CreateAndTrackWithRaceLogTest extends RaceLogTrackingTestHelper {
         testSize(race.getTrack(comp1), 1);
         // further fix arrives in race
         sensorFixStore.storeFix(dev1, new GPSFixMovingImpl(new DegreePosition(0, 0), t(7), new KnotSpeedWithBearingImpl(
-                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null), /* filterByRegattaAndEventEndDate */ false);
+                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null));
         sensorFixStore.storeFix(dev1, new GPSFixMovingImpl(new DegreePosition(0, 0), t(14), new KnotSpeedWithBearingImpl(
-                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null), /* filterByRegattaAndEventEndDate */ false); // outside mapping range
+                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null)); // outside mapping range
         testSize(race.getTrack(comp1), 2);
     }
 
@@ -203,7 +188,7 @@ public class CreateAndTrackWithRaceLogTest extends RaceLogTrackingTestHelper {
         testSize(race.getTrack(comp1), 4);
         // add another fix in new mapping range
         sensorFixStore.storeFix(dev1, new GPSFixMovingImpl(new DegreePosition(0, 0), t(18), new KnotSpeedWithBearingImpl(
-                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null), /* filterByRegattaAndEventEndDate */ false);
+                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null));
         testSize(race.getTrack(comp1), 5);
     }
 
@@ -211,7 +196,7 @@ public class CreateAndTrackWithRaceLogTest extends RaceLogTrackingTestHelper {
             NoCorrespondingServiceRegisteredException {
         // stop tracking, then no more fixes arrive at race
         sensorFixStore.storeFix(dev1, new GPSFixMovingImpl(new DegreePosition(0, 0), t(8), new KnotSpeedWithBearingImpl(
-                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null), /* filterByRegattaAndEventEndDate */ false);
+                10, new DegreeBearingImpl(5)), /* optionalTrueHeading */ null));
         testSize(race.getTrack(comp1), 5);
     }
 
@@ -239,7 +224,7 @@ public class CreateAndTrackWithRaceLogTest extends RaceLogTrackingTestHelper {
         TrackedRace race = trackAndGetRace(column);
         assertNotNull(race);
         RaceLogFixTrackerManager raceLogFixTrackerManager = new RaceLogFixTrackerManager((DynamicTrackedRace) race,
-                sensorFixStore, null, /* removeOutliersFromCompetitorTracks */ false, dummyEventResolver);
+                sensorFixStore, null, /* removeOutliersFromCompetitorTracks */ false);
         raceLogFixTrackerManager.waitForTracker();
         race.waitForLoadingToFinish();
         addFixes1(race, comp1, dev1);
@@ -315,7 +300,7 @@ public class CreateAndTrackWithRaceLogTest extends RaceLogTrackingTestHelper {
         TrackedRace race = trackAndGetRace(column);
         assertNotNull(race);
         RaceLogFixTrackerManager raceLogFixTrackerManager = new RaceLogFixTrackerManager((DynamicTrackedRace) race,
-                sensorFixStore, null, /* removeOutliersFromCompetitorTracks */ false, dummyEventResolver);
+                sensorFixStore, null, /* removeOutliersFromCompetitorTracks */ false);
         raceLogFixTrackerManager.waitForTracker();
         race.waitForLoadingToFinish();
         addFixes1(race, comp1, dev1);

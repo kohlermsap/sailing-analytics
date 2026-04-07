@@ -122,7 +122,6 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
         add(buttonAndFilterPanel);
         allMediaTracks = new ArrayList<>();
         buttonAndFilterPanel.addUnsecuredAction(stringMessages.refresh(), new Command() {
-
             @Override
             public void execute() {
                 presenter.getMediaTracksRefresher().reloadAndCallFillAll();
@@ -138,7 +137,6 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
             @Override
             public void execute() {
                 new MultiVideoDialog(sailingServiceWrite, mediaServiceWrite, stringMessages, errorReporter, new Runnable() {
-
                     @Override
                     public void run() {
                         presenter.getMediaTracksRefresher().reloadAndCallFillAll();
@@ -165,11 +163,9 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
             }
         });
         multiURLChange.setEnabled(false);
-
         Label lblFilterRaces = new Label(stringMessages.filterMediaByName() + ":");
         lblFilterRaces.setWordWrap(false);
         buttonAndFilterPanel.addUnsecuredWidget(lblFilterRaces);
-
         this.filterableMediaTracks = new LabeledAbstractFilterablePanel<MediaTrackWithSecurityDTO>(lblFilterRaces,
                 allMediaTracks, mediaTrackListDataProvider, stringMessages) {
             @Override
@@ -231,17 +227,14 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
 
     private void createMediaTracksTable(final UserService userService) {
         // Create a CellTable.
-
         // Set a key provider that provides a unique key for each contact. If key is
         // used to identify contacts when fields (such as the name and address)
         // change.
         mediaTracksTable = new BaseCelltable<>(1000, tableResources);
         mediaTracksTable.setWidth("100%");
-
         // Attach a column sort handler to the ListDataProvider to sort the list.
         ListHandler<MediaTrackWithSecurityDTO> sortHandler = new ListHandler<>(mediaTrackListDataProvider.getList());
         mediaTracksTable.addColumnSortHandler(sortHandler);
-
         // Add a selection model so we can select cells.
         refreshableSelectionModel = new RefreshableMultiSelectionModel<>(
                 new EntityIdentityComparator<MediaTrackWithSecurityDTO>() {
@@ -258,17 +251,17 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
                 DefaultSelectionEventManager.createCustomManager(
                         new DefaultSelectionEventManager.CheckboxEventTranslator<MediaTrackWithSecurityDTO>() {
                     @Override
-                            public boolean clearCurrentSelection(CellPreviewEvent<MediaTrackWithSecurityDTO> event) {
+                    public boolean clearCurrentSelection(CellPreviewEvent<MediaTrackWithSecurityDTO> event) {
                         return !isCheckboxColumn(event.getColumn());
                     }
 
                     @Override
-                            public SelectAction translateSelectionEvent(
+                    public SelectAction translateSelectionEvent(
                                     CellPreviewEvent<MediaTrackWithSecurityDTO> event) {
                         NativeEvent nativeEvent = event.getNativeEvent();
                         if (BrowserEvents.CLICK.equals(nativeEvent.getType())) {
                             if (nativeEvent.getCtrlKey()) {
-                                        MediaTrackWithSecurityDTO value = event.getValue();
+                                MediaTrackWithSecurityDTO value = event.getValue();
                                 refreshableSelectionModel.setSelected(value, !refreshableSelectionModel.isSelected(value));
                                 return SelectAction.IGNORE;
                             }
@@ -286,7 +279,6 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
 
         // Initialize the columns.
         initTableColumns(sortHandler, userService);
-
         mediaTrackListDataProvider.addDataDisplay(mediaTracksTable);
         add(mediaTracksTable);
         allMediaTracks.clear();
@@ -309,7 +301,6 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
         };
         mediaTracksTable.addColumn(checkColumn, SafeHtmlUtils.fromSafeConstant("<br/>"));
         mediaTracksTable.setColumnWidth(checkColumn, 40, Unit.PX);
-
         // db id
         Column<MediaTrackWithSecurityDTO, String> dbIdColumn = new Column<MediaTrackWithSecurityDTO, String>(
                 new TextCell()) {

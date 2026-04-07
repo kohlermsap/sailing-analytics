@@ -23,10 +23,6 @@ public interface FixReceivedListener<FixT extends Timed> {
      *            if {@code true} then all listeners to which the fix is forwarded shall check to which races the fix
      *            maps and report the live delay for all those races as the third component of the resulting
      *            {@link Triple}s.
-     * @param filterByRegattaAndEventEndDate
-     *            if {@code true}, the fix's {@link Timed#getTimePoint() time point} is matched against the end date of
-     *            any regatta and event that this listener is responsible for; then, fixes that are newer than these end
-     *            dates are dropped and not recorded
      * @param returnManeuverUpdate
      *            if {@code true}, all listeners to which this fix is forwarded shall check whether the fix feeds into a
      *            competitor's track in the scope of a race where for that competitor the maneuver list has changed
@@ -39,5 +35,5 @@ public interface FixReceivedListener<FixT extends Timed> {
      *         mapping is currently ambiguous.
      */
     Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> fixReceived(DeviceIdentifier device, FixT fix,
-            boolean returnManeuverChanges, boolean returnLiveDelay, boolean filterByRegattaAndEventEndDate);
+            boolean returnManeuverChanges, boolean returnLiveDelay);
 }

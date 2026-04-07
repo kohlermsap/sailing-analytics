@@ -144,7 +144,7 @@ public class UDPExpeditionReceiverTest {
         }
 
         @Override
-        public <FixT extends Timed> void storeFix(DeviceIdentifier device, FixT fix, boolean filterByRegattaAndEventEndDate) {
+        public <FixT extends Timed> void storeFix(DeviceIdentifier device, FixT fix) {
             List<Timed> fixesReceivedFromDevice = fixesReceived.get(device);
             if (fixesReceivedFromDevice == null) {
                 fixesReceivedFromDevice = new ArrayList<>();
@@ -155,9 +155,9 @@ public class UDPExpeditionReceiverTest {
 
         @Override
         public <FixT extends Timed> Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> storeFixes(DeviceIdentifier device,
-                Iterable<FixT> fixes, boolean returnManeuverUpdate, boolean returnLiveDelay, boolean filterByRegattaAndEventEndDate) {
+                Iterable<FixT> fixes, boolean returnManeuverUpdate, boolean returnLiveDelay) {
             for (final FixT fix : fixes) {
-                storeFix(device, fix, /* filterByRegattaAndEventEndDate */ false);
+                storeFix(device, fix);
             }
             return Collections.emptySet();
         }

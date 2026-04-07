@@ -131,7 +131,7 @@ public class TrackFilesImporter {
 
     void storeFix(GPSFix fix, DeviceIdentifier deviceIdentifier) {
         try {
-            service.getSensorFixStore().storeFix(deviceIdentifier, fix, /* filterByRegattaAndEventEndDate */ true);
+            service.getSensorFixStore().storeFix(deviceIdentifier, fix);
         } catch (NoCorrespondingServiceRegisteredException e) {
             logger.log(Level.WARNING, "Could not store fix for " + deviceIdentifier);
         }
@@ -139,7 +139,7 @@ public class TrackFilesImporter {
 
     <FixT extends Timed> void storeFixes(Iterable<FixT> fixes, DeviceIdentifier deviceIdentifier) {
         try {
-            service.getSensorFixStore().storeFixes(deviceIdentifier, fixes, /* returnManeuverUpdate */ false, /* returnLiveDelay */ false, /* filterByRegattaAndEventEndDate */ true);
+            service.getSensorFixStore().storeFixes(deviceIdentifier, fixes, /* returnManeuverUpdate */ false, /* returnLiveDelay */ false);
         } catch (NoCorrespondingServiceRegisteredException e) {
             logger.log(Level.WARNING, "Could not store fix for " + deviceIdentifier);
         }

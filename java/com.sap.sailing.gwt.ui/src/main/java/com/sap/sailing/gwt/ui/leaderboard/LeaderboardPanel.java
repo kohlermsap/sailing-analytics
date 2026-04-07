@@ -56,7 +56,6 @@ import com.google.gwt.view.client.CellPreviewEvent;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
-import com.sap.sse.gwt.client.celltable.RefreshableMultiSelectionModel;
 import com.sap.sailing.domain.common.DetailType;
 import com.sap.sailing.domain.common.LeaderboardNameConstants;
 import com.sap.sailing.domain.common.MaxPointsReason;
@@ -109,6 +108,7 @@ import com.sap.sse.gwt.client.async.AsyncActionsExecutor;
 import com.sap.sse.gwt.client.celltable.AbstractSortableColumnWithMinMax;
 import com.sap.sse.gwt.client.celltable.EntityIdentityComparator;
 import com.sap.sse.gwt.client.celltable.FlushableSortedCellTableWithStylableHeaders;
+import com.sap.sse.gwt.client.celltable.RefreshableMultiSelectionModel;
 import com.sap.sse.gwt.client.celltable.SelectionCheckboxColumn;
 import com.sap.sse.gwt.client.celltable.SortedCellTable;
 import com.sap.sse.gwt.client.controls.busyindicator.BusyIndicator;
@@ -2123,7 +2123,7 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
                         public int hashCode(LeaderboardRowDTO t) {
                             return t.competitor.getIdAsString().hashCode();
                         }
-                    }, getData(), leaderboardTable);
+                    }, getData());
             // Note: LeaderboardPanel is the ONLY listener that syncs selection state with CompetitorSelectionProvider.
             // SelectionCheckboxColumn no longer needs to listen separately.
         }
@@ -2489,8 +2489,7 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
                                 // This causes in consequence potentiallyChangedSettings to not be equal to currentSettings anymore.
                                 // We then apply the new settings to make all new race columns visible.
                                 // TODO check if there is an easier way to get to know if we need to reapply the settings.
-                                LS potentiallyChangedSettings = overrideDefaultsForNamesOfRaceColumns(currentSettings,
-                                        result);
+                                LS potentiallyChangedSettings = overrideDefaultsForNamesOfRaceColumns(currentSettings, result);
                                 // reapply, when this is the first time we received the race columns or if columns have
                                 // changed
                                 if (wasEmptyRaceColumnSelection
@@ -3129,7 +3128,7 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
         if (getLeaderboardTable().getColumnCount() > selectionCheckboxColumnIndex) {
             if (showSelectionCheckbox) {
                 if (getLeaderboardTable().getColumn(selectionCheckboxColumnIndex) != selectionCheckboxColumn) {
-                    insertColumn(selectionCheckboxColumnIndex, selectionCheckboxColumn);
+                    insertSelectionCheckboxColumn(selectionCheckboxColumnIndex);
                 } // else, the column is needed and is already in place
             } else {
                 if (getLeaderboardTable().getColumn(selectionCheckboxColumnIndex) == selectionCheckboxColumn) {
@@ -3138,10 +3137,17 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
             }
         } else {
             if (showSelectionCheckbox) {
-                insertColumn(selectionCheckboxColumnIndex, selectionCheckboxColumn);
+                insertSelectionCheckboxColumn(selectionCheckboxColumnIndex);
             }
         }
         return indexOfNextColumn;
+    }
+
+    private void insertSelectionCheckboxColumn(int beforeIndex) {
+        removeColumnStyles(beforeIndex);
+        getLeaderboardTable().insertColumn(beforeIndex, selectionCheckboxColumn, selectionCheckboxColumn.createHeader(),
+                /* comparator */ null, selectionCheckboxColumn.getPreferredSortingOrder().isAscending());
+        addColumnStyles(beforeIndex);
     }
 
     /**

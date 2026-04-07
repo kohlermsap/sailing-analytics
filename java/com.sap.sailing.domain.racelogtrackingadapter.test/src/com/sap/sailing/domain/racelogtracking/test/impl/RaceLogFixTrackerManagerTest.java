@@ -2,7 +2,6 @@ package com.sap.sailing.domain.racelogtracking.test.impl;
 
 import static org.mockito.Mockito.mock;
 
-import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,7 +28,6 @@ import com.sap.sailing.domain.base.BoatClass;
 import com.sap.sailing.domain.base.Competitor;
 import com.sap.sailing.domain.base.Course;
 import com.sap.sailing.domain.base.DomainFactory;
-import com.sap.sailing.domain.base.Event;
 import com.sap.sailing.domain.base.Mark;
 import com.sap.sailing.domain.base.RaceDefinition;
 import com.sap.sailing.domain.base.Sideline;
@@ -40,7 +38,6 @@ import com.sap.sailing.domain.base.impl.RegattaImpl;
 import com.sap.sailing.domain.base.impl.WaypointImpl;
 import com.sap.sailing.domain.common.CompetitorRegistrationType;
 import com.sap.sailing.domain.common.DeviceIdentifier;
-import com.sap.sailing.domain.leaderboard.EventResolver;
 import com.sap.sailing.domain.persistence.PersistenceFactory;
 import com.sap.sailing.domain.persistence.racelog.tracking.impl.MongoSensorFixStoreImpl;
 import com.sap.sailing.domain.racelog.RaceLogAndTrackedRaceResolver;
@@ -80,19 +77,6 @@ public class RaceLogFixTrackerManagerTest {
     protected final AbstractLogEventAuthor author = new LogEventAuthorImpl("author", 0);
     private DynamicTrackedRace trackedRace;
     
-    private final EventResolver dummyEventResolver = new EventResolver() {
-        @Override
-        public Event getEvent(Serializable id) {
-            return null;
-        }
-
-        @Override
-        public Iterable<Event> getAllEvents() {
-            return Collections.emptySet();
-        }
-    };
-
-
     @BeforeEach
     public void setUp() throws UnknownHostException, MongoException {
         raceLog = new RaceLogImpl("racelog");
@@ -132,7 +116,7 @@ public class RaceLogFixTrackerManagerTest {
                             Class<? extends RegattaLogDeviceMappingEvent<?>> eventType) {
                         throw new IllegalArgumentException("Unknown event type");
                     }
-                }, /* removeOutliersFromCompetitorTracks */ true, dummyEventResolver);
+                }, /* removeOutliersFromCompetitorTracks */ true);
         raceLogFixTrackerManager.stop(/* preemptive */ false, /* willBeRemoved */ false);
     }
 
@@ -151,7 +135,7 @@ public class RaceLogFixTrackerManagerTest {
                             Class<? extends RegattaLogDeviceMappingEvent<?>> eventType) {
                         throw new IllegalArgumentException("Unknown event type");
                     }
-                }, /* removeOutliersFromCompetitorTracks */ true, dummyEventResolver);
+                }, /* removeOutliersFromCompetitorTracks */ true);
         trackedRace.attachRaceLog(raceLog2);
         raceLogFixTrackerManager.stop(/* preemptive */ false, /* willBeRemoved */ false);
     }
