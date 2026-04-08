@@ -72,6 +72,7 @@ import com.sap.sailing.gwt.ui.shared.SwissTimingRaceRecordDTO;
 import com.sap.sailing.gwt.ui.shared.TracTracConfigurationWithSecurityDTO;
 import com.sap.sailing.gwt.ui.shared.TracTracRaceRecordDTO;
 import com.sap.sailing.gwt.ui.shared.TrackFileImportDeviceIdentifierDTO;
+import com.sap.sailing.gwt.ui.shared.TrackingTimesRevocationReportDTO;
 import com.sap.sailing.gwt.ui.shared.TypedDeviceMappingDTO;
 import com.sap.sailing.gwt.ui.shared.UrlDTO;
 import com.sap.sailing.gwt.ui.shared.VenueDTO;
@@ -791,5 +792,5 @@ public interface SailingServiceWriteAsync extends FileStorageManagementGwtServic
      * Precondition: The leaderboard must be a {@link RegattaLeaderboard}, and the corresponding regatta must be in more
      * {@link Regatta#isControlTrackingFromStartAndFinishTimes()}
      */
-    void revokeExplicitTrackingTimes(String leaderboardName, AsyncCallback<Void> asyncCallback);
+    void revokeExplicitTrackingTimes(String leaderboardName, AsyncCallback<TrackingTimesRevocationReportDTO> asyncCallback);
 }

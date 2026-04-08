@@ -207,6 +207,7 @@ import com.sap.sailing.domain.common.racelog.tracking.DoesNotHaveRegattaLogExcep
 import com.sap.sailing.domain.common.racelog.tracking.MarkAlreadyUsedInRaceException;
 import com.sap.sailing.domain.common.racelog.tracking.NotDenotableForRaceLogTrackingException;
 import com.sap.sailing.domain.common.racelog.tracking.NotDenotedForRaceLogTrackingException;
+import com.sap.sailing.domain.common.racelog.tracking.TrackingTimesRevocationErrorCode;
 import com.sap.sailing.domain.common.security.SecuredDomainType;
 import com.sap.sailing.domain.common.security.SecuredDomainType.EventActions;
 import com.sap.sailing.domain.common.tagging.RaceLogNotFoundException;
@@ -288,6 +289,7 @@ import com.sap.sailing.gwt.ui.shared.SwissTimingRaceRecordDTO;
 import com.sap.sailing.gwt.ui.shared.TracTracConfigurationWithSecurityDTO;
 import com.sap.sailing.gwt.ui.shared.TracTracRaceRecordDTO;
 import com.sap.sailing.gwt.ui.shared.TrackFileImportDeviceIdentifierDTO;
+import com.sap.sailing.gwt.ui.shared.TrackingTimesRevocationReportDTO;
 import com.sap.sailing.gwt.ui.shared.TypedDeviceMappingDTO;
 import com.sap.sailing.gwt.ui.shared.UrlDTO;
 import com.sap.sailing.gwt.ui.shared.VenueDTO;
@@ -4197,22 +4199,21 @@ public class SailingServiceWriteImpl extends SailingServiceImpl implements Saili
     }
 
     @Override
-    public void revokeExplicitTrackingTimes(String leaderboardName) throws NotFoundException {
+    public TrackingTimesRevocationReportDTO revokeExplicitTrackingTimes(String leaderboardName) throws NotFoundException {
         final Leaderboard leaderboard = getLeaderboardByName(leaderboardName);
         getService().getSecurityService().checkCurrentUserUpdatePermission(leaderboard);
+        final TrackingTimesRevocationReportDTO result;
         if (leaderboard instanceof RegattaLeaderboard) {
             final Regatta regatta = ((RegattaLeaderboard) leaderboard).getRegatta();
             if (regatta.isControlTrackingFromStartAndFinishTimes()) {
-                getRaceLogTrackingAdapter().revokeExplicitTrackingTimes((RegattaLeaderboard) leaderboard, /* raceLogResolver */ getService());
+                result = new TrackingTimesRevocationReportDTO(getRaceLogTrackingAdapter().revokeExplicitTrackingTimes(
+                        (RegattaLeaderboard) leaderboard, /* raceLogResolver */ getService()));
             } else {
-                throw new IllegalStateException("Leaderboard " + leaderboardName
-                        + " is not configured to control tracking from start and finish times, so explicit tracking times should not exist and thus cannot be revoked.");
+                result = new TrackingTimesRevocationReportDTO(TrackingTimesRevocationErrorCode.NO_AUTOMATED_TRACKING_TIMES);
             }
         } else {
-            throw new IllegalArgumentException("Leaderboard " + leaderboardName
-                    + " must be a regatta leaderboard, but was: " + leaderboard.getLeaderboardType());
+           result = new TrackingTimesRevocationReportDTO(TrackingTimesRevocationErrorCode.NO_REGATTA_LEADERBOARD);
         }
-        // TODO Auto-generated method stub
-        
+        return result;
     }
 }

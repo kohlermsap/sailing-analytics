@@ -141,5 +141,5 @@ public interface RaceLogTrackingAdapter {
     void copyPairingListFromOtherLeaderboard(RegattaLeaderboard sourceLeaderboard, RegattaLeaderboard targetLeaderboard,
             String fromRaceColumnName, String toRaceColumnInclusiveName) throws NotFoundException;
 
-    void revokeExplicitTrackingTimes(RegattaLeaderboard leaderboard, RacingEventService raceLogResolver);
+    TrackingTimesRevocationReport revokeExplicitTrackingTimes(RegattaLeaderboard leaderboard, RacingEventService raceLogResolver);
 }

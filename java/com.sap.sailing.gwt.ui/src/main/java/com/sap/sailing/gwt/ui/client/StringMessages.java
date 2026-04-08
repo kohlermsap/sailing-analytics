@@ -105,6 +105,7 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages,
     String event();
     String startTime();
     String endTime();
+    String finishedTime();
     String startOfTracking();
     String endOfTracking();
     String regatta();
@@ -2558,5 +2559,11 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages,
     String revokeExplicitTrackingTimes();
     String confirmRevokeExplicitTrackingTimes(String leaderboardName);
     String errorRevokingExplicitTrackingTimes(String leaderboardName, String message);
-    String successfullyREvokedExplicitTrackingTimes(String leaderboardName);
+    String successfullyRevokedExplicitTrackingTimes(String leaderboardName, String formattedAndTranslatedReport);
+    String revokedTrackingTimesForEvents();
+    String notRevokedTrackingTimesBecauseNotForTracking();
+    String notRevokedTrackingTimesBecauseOfMissingStartOrFinishTime();
+    String noRegattaLeaderboard(String leaderboardName);
+    String noAutomatedTrackingTimes(String leaderboardName);
+    String unknownError(String name);
 }

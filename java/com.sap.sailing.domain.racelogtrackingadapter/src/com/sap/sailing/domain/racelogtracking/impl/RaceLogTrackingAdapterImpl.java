@@ -73,6 +73,7 @@ import com.sap.sailing.domain.leaderboard.Leaderboard;
 import com.sap.sailing.domain.leaderboard.RegattaLeaderboard;
 import com.sap.sailing.domain.racelogtracking.DeviceMappingWithRegattaLogEvent;
 import com.sap.sailing.domain.racelogtracking.RaceLogTrackingAdapter;
+import com.sap.sailing.domain.racelogtracking.TrackingTimesRevocationReport;
 import com.sap.sailing.domain.regattalike.LeaderboardThatHasRegattaLike;
 import com.sap.sailing.domain.tracking.RaceHandle;
 import com.sap.sailing.domain.tracking.RaceTrackingHandler;
@@ -471,7 +472,8 @@ public class RaceLogTrackingAdapterImpl implements RaceLogTrackingAdapter {
     }
 
     @Override
-    public void revokeExplicitTrackingTimes(RegattaLeaderboard leaderboard, RacingEventService service) {
+    public TrackingTimesRevocationReport revokeExplicitTrackingTimes(RegattaLeaderboard leaderboard, RacingEventService service) {
+        final TrackingTimesRevocationReportImpl result = new TrackingTimesRevocationReportImpl(/* error code */ null /* meaning no error */);
         for (final RaceColumn raceColumn : leaderboard.getRaceColumns()) {
             for (final Fleet fleet : raceColumn.getFleets()) {
                 final RaceLog raceLog = raceColumn.getRaceLog(fleet);
@@ -489,6 +491,7 @@ public class RaceLogTrackingAdapterImpl implements RaceLogTrackingAdapter {
                                 if (trackingTimes.getA() != null) {
                                     try {
                                         raceLog.revokeEvent(service.getServerAuthor(), trackingTimes.getA(), "revoke explicit start of tracking time");
+                                        result.revoked(raceColumn, fleet, trackingTimes.getA());
                                     } catch (NotRevokableException e) {
                                         logger.log(Level.WARNING, "could not revoke explicit start of tracking time by adding RevokeEvent", e);
                                     }
@@ -496,15 +499,21 @@ public class RaceLogTrackingAdapterImpl implements RaceLogTrackingAdapter {
                                 if (trackingTimes.getB() != null) {
                                     try {
                                         raceLog.revokeEvent(service.getServerAuthor(), trackingTimes.getB(), "revoke explicit end of tracking time");
+                                        result.revoked(raceColumn, fleet, trackingTimes.getB());
                                     } catch (NotRevokableException e) {
                                         logger.log(Level.WARNING, "could not revoke explicit end of tracking time by adding RevokeEvent", e);
                                     }
                                 }
                             }
+                        } else {
+                            result.notRevokedBecauseOfMissingStartOrFinishTime(raceColumn, fleet, startTimeFinderResult != null ? startTimeFinderResult.getStartTime() : null, finishedTime);
                         }
+                    } else {
+                        result.notRevokedBecauseNotForTracking(raceColumn, fleet);
                     }
                 }
             }
         }
+        return result;
     }
 }
