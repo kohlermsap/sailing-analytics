@@ -206,7 +206,8 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
     
     private final FixReceivedListener<Timed> listener = new FixReceivedListener<Timed>() {
         @Override
-        public Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> fixReceived(DeviceIdentifier device, Timed fix, boolean returnManeuverChanges, boolean returnLiveDelay) {
+        public Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> fixReceived(DeviceIdentifier device,
+                Timed fix, boolean returnManeuverChanges, boolean returnLiveDelay) {
             final Set<RegattaAndRaceIdentifier> maneuverChanged = new HashSet<>();
             final Map<RegattaAndRaceIdentifier, Duration> delayToLive = new HashMap<>();
             if (!preemptiveStopRequested.get() && trackedRace.getStartOfTracking() != null) {
@@ -272,7 +273,7 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
                                         // check for maneuvers; otherwise, the fix may not have been accepted
                                         // by the race or the track, e.g., because the race's end-of-tracking
                                         // comes before the fix's time point
-                                        if (trackedRace.recordFix(comp, (GPSFixMoving) fix)) {
+                                        if (trackedRace.recordFix(comp, (GPSFixMoving) fix)) { // TOOD bug6229: this checks the TrackedRace's tracking interval, but for an MDI we'd also want to intersect with Event/Regatta end date if set
                                             if (returnManeuverChanges) {
                                                 RegattaAndRaceIdentifier maneuverChangedAnswer = detectIfManeuverChanged(comp);
                                                 if (maneuverChangedAnswer != null) {
@@ -313,7 +314,7 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
                                             } else {
                                                 // checking if the given fix is "better" than an existing one
                                                 TimePoint startOfTracking = trackedRace.getStartOfTracking();
-                                                TimePoint endOfTracking = trackedRace.getStartOfTracking();
+                                                TimePoint endOfTracking = trackedRace.getEndOfTracking();
                                                 if (startOfTracking != null) {
                                                     GPSFix fixAfterStartOfTracking = markTrack
                                                             .getFirstFixAtOrAfter(startOfTracking);
@@ -441,7 +442,7 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
             }
         }
     }
-
+    
     /**
      * Loads fixes defined by the given mapping and {@link MultiTimeRange}. Only those fixes that are in the mapping
      * time range are being loaded.
@@ -963,9 +964,10 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
     }
     
     /**
-     * This is used when device mappings for an item changed so that fixes in a new {@link TimeRange} are covered. This is also used when initially loading fixes due to startOfTracking being initially set. If
-     * the mapping is a {@link Mark}, best fixes outside of the tracking {@link TimeRange} are loaded if none is
-     * available in the tracking {@link TimeRange}.
+     * This is used when device mappings for an item changed so that fixes in a new {@link TimeRange} are covered. This
+     * is also used when initially loading fixes due to startOfTracking being initially set. If the mapping is a
+     * {@link Mark}, best fixes outside of the tracking {@link TimeRange} are loaded if none is available in the
+     * tracking {@link TimeRange}.
      */
     private class LoadFixesForNewlyCoveredTimeRangesJob extends AbstractLoadingJob {
         private final WithID item;

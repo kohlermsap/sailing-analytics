@@ -175,6 +175,7 @@ import com.sap.sailing.domain.common.tracking.BravoFix;
 import com.sap.sailing.domain.common.tracking.GPSFix;
 import com.sap.sailing.domain.common.tracking.GPSFixMoving;
 import com.sap.sailing.domain.common.tracking.SensorFix;
+import com.sap.sailing.domain.leaderboard.EventResolver;
 import com.sap.sailing.domain.leaderboard.FlexibleLeaderboard;
 import com.sap.sailing.domain.leaderboard.FlexibleRaceColumn;
 import com.sap.sailing.domain.leaderboard.Leaderboard;
@@ -398,6 +399,8 @@ Replicator {
      * {@link Event} objects that exist outside this service for events not (yet) registered here.
      */
     private final ConcurrentHashMap<Serializable, Event> eventsById;
+    
+    private final Set<EventResolver.Listener> eventResolverListeners; 
 
     private final RemoteSailingServerSet remoteSailingServerSet;
 
@@ -843,6 +846,7 @@ Replicator {
             ServiceTracker<CompetitorProvider, CompetitorProvider> competitorProviderServiceTracker,
             ServiceTracker<ResultUrlRegistry, ResultUrlRegistry> resultUrlRegistryServiceTracker) {
         logger.info("Created " + this);
+        this.eventResolverListeners = Collections.newSetFromMap(new ConcurrentHashMap<>());
         this.securityServiceTracker = securityServiceTracker;
         this.numberOfTrackedRacesRestored = new AtomicInteger();
         this.numberOfTrackedRacesRestoredDoneLoading = new AtomicInteger();
@@ -2739,12 +2743,15 @@ Replicator {
     @Override
     public List<Triple<Leaderboard, RaceColumn, Fleet>> getColumnsWithRaceLogForTrackedRace(
             final RegattaAndRaceIdentifier trackedRaceIdentifier) {
+        final Set<RaceColumn> raceColumnsVisited = new HashSet<>();
         final List<Triple<Leaderboard, RaceColumn, Fleet>> trackedRaceLink = new ArrayList<>();
         for (Leaderboard leaderboard : getLeaderboards().values()) {
             for (RaceColumn column : leaderboard.getRaceColumns()) {
-                for (Fleet fleet : column.getFleets()) {
-                    if (trackedRaceIdentifier.equals(column.getRaceIdentifier(fleet))) {
-                        trackedRaceLink.add(new Triple<>(leaderboard, column, fleet));
+                if (raceColumnsVisited.add(column)) { // avoid visiting the same column multiple times in case it's shared across multiple leaderboards
+                    for (Fleet fleet : column.getFleets()) {
+                        if (trackedRaceIdentifier.equals(column.getRaceIdentifier(fleet))) {
+                            trackedRaceLink.add(new Triple<>(leaderboard, column, fleet));
+                        }
                     }
                 }
             }
@@ -3884,13 +3891,26 @@ Replicator {
         return result;
     }
 
-    private void addEvent(Event result) {
-        if (eventsById.containsKey(result.getId())) {
-            throw new IllegalArgumentException("Event with ID " + result.getId()
+    private void addEvent(Event event) {
+        if (eventsById.containsKey(event.getId())) {
+            throw new IllegalArgumentException("Event with ID " + event.getId()
                     + " already exists which is pretty surprising...");
         }
-        eventsById.put(result.getId(), result);
-        mongoObjectFactory.storeEvent(result);
+        eventsById.put(event.getId(), event);
+        mongoObjectFactory.storeEvent(event);
+        for (final EventResolver.Listener listener : eventResolverListeners) {
+            listener.eventAdded(event);
+        }
+    }
+    
+    @Override
+    public void addEventResolverListener(Listener listener) {
+        eventResolverListeners.add(listener);
+    }
+    
+    @Override
+    public void removeEventResolverListener(Listener listener) {
+        eventResolverListeners.remove(listener);
     }
 
     @Override
@@ -3947,7 +3967,12 @@ Replicator {
     }
 
     protected void removeEventFromEventsById(Serializable id) {
-        eventsById.remove(id);
+        final Event removedEvent = eventsById.remove(id);
+        if (removedEvent != null) {
+            for (final EventResolver.Listener listener : eventResolverListeners) {
+                listener.eventRemoved(removedEvent);
+            }
+        }
     }
 
     @Override

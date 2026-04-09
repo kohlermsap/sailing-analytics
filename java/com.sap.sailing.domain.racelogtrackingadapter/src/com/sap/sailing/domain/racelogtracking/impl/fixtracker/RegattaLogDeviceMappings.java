@@ -225,7 +225,7 @@ public abstract class RegattaLogDeviceMappings<ItemT extends WithID> {
 
     /**
      * Adjusts the {@link #mappings} map according to the device mappings provided from the {@link #calculateMappings()}
-     * method. Afterwards, the start end end of tracking is {@link #updateStartAndEndOfTracking() updated} from the
+     * method. Afterwards, the start and end of tracking is {@link #updateStartAndEndOfTracking() updated} from the
      * mapping intervals.
      * 
      * @param loadIfNotCovered
@@ -317,12 +317,10 @@ public abstract class RegattaLogDeviceMappings<ItemT extends WithID> {
             Iterable<DeviceMappingWithRegattaLogEvent<ItemT>> oldMappings,
             Iterable<DeviceMappingWithRegattaLogEvent<ItemT>> newMappings,
             GroupedOldAndNewMappingsCallback<ItemT> callback) {
-
         final Map<Pair<DeviceIdentifier, Class<?>>, Iterable<DeviceMappingWithRegattaLogEvent<ItemT>>> groupedOldMappings = groupMappingsByDeviceIdAndMappingType(
                 oldMappings != null ? oldMappings : Collections.emptySet());
         final Map<Pair<DeviceIdentifier, Class<?>>, Iterable<DeviceMappingWithRegattaLogEvent<ItemT>>> groupedNewMappings = groupMappingsByDeviceIdAndMappingType(
                 newMappings);
-
         groupedNewMappings.forEach((key, newMappingsForDeviceIdAndMappingType) -> {
             Iterable<DeviceMappingWithRegattaLogEvent<ItemT>> oldMappingsForDeviceIdAndMappingType = groupedOldMappings
                     .get(key);
