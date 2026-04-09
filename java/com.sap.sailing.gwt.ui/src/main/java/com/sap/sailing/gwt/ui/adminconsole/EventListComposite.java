@@ -191,7 +191,6 @@ public class EventListComposite extends Composite {
                     }
                 }
                 remove.setEnabled(!selectedEvents.isEmpty() && canDeleteAll);
-
             }
         });
         buttonPanel.addUnsecuredWidget(new HelpButton(HelpButtonResources.INSTANCE,
