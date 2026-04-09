@@ -329,6 +329,8 @@ public class SingleRaceLeaderboardPanel extends LeaderboardPanel<SingleRaceLeade
     
     @Override
     public void updateSettings(SingleRaceLeaderboardSettings newSettings) {
+        // Note: it's important to update showRaceRankColumn *before* calling super.updateSettings(newSettings)
+        // because the base class implementation then also ensures all columns are displayed according to settings 
         showRaceRankColumn = newSettings.isShowRaceRankColumn();
         super.updateSettings(newSettings);
     }
