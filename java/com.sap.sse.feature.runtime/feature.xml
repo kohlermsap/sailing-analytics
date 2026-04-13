@@ -594,28 +594,28 @@
          id="org.eclipse.osgi"
          download-size="0"
          install-size="0"
-         version="3.18.0.v20220516-2155"
+         version="3.19.0.v20240213-1246"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.osgi.source"
          download-size="0"
          install-size="0"
-         version="3.18.0.v20220516-2155"
+         version="3.19.0.v20240213-1246"
          unpack="false"/>
 
    <plugin
          id="org.osgi.util.promise"
          download-size="0"
          install-size="0"
-         version="1.2.0.202109301733"
+         version="1.3.0.202212101352"
          unpack="false"/>
 
    <plugin
          id="org.osgi.util.promise.source"
          download-size="0"
          install-size="0"
-         version="1.2.0.202109301733"
+         version="1.3.0.202212101352"
          unpack="false"/>
 
    <plugin
@@ -678,14 +678,14 @@
          id="org.eclipse.osgi.services"
          download-size="0"
          install-size="0"
-         version="3.10.200.v20210723-0643"
+         version="3.12.0.v20231218-2126"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.osgi.services.source"
          download-size="0"
          install-size="0"
-         version="3.10.200.v20210723-0643"
+         version="3.12.0.v20231218-2126"
          unpack="false"/>
 
    <plugin
@@ -733,14 +733,14 @@
          id="org.eclipse.osgi.util"
          download-size="0"
          install-size="0"
-         version="3.7.0.v20220427-2144"
+         version="3.7.300.v20231104-1118"
          unpack="false"/>
 
    <plugin
          id="org.eclipse.osgi.util.source"
          download-size="0"
          install-size="0"
-         version="3.7.0.v20220427-2144"
+         version="3.7.300.v20231104-1118"
          unpack="false"/>
 
    <plugin
@@ -1050,13 +1050,6 @@
          download-size="0"
          install-size="0"
          version="1.6.1.202109301733"
-         unpack="false"/>
-
-   <plugin
-         id="org.osgi.util.tracker"
-         download-size="0"
-         install-size="0"
-         version="1.5.4.202109301733"
          unpack="false"/>
 
    <plugin
