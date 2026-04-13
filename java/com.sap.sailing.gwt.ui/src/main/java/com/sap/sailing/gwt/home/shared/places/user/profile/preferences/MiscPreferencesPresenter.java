@@ -5,10 +5,10 @@ import com.sap.sailing.gwt.home.shared.partials.multiselection.MiscellaneousDisp
 import com.sap.sse.gwt.dispatch.shared.commands.VoidResult;
 
 public interface MiscPreferencesPresenter {
-    public void registerDisplay(MiscellaneousDisplayImpl display);
+    void registerDisplay(MiscellaneousDisplayImpl display);
     
-    public void updateIsSubscribedToFeatureAndCommunityUpdates(final boolean b, final AsyncCallback<VoidResult> callback);
+    void updateIsSubscribedToFeatureAndCommunityUpdates(final boolean b, final AsyncCallback<VoidResult> callback);
 
     /** get value via dispatch method, set first correct value onto checkbox */
-    public void initIsSubscribedToFeatureAndCommunityUpdates(final boolean b);
+    void initIsSubscribedToFeatureAndCommunityUpdates(final boolean b);
 }
