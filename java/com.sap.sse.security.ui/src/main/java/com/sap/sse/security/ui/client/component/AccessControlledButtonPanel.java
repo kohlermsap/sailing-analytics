@@ -165,6 +165,32 @@ public class AccessControlledButtonPanel extends Composite {
     }
 
     /**
+     * Adds a secured action button, which is only visible if the current user has any
+     * {@link UserService#hasCurrentUserPermissionToDeleteAnyObjectOfType(HasPermissions) update permission} for the
+     * {@link HasPermissions type} provided in this {@link AccessControlledButtonPanel}'s constructor.
+     *
+     * @param text
+     *            the {@link String text} to show on the button
+     * @param selectionModel
+     *            the {@link SetSelectionModel<T> selection model} of the table; used to enable/disable the remove
+     *            button when the selection becomes non-empty/empty, respectively and to display the number of elements
+     *            selected in case the selection contains more than one element
+     * @param callback
+     *            the {@link Command callback} to execute on button click, if permission is granted
+     *
+     * @return the created {@link SelectedElementsCountingButton} instance with optional confirmation
+     */
+    public <T extends Named> Button addUpdateAction(final String text, final SetSelectionModel<T> selectionModel,
+            final Command callback) {
+        if (selectionModel == null) {
+            throw new IllegalArgumentException("Selection model for an update action must not be null");
+        }
+        final ClickHandler handler = wrap(updatePermissionCheck, callback);
+        final Button button = new SelectedElementsCountingButton<T>(text, selectionModel, handler);
+        return resolveButtonVisibility(updatePermissionCheck, button);
+    }
+
+    /**
      * Adds an action button, which's visibility depends on the provided {@link Supplier permission check}.
      * 
      * @param text

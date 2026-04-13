@@ -105,6 +105,7 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages,
     String event();
     String startTime();
     String endTime();
+    String finishedTime();
     String startOfTracking();
     String endOfTracking();
     String regatta();
@@ -2564,14 +2565,13 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages,
     String youWillNowReceiveNotificationsForFavoriteCompetitors();
     String youWillNotReceiveNotificationsForFavoriteCompetitorsAnymore();
     String failedToSetStatusOfNotificationsForFavoriteCompetitors();
-    String youWillNowReceiveNotificationsForFavoriteBoatClassUpcomingRaces();
-    String youWillNotReceiveUpdatesOnUpcomingRacesForYourFavoredBoatClassesAnymore();
-    String failedToSetStatusOfUpdatesOnUpcomingRacesForYourFavoredBoatClasses();
-    String youWillNowReceiveUpdatesOnNewResultsForYourFavoredBoatClasses();
-    String youWillNotReceiveNotificationsForFavoriteBoatClassNewResultsAnymore();
-    String failedToSetStatusOfUpdatesOnNewResultsForYourFavoredBoatClasses();
-    String failedToModifyFavoriteCompetitors();
-    String favoriteCompetitorsModifiedSuccessfully();
-    String failedToModifyFavoredBoatClasses();
-    String succesfullyModifiedFavoredBoatClasses();
-}
+    String revokeExplicitTrackingTimes();
+    String confirmRevokeExplicitTrackingTimes(String leaderboardName);
+    String errorRevokingExplicitTrackingTimes(String leaderboardName, String message);
+    String successfullyRevokedExplicitTrackingTimes(String leaderboardName, String formattedAndTranslatedReport);
+    String revokedTrackingTimesForEvents();
+    String notRevokedTrackingTimesBecauseNotForTracking();
+    String notRevokedTrackingTimesBecauseOfMissingStartOrFinishTime();
+    String noRegattaLeaderboard(String leaderboardName);
+    String noAutomatedTrackingTimes(String leaderboardName);
+    String unknownError(String name);

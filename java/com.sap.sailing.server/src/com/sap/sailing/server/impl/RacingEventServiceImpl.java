@@ -2743,12 +2743,15 @@ Replicator {
     @Override
     public List<Triple<Leaderboard, RaceColumn, Fleet>> getColumnsWithRaceLogForTrackedRace(
             final RegattaAndRaceIdentifier trackedRaceIdentifier) {
+        final Set<RaceColumn> raceColumnsVisited = new HashSet<>();
         final List<Triple<Leaderboard, RaceColumn, Fleet>> trackedRaceLink = new ArrayList<>();
         for (Leaderboard leaderboard : getLeaderboards().values()) {
             for (RaceColumn column : leaderboard.getRaceColumns()) {
-                for (Fleet fleet : column.getFleets()) {
-                    if (trackedRaceIdentifier.equals(column.getRaceIdentifier(fleet))) {
-                        trackedRaceLink.add(new Triple<>(leaderboard, column, fleet));
+                if (raceColumnsVisited.add(column)) { // avoid visiting the same column multiple times in case it's shared across multiple leaderboards
+                    for (Fleet fleet : column.getFleets()) {
+                        if (trackedRaceIdentifier.equals(column.getRaceIdentifier(fleet))) {
+                            trackedRaceLink.add(new Triple<>(leaderboard, column, fleet));
+                        }
                     }
                 }
             }

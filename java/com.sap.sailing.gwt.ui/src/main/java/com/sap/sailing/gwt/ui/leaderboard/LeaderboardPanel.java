@@ -2815,8 +2815,8 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
 
     private void adjustColumnLayout(LeaderboardDTO leaderboard) {
         int columnIndex = 0;
-        columnIndex = ensureRaceRankColumn(columnIndex);
         columnIndex = ensureSelectionCheckboxColumn(columnIndex);
+        columnIndex = ensureRaceRankColumn(columnIndex);
         columnIndex = ensureRankColumn(columnIndex);
         columnIndex = ensureCompetitorInfoWithFlagColumnAndCompetitorColumn(columnIndex);
         columnIndex = updateCarryColumn(leaderboard, columnIndex);
@@ -2833,7 +2833,7 @@ public abstract class LeaderboardPanel<LS extends LeaderboardSettings> extends A
 
     // Single leaderboard hook
     protected int ensureRaceRankColumn(int columnIndex) {
-        return 0;
+        return columnIndex;
     }
 
     /**

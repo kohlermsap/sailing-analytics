@@ -964,9 +964,10 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
     }
     
     /**
-     * This is used when device mappings for an item changed so that fixes in a new {@link TimeRange} are covered. This is also used when initially loading fixes due to startOfTracking being initially set. If
-     * the mapping is a {@link Mark}, best fixes outside of the tracking {@link TimeRange} are loaded if none is
-     * available in the tracking {@link TimeRange}.
+     * This is used when device mappings for an item changed so that fixes in a new {@link TimeRange} are covered. This
+     * is also used when initially loading fixes due to startOfTracking being initially set. If the mapping is a
+     * {@link Mark}, best fixes outside of the tracking {@link TimeRange} are loaded if none is available in the
+     * tracking {@link TimeRange}.
      */
     private class LoadFixesForNewlyCoveredTimeRangesJob extends AbstractLoadingJob {
         private final WithID item;
