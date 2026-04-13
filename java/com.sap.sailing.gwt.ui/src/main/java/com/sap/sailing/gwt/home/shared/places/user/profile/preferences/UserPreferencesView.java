@@ -1,10 +1,7 @@
 package com.sap.sailing.gwt.home.shared.places.user.profile.preferences;
 
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.IsWidget;
-import com.sap.sailing.gwt.home.shared.partials.checkboxtile.CheckBoxTile;
 import com.sap.sailing.gwt.home.shared.partials.multiselection.SuggestedMultiSelectionPresenter;
-import com.sap.sse.gwt.dispatch.shared.commands.VoidResult;
 
 /**
  * Interface for the user preferences UI. To support desktop as well as mobile version, an
@@ -31,11 +28,9 @@ public interface UserPreferencesView extends IsWidget {
 
         BoatClassSelectionPresenter getFavoriteBoatClassesDataProvider();
 
-        void setIsSubscribedToFeatureAndCommunityUpdates(final Boolean b, final AsyncCallback<VoidResult> callback);
-
-        void initIsSubscribedToFeatureAndCommunityUpdates(final CheckBoxTile featureAndCommunityUpdates);
-
         CompetitorSelectionPresenter getFavoriteCompetitorsDataProvider();
+
+        MiscPreferencesPresenter getMiscPresenter();
     }
 
 }

@@ -9,16 +9,14 @@ import com.sap.sailing.gwt.home.communication.user.profile.FavoriteBoatClassesDT
 import com.sap.sailing.gwt.home.communication.user.profile.FavoriteCompetitorsDTO;
 import com.sap.sailing.gwt.home.communication.user.profile.FavoritesResult;
 import com.sap.sailing.gwt.home.communication.user.profile.GetFavoritesAction;
-import com.sap.sailing.gwt.home.communication.user.profile.GetMiscEmailPreferencesAction;
 import com.sap.sailing.gwt.home.communication.user.profile.SaveFavoriteBoatClassesAction;
 import com.sap.sailing.gwt.home.communication.user.profile.SaveFavoriteCompetitorsAction;
 import com.sap.sailing.gwt.home.communication.user.profile.SaveMiscEmailPreferences;
 import com.sap.sailing.gwt.home.shared.app.ClientFactoryWithDispatch;
-import com.sap.sailing.gwt.home.shared.partials.checkboxtile.CheckBoxTile;
 import com.sap.sailing.gwt.home.shared.partials.multiselection.AbstractSuggestedBoatClassMultiSelectionPresenter;
 import com.sap.sailing.gwt.home.shared.partials.multiselection.AbstractSuggestedCompetitorMultiSelectionPresenter;
+import com.sap.sailing.gwt.home.shared.partials.multiselection.MiscellaneousDisplayImpl;
 import com.sap.sailing.gwt.ui.client.refresh.ErrorAndBusyClientFactory;
-import com.sap.sse.gwt.dispatch.shared.commands.BooleanResult;
 import com.sap.sse.gwt.dispatch.shared.commands.VoidResult;
 
 /**
@@ -34,6 +32,7 @@ public class UserPreferencesPresenter<C extends ClientFactoryWithDispatch & Erro
 
     private final BoatClassSelectionPresenter boatClassSelectionPresenter = new BoatClassSelectionPresenterImpl();
     final CompetitorSelectionPresenter competitorPresenter;
+    private final MiscPreferencesPresenter miscPresenter = new MiscPresenterImpl(); 
     private final C clientFactory;
 
     public UserPreferencesPresenter(C clientFactory) {
@@ -57,9 +56,36 @@ public class UserPreferencesPresenter<C extends ClientFactoryWithDispatch & Erro
                 final FavoriteBoatClassesDTO favoriteBoatClasses = result.getFavoriteBoatClasses();
                 boatClassSelectionPresenter.initNotifications(favoriteBoatClasses.isNotifyAboutUpcomingRaces(),
                         favoriteBoatClasses.isNotifyAboutResults(), favoriteBoatClasses.getSelectedBoatClasses());
+                miscPresenter.initIsSubscribedToFeatureAndCommunityUpdates(result.getIsSubscribedToFeatureAndCommunityUpdates());
             }
         };
         clientFactory.getDispatch().execute(new GetFavoritesAction(), callback);
+    }
+    
+    @Override
+    public MiscPreferencesPresenter getMiscPresenter() {
+        return miscPresenter;
+    }
+    
+    private class MiscPresenterImpl implements MiscPreferencesPresenter {
+        MiscellaneousDisplayImpl display;
+
+        @Override
+        public void registerDisplay(MiscellaneousDisplayImpl display) {
+            this.display = display;
+        }
+
+        @Override
+        public void initIsSubscribedToFeatureAndCommunityUpdates(final boolean b) {
+            if (display != null) {
+                display.setIsSubscribedToFeatureAndCommunityUpdates(b, false);
+            }
+        }
+        
+        @Override
+        public void updateIsSubscribedToFeatureAndCommunityUpdates(final boolean b, final AsyncCallback<VoidResult> callback) {
+            clientFactory.getDispatch().execute(new SaveMiscEmailPreferences(b), callback);
+        }
     }
     
     @Override
@@ -108,11 +134,7 @@ public class UserPreferencesPresenter<C extends ClientFactoryWithDispatch & Erro
                 if (selectionCallback != null) {
                     persistResults(display.getNotifyAboutUpcomingRaces(), display.getNotifyAboutResults(),
                             selectionCallback, selectedItems);
-                } else {
-                    throw new RuntimeException("set the selection callback first");
                 }
-            } else {
-                throw new RuntimeException("attach a display to this presenter");
             }
         }
 
@@ -128,28 +150,6 @@ public class UserPreferencesPresenter<C extends ClientFactoryWithDispatch & Erro
         public void setSelectionPersistenceCallback(AsyncCallback<VoidResult> selectionCallback) {
             this.selectionCallback = selectionCallback;
         }
-    }
-
-    @Override
-    public void setIsSubscribedToFeatureAndCommunityUpdates(final Boolean b, final AsyncCallback<VoidResult> callback) {
-        clientFactory.getDispatch().execute(new SaveMiscEmailPreferences(b), callback);
-    }
-
-    /** get value via dispatch method, set first correct value onto checkbox */
-    @Override
-    public void initIsSubscribedToFeatureAndCommunityUpdates(final CheckBoxTile ui) {
-        final AsyncCallback<BooleanResult> callback = new AsyncCallback<BooleanResult>() {
-            @Override
-            public void onFailure(Throwable caught) {
-                clientFactory.createErrorView("Error while loading miscellaneous email subscriptions!", caught);
-            }
-
-            @Override
-            public void onSuccess(BooleanResult result) {
-                ui.setValue(result.getValue());
-            }
-        };
-        clientFactory.getDispatch().execute(new GetMiscEmailPreferencesAction(), callback);
     }
 
     private class CompetitorSelectionPresenterImpl
@@ -168,11 +168,7 @@ public class UserPreferencesPresenter<C extends ClientFactoryWithDispatch & Erro
                         .toArray()[0];
                 if (selectionCallback != null) {
                     persistResults(display.getIsNotify(), selectionCallback, selectedItems);
-                } else {
-                    throw new RuntimeException("set the selection callback first");
                 }
-            } else {
-                throw new RuntimeException("attach a display to this presenter");
             }
         }
 

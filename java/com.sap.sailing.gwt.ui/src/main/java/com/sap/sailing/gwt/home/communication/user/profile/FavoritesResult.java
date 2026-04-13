@@ -6,10 +6,11 @@ public class FavoritesResult implements Result {
     
     private FavoriteBoatClassesDTO favoriteBoatClasses;
     private FavoriteCompetitorsDTO favoriteCompetitors;
+    private boolean isSubscribedToFeatureAndCommunityUpdates;
     
     protected FavoritesResult() {}
     
-    public FavoritesResult(FavoriteBoatClassesDTO favoriteBoatClasses, FavoriteCompetitorsDTO favoriteCompetitors) {
+    public FavoritesResult(FavoriteBoatClassesDTO favoriteBoatClasses, FavoriteCompetitorsDTO favoriteCompetitors, boolean isSubscribedToFeatureAndCommunityUpdates) {
         this.favoriteBoatClasses = favoriteBoatClasses;
         this.favoriteCompetitors = favoriteCompetitors;
     }
@@ -20,6 +21,10 @@ public class FavoritesResult implements Result {
     
     public FavoriteCompetitorsDTO getFavoriteCompetitors() {
         return favoriteCompetitors;
+    }
+
+    public boolean getIsSubscribedToFeatureAndCommunityUpdates() {
+        return isSubscribedToFeatureAndCommunityUpdates;
     }
 
 }

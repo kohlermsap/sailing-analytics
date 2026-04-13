@@ -48,7 +48,7 @@ public class UserPreferences extends Composite implements UserPreferencesView {
                 flagImageResolver).selectionUi;
         favoriteBoatClassesSelctionUi = new BoatClassDisplayImpl(
                 presenter.getFavoriteBoatClassesDataProvider()).selectionUi;
-        miscUi = (new MiscellaneousDisplayImpl(presenter)).selectionUi;
+        miscUi = (new MiscellaneousDisplayImpl(presenter.getMiscPresenter())).selectionUi;
         initWidget(uiBinder.createAndBindUi(this));
         // TODO hide notificationsTextUi if the user's mail address is already verified
     }
