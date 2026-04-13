@@ -424,6 +424,7 @@
 <plugin id="org.osgi.service.cm"/>
 <plugin id="org.osgi.service.component"/>
 <plugin id="org.osgi.service.packageadmin"/>
+<plugin id="org.osgi.service.upnp"/>
 <plugin id="org.osgi.service.url"/>
 <plugin id="org.osgi.service.event"/>
 <plugin id="org.osgi.util.promise"/>

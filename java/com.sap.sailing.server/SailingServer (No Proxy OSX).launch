@@ -200,6 +200,7 @@
 <setEntry value="org.osgi.service.cm@default:default"/>
 <setEntry value="org.osgi.service.event@default:default"/>
 <setEntry value="org.osgi.service.packageadmin@default:default"/>
+<setEntry value="org.osgi.service.upnp@default:default"/>
 <setEntry value="org.osgi.service.url@default:default"/>
 <setEntry value="redisson@default:default"/>
 <setEntry value="com.esotericsoftware.kryo@default:default"/>
