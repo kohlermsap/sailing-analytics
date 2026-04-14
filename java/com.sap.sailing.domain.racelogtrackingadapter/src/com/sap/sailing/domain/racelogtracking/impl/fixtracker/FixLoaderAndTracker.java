@@ -206,10 +206,11 @@ public class FixLoaderAndTracker implements TrackingDataLoader {
     
     private final FixReceivedListener<Timed> listener = new FixReceivedListener<Timed>() {
         @Override
-        public Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> fixReceived(DeviceIdentifier device,
-                Timed fix, boolean returnManeuverChanges, boolean returnLiveDelay) {
+        public Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> fixesReceived(DeviceIdentifier device,
+                Iterable<Timed> fixes, boolean returnManeuverChanges, boolean returnLiveDelay) {
             final Set<RegattaAndRaceIdentifier> maneuverChanged = new HashSet<>();
             final Map<RegattaAndRaceIdentifier, Duration> delayToLive = new HashMap<>();
+            // TODO bug6236: how to improve performance of device mappings look-up when we have received multiple fixes from the same device?
             if (!preemptiveStopRequested.get() && trackedRace.getStartOfTracking() != null) {
                 final TimePoint timePoint = fix.getTimePoint();
                 deviceMappings.forEachMappingOfDeviceIncludingTimePoint(device, fix.getTimePoint(),
