@@ -48,11 +48,14 @@ class App < Precious::App
   end
 
   get '/login' do
-    session[:oauth_state] = SecureRandom.hex(16)
+    session[:oauth_state] = {
+      :state => SecureRandom.hex(16),
+      :expiry => Time.now + (60 * 5) 
+    }
     params = {
         client_id: CLIENT_ID,
         scope: 'public_repo user:email',
-        state: session[:oauth_state],
+        state: session[:oauth_state][:state],
         redirect_uri: REDIRECT_URL
     }
     uri = URI::HTTPS.build(
@@ -66,7 +69,9 @@ class App < Precious::App
   get '/callback' do
     halt 401, params[:error] if params[:error]
     halt 400, "Missing code" unless params[:code]
-    halt 403, "Invalid OAuth state" unless session[:oauth_state] ==  params[:state]
+    halt 403, "State issue" unless session[:oauth_state]
+    halt 403, "Old state" unless session[:oauth_state][:expiry] > Time.now
+    halt 403, "Invalid OAuth state" unless session[:oauth_state][:state] ==  params[:state]
 
     session.delete(:oauth_state)
 
