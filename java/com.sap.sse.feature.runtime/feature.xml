@@ -1095,6 +1095,20 @@
          unpack="false"/>
 
    <plugin
+         id="org.osgi.service.http.whiteboard"
+         download-size="0"
+         install-size="0"
+         version="1.1.1.202109301733"
+         unpack="false"/>
+
+   <plugin
+         id="org.osgi.service.http.whiteboard.source"
+         download-size="0"
+         install-size="0"
+         version="1.1.1.202109301733"
+         unpack="false"/>
+
+   <plugin
          id="org.osgi.service.url"
          download-size="0"
          install-size="0"
