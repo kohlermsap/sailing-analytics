@@ -1,9 +1,9 @@
 package com.sap.sailing.windestimation.data;
 
 import com.sap.sailing.domain.base.BoatClass;
-import com.sap.sailing.domain.common.Position;
-import com.sap.sailing.domain.common.SpeedWithBearing;
 import com.sap.sse.common.Bearing;
+import com.sap.sse.common.Position;
+import com.sap.sse.common.SpeedWithBearing;
 import com.sap.sse.common.TimePoint;
 
 /**
@@ -36,6 +36,7 @@ public class ManeuverForEstimation implements Comparable<ManeuverForEstimation> 
     private final boolean markPassing;
     private final BoatClass boatClass;
     private final boolean markPassingDataAvailable;
+    private final String competitorName;
 
     public ManeuverForEstimation(TimePoint maneuverTimePoint, Position maneuverPosition, Bearing middleCourse,
             SpeedWithBearing speedWithBearingBefore, SpeedWithBearing speedWithBearingAfter,
@@ -44,7 +45,7 @@ public class ManeuverForEstimation implements Comparable<ManeuverForEstimation> 
             Double deviationFromOptimalJibeAngleInDegrees, double speedLossRatio, double speedGainRatio,
             double lowestSpeedVsExitingSpeedRatio, boolean clean, ManeuverCategory maneuverCategory,
             double scaledSpeedBefore, double scaledSpeedAfter, boolean markPassing, BoatClass boatClass,
-            boolean markPassingDataAvailable) {
+            boolean markPassingDataAvailable, String competitorName) {
         this.maneuverTimePoint = maneuverTimePoint;
         this.maneuverPosition = maneuverPosition;
         this.middleCourse = middleCourse;
@@ -65,6 +66,7 @@ public class ManeuverForEstimation implements Comparable<ManeuverForEstimation> 
         this.markPassing = markPassing;
         this.boatClass = boatClass;
         this.markPassingDataAvailable = markPassingDataAvailable;
+        this.competitorName = competitorName;
     }
 
     public TimePoint getManeuverTimePoint() {
@@ -145,6 +147,10 @@ public class ManeuverForEstimation implements Comparable<ManeuverForEstimation> 
 
     public boolean isMarkPassingDataAvailable() {
         return markPassingDataAvailable;
+    }
+
+    public String getCompetitorName() {
+        return competitorName;
     }
 
     @Override

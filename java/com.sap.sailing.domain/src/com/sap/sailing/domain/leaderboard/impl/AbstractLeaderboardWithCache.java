@@ -57,7 +57,6 @@ import com.sap.sailing.domain.common.RegattaAndRaceIdentifier;
 import com.sap.sailing.domain.common.RegattaNameAndRaceName;
 import com.sap.sailing.domain.common.RegattaScoreCorrections;
 import com.sap.sailing.domain.common.RegattaScoreCorrections.ScoreCorrectionsForRace;
-import com.sap.sailing.domain.common.SpeedWithBearing;
 import com.sap.sailing.domain.common.dto.BasicRaceDTO;
 import com.sap.sailing.domain.common.dto.BoatClassDTO;
 import com.sap.sailing.domain.common.dto.CompetitorDTO;
@@ -103,6 +102,7 @@ import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Distance;
 import com.sap.sse.common.Duration;
 import com.sap.sse.common.Speed;
+import com.sap.sse.common.SpeedWithBearing;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.TimingStats;
 import com.sap.sse.common.Util;
@@ -542,10 +542,6 @@ public abstract class AbstractLeaderboardWithCache implements Leaderboard {
                     });
                     futuresForCompetitorAndColumnName.put(new Pair<>(competitor, raceColumn.getName()), new Pair<>(row, future));
                 }
-                if (addOverallDetails) {
-                    //this reuses several prior calculated fields, so must be evaluated after them
-                    row.totalScoredRaces = this.getTotalRaces(competitor, row, timePoint);
-                }
                 result.rows.put(competitorDTO, row);
                 String displayName = this.getDisplayName(competitor);
                 if (displayName != null) {
@@ -565,6 +561,10 @@ public abstract class AbstractLeaderboardWithCache implements Leaderboard {
                     final String columnName = competitorAndRaceColumnNameAndRowAndFuture.getKey().getB();
                     final Future<LeaderboardEntryDTO> future = competitorAndRaceColumnNameAndRowAndFuture.getValue().getB();
                     rowForCompetitor.fieldsByRaceColumnName.put(columnName, future.get());
+                    if (addOverallDetails) {
+                        //this reuses several prior calculated fields, so must be evaluated after them
+                        rowForCompetitor.totalScoredRaces = this.getTotalRaces(competitorAndRaceColumnNameAndRowAndFuture.getKey().getA(), rowForCompetitor, timePoint);
+                    }
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } catch (ExecutionException e) {

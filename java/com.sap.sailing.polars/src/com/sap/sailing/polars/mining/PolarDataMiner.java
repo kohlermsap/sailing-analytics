@@ -34,8 +34,6 @@ import com.sap.sailing.domain.common.PolarSheetsData;
 import com.sap.sailing.domain.common.PolarSheetsHistogramData;
 import com.sap.sailing.domain.common.Tack;
 import com.sap.sailing.domain.common.TrackedRaceStatusEnum;
-import com.sap.sailing.domain.common.impl.KnotSpeedImpl;
-import com.sap.sailing.domain.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sailing.domain.common.impl.PolarSheetsDataImpl;
 import com.sap.sailing.domain.common.impl.PolarSheetsHistogramDataImpl;
 import com.sap.sailing.domain.common.polars.NotEnoughDataHasBeenAddedException;
@@ -48,6 +46,8 @@ import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Speed;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.impl.DegreeBearingImpl;
+import com.sap.sse.common.impl.KnotSpeedImpl;
+import com.sap.sse.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sse.datamining.components.FilterCriterion;
 import com.sap.sse.datamining.components.Processor;
 import com.sap.sse.datamining.data.ClusterGroup;
@@ -63,11 +63,14 @@ import com.sap.sse.util.impl.ThreadFactoryWithPriority;
 
 /**
  * Entry point for the aggregation of backend polar data and backend to that data.
+ * <p>
  * 
- * Creates a polar data pipeline upon creation and puts incoming GPS fixes into that pipeline.
- * Also holds references to the actual data containers in which the aggregation results lay.
+ * Creates a polar data pipeline upon creation and puts incoming GPS fixes into that pipeline. Also holds references to
+ * the actual data containers in which the aggregation results lay.
+ * <p>
  * 
- * For more information on polars in SAP Sailing Analytics, please see: http://wiki.sapsailing.com/wiki/howto/misc/polars
+ * For more information on polars in SAP Sailing Analytics, please see:
+ * <a href="https://wiki.sapsailing.com/wiki/howto/misc/polars">https://wiki.sapsailing.com/wiki/howto/misc/polars</a>
  * 
  * @author D054528 (Frederik Petersen)
  *
@@ -133,6 +136,13 @@ public class PolarDataMiner {
             throw new RuntimeException(e);
         }
     }
+    
+    public PolarDataMiner filterToBoatClasses(Iterable<BoatClass> boatClasses) {
+        return new PolarDataMiner(backendPolarSheetGenerationSettings,
+                                  cubicRegressionPerCourseProcessor.filterToBoatClasses(boatClasses),
+                                  speedRegressionPerAngleClusterProcessor.filterToBoatClasses(boatClasses),
+                                  angleClusterGroup);
+    }
 
     private void setUpWorkflow() throws ClassCastException, NoSuchMethodException, SecurityException {
         Collection<Processor<GroupedDataEntry<GPSFixMovingWithPolarContext>, ?>> regressionPerCourseGrouperResultReceivers = new ArrayList<Processor<GroupedDataEntry<GPSFixMovingWithPolarContext>, ?>>();
@@ -163,8 +173,7 @@ public class PolarDataMiner {
         Processor<GPSFixMovingWithPolarContext, GPSFixMovingWithPolarContext> filteringProcessor = new ParallelFilteringProcessor<GPSFixMovingWithPolarContext>(
                 GPSFixMovingWithPolarContext.class, executor, filteringResultReceivers, new PolarFixFilterCriteria(
                         backendPolarSheetGenerationSettings.getPctOfLeadingCompetitorsToInclude()));
-        Collection<Processor<GPSFixMovingWithPolarContext, ?>> enrichingResultReceivers = Arrays
-                .asList(filteringProcessor);
+        Collection<Processor<GPSFixMovingWithPolarContext, ?>> enrichingResultReceivers = Arrays.asList(filteringProcessor);
         AbstractEnrichingProcessor<GPSFixMovingWithOriginInfo, GPSFixMovingWithPolarContext> enrichingProcessor = new AbstractEnrichingProcessor<GPSFixMovingWithOriginInfo, GPSFixMovingWithPolarContext>(
                 GPSFixMovingWithOriginInfo.class, GPSFixMovingWithPolarContext.class, executor,
                 enrichingResultReceivers) {
@@ -176,8 +185,7 @@ public class PolarDataMiner {
                 return result;
             }
         };
-        Collection<Processor<GPSFixMovingWithOriginInfo, ?>> preFilterResultReceivers = Arrays
-                .asList(enrichingProcessor);
+        Collection<Processor<GPSFixMovingWithOriginInfo, ?>> preFilterResultReceivers = Arrays.asList(enrichingProcessor);
         preFilteringProcessor = new ParallelFilteringProcessor<GPSFixMovingWithOriginInfo>(
                 GPSFixMovingWithOriginInfo.class, executor, preFilterResultReceivers,
                 new FilterCriterion<GPSFixMovingWithOriginInfo>() {
@@ -225,7 +233,7 @@ public class PolarDataMiner {
         }
     }
 
-    public boolean isCurrentlyActiveAndOrHasQueue() {
+    public boolean isCurrentlyActiveOrHasQueue() {
         boolean isActive = executor.getActiveCount() > 0;
         boolean hasQueue = executor.getQueue().size() > 0;
         return isActive || hasQueue;

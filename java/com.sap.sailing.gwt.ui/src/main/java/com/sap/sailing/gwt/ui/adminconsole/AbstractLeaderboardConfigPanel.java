@@ -262,7 +262,7 @@ public abstract class AbstractLeaderboardConfigPanel extends FormPanel
         Label helpLabel = new Label(stringMessages.helptextLinkingRaces());
         hPanel.setWidget(0, 0, helpLabel);
         hPanel.setWidget(0, 1, new HelpButton(HelpButtonResources.INSTANCE,
-                stringMessages.videoGuide(), "https://vimeo.com/768053778/922b629cc4"));
+                stringMessages.videoGuide(), "https://sapsailing-documentation.s3-eu-west-1.amazonaws.com/adminconsole/LinkingEx.mp4"));
         mainPanel.add(hPanel);
         // caption panels for the selected leaderboard and tracked races
         final HorizontalPanel splitPanel = new HorizontalPanel();

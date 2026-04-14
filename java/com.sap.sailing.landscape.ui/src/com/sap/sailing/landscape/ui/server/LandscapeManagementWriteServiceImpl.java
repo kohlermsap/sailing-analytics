@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,6 +74,7 @@ import com.sap.sse.common.Util;
 import com.sap.sse.common.Util.Pair;
 import com.sap.sse.common.Util.Triple;
 import com.sap.sse.gwt.server.ResultCachingProxiedRemoteServiceServlet;
+import com.sap.sse.landscape.DefaultProcessConfigurationVariables;
 import com.sap.sse.landscape.Host;
 import com.sap.sse.landscape.Landscape;
 import com.sap.sse.landscape.Release;
@@ -99,6 +101,7 @@ import com.sap.sse.landscape.aws.orchestration.CreateDynamicLoadBalancerMapping;
 import com.sap.sse.landscape.aws.orchestration.CreateLoadBalancerMapping;
 import com.sap.sse.landscape.aws.orchestration.StartMongoDBServer;
 import com.sap.sse.landscape.common.shared.SecuredLandscapeTypes;
+import com.sap.sse.landscape.mongodb.Database;
 import com.sap.sse.landscape.mongodb.MongoEndpoint;
 import com.sap.sse.landscape.mongodb.MongoProcess;
 import com.sap.sse.landscape.mongodb.MongoProcessInReplicaSet;
@@ -295,10 +298,10 @@ public class LandscapeManagementWriteServiceImpl extends ResultCachingProxiedRem
     private ReverseProxyDTO convertToReverseProxyDTO(String region, Map<AwsInstance<String>, TargetHealth> healths,
             AwsInstance<String> instance, boolean isDisposable) {
         return new ReverseProxyDTO(instance.getInstanceId(),
-                instance.getPrivateAddress().getHostAddress(), instance.getPublicAddress().getHostAddress(),
-                region, instance.getLaunchTimePoint(), instance.isSharedHost(),
-                instance.getNameTag(), instance.getImageId(), extractHealth(healths, instance),
-                isDisposable, new AvailabilityZoneDTO(instance.getAvailabilityZone().getName(), instance.getRegion().getId(), instance.getAvailabilityZone().getId()));
+                instance.getInstanceType().name(), instance.getPrivateAddress().getHostAddress(),
+                instance.getPublicAddress().getHostAddress(), region, instance.getLaunchTimePoint(),
+                instance.isSharedHost(), instance.getNameTag(), instance.getImageId(),
+                extractHealth(healths, instance), isDisposable, new AvailabilityZoneDTO(instance.getAvailabilityZone().getName(), instance.getRegion().getId(), instance.getAvailabilityZone().getId()));
     }
     
     @Override
@@ -377,9 +380,13 @@ public class LandscapeManagementWriteServiceImpl extends ResultCachingProxiedRem
     }
 
     private AwsInstanceDTO convertToAwsInstanceDTO(Host host) {
-        return new AwsInstanceDTO(host.getId().toString(), host.getPrivateAddress().getHostAddress(), host.getPublicAddress() == null ? null : host.getPublicAddress().getHostAddress(),
-                host.getRegion().getId(),
-                host.getLaunchTimePoint(), host.isSharedHost(), new AvailabilityZoneDTO(host.getAvailabilityZone().getName(), host.getRegion().getId(), host.getAvailabilityZone().getId()));
+        return new AwsInstanceDTO(host.getId().toString(),
+                (host instanceof AwsInstance<?>) ? ((AwsInstance<?>) host).getInstanceType().name() : null,
+                host.getPrivateAddress().getHostAddress(),
+                host.getPublicAddress() == null ? null : host.getPublicAddress().getHostAddress(),
+                host.getRegion().getId(), host.getLaunchTimePoint(), host.isSharedHost(),
+                new AvailabilityZoneDTO(host.getAvailabilityZone().getName(), host.getRegion().getId(),
+                        host.getAvailabilityZone().getId()));
     }
     
     @Override
@@ -674,6 +681,46 @@ public class LandscapeManagementWriteServiceImpl extends ResultCachingProxiedRem
                 optionalDomainName, optionalMinimumAutoScalingGroupSizeOrNull,
                 optionalMaximumAutoScalingGroupSizeOrNull, optionalMemoryInMegabytesOrNull,
                 optionalMemoryTotalSizeFactorOrNull, optionalIgtimiRiotPort, optionalPreferredInstanceToDeployUnmanagedReplicaTo);
+    }
+    
+    @Override
+    public void createArchiveReplicaSet(String regionId, SailingApplicationReplicaSetDTO<String> archiveReplicaSetToUpgrade,
+            String instanceType, String releaseNameOrNullForLatestMaster, String optionalKeyName,
+            byte[] privateKeyEncryptionPassphrase, String securityReplicationBearerToken,
+            String replicaReplicationBearerToken, Integer optionalMemoryInMegabytesOrNull, Integer optionalMemoryTotalSizeFactorOrNull) throws Exception {
+        checkLandscapeManageAwsPermission();
+        final String userSetOrArchiveServerSecurityReplicationBearerToken;
+        final AwsRegion region = new AwsRegion(regionId, getLandscape());
+        final AwsApplicationReplicaSet<String, SailingAnalyticsMetrics, SailingAnalyticsProcess<String>> awsReplicaSet =
+                convertFromApplicationReplicaSetDTO(region, archiveReplicaSetToUpgrade, optionalKeyName, privateKeyEncryptionPassphrase);
+        final SailingAnalyticsProcess<String> master = awsReplicaSet.getMaster();
+        if (Util.hasLength(securityReplicationBearerToken)) {
+            userSetOrArchiveServerSecurityReplicationBearerToken = securityReplicationBearerToken;
+        } else {
+            userSetOrArchiveServerSecurityReplicationBearerToken = master.getEnvShValueFor(
+                    DefaultProcessConfigurationVariables.REPLICATE_MASTER_BEARER_TOKEN,
+                    Landscape.WAIT_FOR_PROCESS_TIMEOUT, Optional.of(optionalKeyName), privateKeyEncryptionPassphrase);
+        }
+        final String replicaSetName = SharedLandscapeConstants.ARCHIVE_SERVER_APPLICATION_REPLICA_SET_NAME;
+        final String domainName = AwsLandscape.getHostedZoneName(archiveReplicaSetToUpgrade.getHostname());
+        final Database databaseConfiguration = master.getDatabaseConfiguration(region,
+                Landscape.WAIT_FOR_PROCESS_TIMEOUT, Optional.ofNullable(optionalKeyName),
+                privateKeyEncryptionPassphrase);
+        final URL requestURL = new URL(getThreadLocalRequest().getRequestURL().toString());
+        final URL continuationBaseURL = new URL(requestURL.getProtocol(), requestURL.getHost(), requestURL.getPort(), "");
+        getLandscapeService()
+                .createArchiveReplicaSet(regionId, replicaSetName, instanceType, releaseNameOrNullForLatestMaster,
+                        databaseConfiguration, optionalKeyName, privateKeyEncryptionPassphrase,
+                        replicaReplicationBearerToken, domainName, optionalMemoryInMegabytesOrNull,
+                        userSetOrArchiveServerSecurityReplicationBearerToken, optionalMemoryTotalSizeFactorOrNull,
+                        /* optionalIgtimiRiotPort */ null, continuationBaseURL);
+    }
+    
+    @Override
+    public void makeCandidateArchiveServerGoLive(String regionId, SailingApplicationReplicaSetDTO<String> archiveReplicaSetToUpgrade,
+            String optionalKeyName, byte[] privateKeyEncryptionPassphrase) throws Exception {
+        final String domainName = AwsLandscape.getHostedZoneName(archiveReplicaSetToUpgrade.getHostname());
+        getLandscapeService().makeCandidateArchiveServerGoLive(regionId, optionalKeyName, privateKeyEncryptionPassphrase, domainName);
     }
     
     /**

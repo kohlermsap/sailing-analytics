@@ -16,6 +16,23 @@ It contains also some files:
  - Manifest.txt -> manifest used to create the test.jar file
 
 ********************************************
+        TracAPI 5.0.3
+********************************************
+This is a final version. It keeps the backward compatibility.
+
+  Release date: 15/12/2025
+
+ 1) Features
+
+ - Adding two new methods to the IPosition interface:
+  1) getDTL: the distance to the start line in centimeters. It will be NULL until a final distance
+    is captured at the start.
+  2) isClear: before the start isClear will = TRUE for all boats. For boats that are clear of the line
+    at go this will remain TRUE for the entire race. For OCS boats this will = FALSE until they clear
+    the line, at which point it will switch to TRUE
+  (Requested by Chris Terkelsen, 12/12/2025)
+
+********************************************
         TracAPI 5.0.2
 ********************************************
 This is a final version. It keeps the backward compatibility.

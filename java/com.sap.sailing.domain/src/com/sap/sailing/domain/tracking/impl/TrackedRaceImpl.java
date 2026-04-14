@@ -64,14 +64,15 @@ import com.sap.sailing.domain.abstractlog.race.state.racingprocedure.ReadonlyRac
 import com.sap.sailing.domain.abstractlog.regatta.RegattaLog;
 import com.sap.sailing.domain.abstractlog.regatta.tracking.analyzing.impl.RegattaLogDefinedMarkAnalyzer;
 import com.sap.sailing.domain.base.Boat;
-import com.sap.sailing.domain.base.CPUMeteringType;
 import com.sap.sailing.domain.base.Competitor;
 import com.sap.sailing.domain.base.ControlPoint;
 import com.sap.sailing.domain.base.Course;
 import com.sap.sailing.domain.base.CourseListener;
 import com.sap.sailing.domain.base.DomainFactory;
+import com.sap.sailing.domain.base.Fleet;
 import com.sap.sailing.domain.base.Leg;
 import com.sap.sailing.domain.base.Mark;
+import com.sap.sailing.domain.base.RaceColumn;
 import com.sap.sailing.domain.base.RaceDefinition;
 import com.sap.sailing.domain.base.Regatta;
 import com.sap.sailing.domain.base.RegattaListener;
@@ -87,12 +88,10 @@ import com.sap.sailing.domain.common.ManeuverType;
 import com.sap.sailing.domain.common.MaxPointsReason;
 import com.sap.sailing.domain.common.NauticalSide;
 import com.sap.sailing.domain.common.NoWindException;
-import com.sap.sailing.domain.common.Position;
 import com.sap.sailing.domain.common.RaceTimesCalculationUtil;
 import com.sap.sailing.domain.common.RankingMetrics;
 import com.sap.sailing.domain.common.RegattaAndRaceIdentifier;
 import com.sap.sailing.domain.common.RegattaNameAndRaceName;
-import com.sap.sailing.domain.common.SpeedWithBearing;
 import com.sap.sailing.domain.common.Tack;
 import com.sap.sailing.domain.common.TargetTimeInfo;
 import com.sap.sailing.domain.common.TargetTimeInfo.LegTargetTimeInfo;
@@ -102,29 +101,19 @@ import com.sap.sailing.domain.common.Wind;
 import com.sap.sailing.domain.common.WindSource;
 import com.sap.sailing.domain.common.WindSourceType;
 import com.sap.sailing.domain.common.abstractlog.TimePointSpecificationFoundInLog;
-import com.sap.sailing.domain.common.confidence.BearingWithConfidence;
-import com.sap.sailing.domain.common.confidence.BearingWithConfidenceCluster;
-import com.sap.sailing.domain.common.confidence.HasConfidence;
-import com.sap.sailing.domain.common.confidence.Weigher;
-import com.sap.sailing.domain.common.confidence.impl.BearingWithConfidenceImpl;
-import com.sap.sailing.domain.common.confidence.impl.HyperbolicTimeDifferenceWeigher;
-import com.sap.sailing.domain.common.confidence.impl.PositionAndTimePointWeigher;
 import com.sap.sailing.domain.common.confidence.impl.ScalableWind;
-import com.sap.sailing.domain.common.impl.CentralAngleDistance;
-import com.sap.sailing.domain.common.impl.KnotSpeedImpl;
-import com.sap.sailing.domain.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sailing.domain.common.impl.TargetTimeInfoImpl;
 import com.sap.sailing.domain.common.impl.WindImpl;
 import com.sap.sailing.domain.common.impl.WindSourceImpl;
 import com.sap.sailing.domain.common.polars.NotEnoughDataHasBeenAddedException;
 import com.sap.sailing.domain.common.racelog.RaceLogRaceStatus;
 import com.sap.sailing.domain.common.racelog.RacingProcedureType;
-import com.sap.sailing.domain.common.scalablevalue.impl.ScalablePosition;
 import com.sap.sailing.domain.common.tracking.GPSFix;
 import com.sap.sailing.domain.common.tracking.GPSFixMoving;
 import com.sap.sailing.domain.common.tracking.SensorFix;
 import com.sap.sailing.domain.confidence.ConfidenceBasedWindAverager;
 import com.sap.sailing.domain.confidence.ConfidenceFactory;
+import com.sap.sailing.domain.leaderboard.Leaderboard;
 import com.sap.sailing.domain.leaderboard.Leaderboard.RankComparableRank;
 import com.sap.sailing.domain.leaderboard.caching.LeaderboardDTOCalculationReuseCache;
 import com.sap.sailing.domain.leaderboard.impl.CompetitorAndRankComparable;
@@ -133,6 +122,9 @@ import com.sap.sailing.domain.maneuverdetection.IncrementalManeuverDetector;
 import com.sap.sailing.domain.maneuverdetection.ManeuverDetector;
 import com.sap.sailing.domain.maneuverdetection.ShortTimeAfterLastHitCache;
 import com.sap.sailing.domain.maneuverdetection.impl.IncrementalManeuverDetectorImpl;
+import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprintRegistry;
+import com.sap.sailing.domain.maneuverhash.SerializableManeuverCache;
+import com.sap.sailing.domain.maneuverhash.impl.ManeuverCacheDelegate;
 import com.sap.sailing.domain.markpassingcalculation.MarkPassingCalculator;
 import com.sap.sailing.domain.markpassinghash.MarkPassingRaceFingerprintRegistry;
 import com.sap.sailing.domain.orc.ORCPerformanceCurveRankingMetric;
@@ -141,13 +133,13 @@ import com.sap.sailing.domain.racelog.RaceLogAndTrackedRaceResolver;
 import com.sap.sailing.domain.ranking.OneDesignRankingMetric;
 import com.sap.sailing.domain.ranking.RankingMetric;
 import com.sap.sailing.domain.ranking.RankingMetric.RankingInfo;
+import com.sap.sailing.domain.ranking.RankingMetricConstructor;
 import com.sap.sailing.domain.shared.tracking.AddResult;
 import com.sap.sailing.domain.shared.tracking.LineDetails;
 import com.sap.sailing.domain.shared.tracking.Track;
 import com.sap.sailing.domain.shared.tracking.TrackingConnectorInfo;
 import com.sap.sailing.domain.shared.tracking.impl.LineDetailsImpl;
 import com.sap.sailing.domain.shared.tracking.impl.TimedComparator;
-import com.sap.sailing.domain.ranking.RankingMetricConstructor;
 import com.sap.sailing.domain.tracking.BravoFixTrack;
 import com.sap.sailing.domain.tracking.DynamicSensorFixTrack;
 import com.sap.sailing.domain.tracking.GPSFixTrack;
@@ -177,22 +169,33 @@ import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Distance;
 import com.sap.sse.common.Duration;
 import com.sap.sse.common.IsManagedByCache;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.Speed;
+import com.sap.sse.common.SpeedWithBearing;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.TimeRange;
 import com.sap.sse.common.Timed;
 import com.sap.sse.common.Util;
 import com.sap.sse.common.Util.Pair;
+import com.sap.sse.common.Util.Triple;
+import com.sap.sse.common.confidence.BearingWithConfidence;
+import com.sap.sse.common.confidence.BearingWithConfidenceCluster;
+import com.sap.sse.common.confidence.HasConfidence;
+import com.sap.sse.common.confidence.Weigher;
+import com.sap.sse.common.confidence.impl.BearingWithConfidenceImpl;
+import com.sap.sse.common.confidence.impl.HyperbolicTimeDifferenceWeigher;
+import com.sap.sse.common.confidence.impl.PositionAndTimePointWeigher;
+import com.sap.sse.common.impl.CentralAngleDistance;
 import com.sap.sse.common.impl.DegreeBearingImpl;
+import com.sap.sse.common.impl.KnotSpeedImpl;
+import com.sap.sse.common.impl.KnotSpeedWithBearingImpl;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
+import com.sap.sse.common.scalablevalue.impl.ScalablePosition;
 import com.sap.sse.concurrent.LockUtil;
 import com.sap.sse.concurrent.NamedReentrantReadWriteLock;
 import com.sap.sse.shared.util.impl.ApproximateTime;
 import com.sap.sse.shared.util.impl.ArrayListNavigableSet;
 import com.sap.sse.util.IdentityWrapper;
-import com.sap.sse.util.SmartFutureCache;
-import com.sap.sse.util.SmartFutureCache.AbstractCacheUpdater;
-import com.sap.sse.util.SmartFutureCache.EmptyUpdateInterval;
 import com.sap.sse.util.impl.FutureTaskWithTracingGet;
 
 import difflib.DiffUtils;
@@ -340,14 +343,14 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
      * computed. Clients wanting to know maneuvers for the competitor outside of this time interval need to (re-)compute
      * them.
      */
-    private transient SmartFutureCache<Competitor, List<Maneuver>, EmptyUpdateInterval> maneuverCache;
-
+    private final SerializableManeuverCache maneuverCache;
+    
     /**
-     * The values of this map are used by the {@link #approximate(Competitor, Distance, TimePoint, TimePoint)} method and
-     * maintain state to accelerate the {@link #approximate(Competitor, Distance, TimePoint, TimePoint)} method, also in
+     * The values of this map are used by the {@link #approximate(Competitor, TimePoint, TimePoint)} method and
+     * maintain state to accelerate the {@link #approximate(Competitor, TimePoint, TimePoint)} method, also in
      * live scenarios when the contents of the competitors' {@link #tracks} changes dynamically.
      */
-    private final Map<Competitor, CourseChangeBasedTrackApproximation> maneuverApproximators;
+    private final ConcurrentMap<Competitor, CourseChangeBasedTrackApproximation> maneuverApproximators;
 
     private transient ConcurrentMap<TimePoint, Future<Wind>> directionFromStartToNextMarkCache;
 
@@ -495,12 +498,13 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
     public TrackedRaceImpl(final TrackedRegatta trackedRegatta, RaceDefinition race, final Iterable<Sideline> sidelines,
             final WindStore windStore, long delayToLiveInMillis, final long millisecondsOverWhichToAverageWind,
             long millisecondsOverWhichToAverageSpeed, long delayForWindEstimationCacheInvalidation,
-            boolean useInternalMarkPassingAlgorithm, RaceLogAndTrackedRaceResolver raceLogResolver, TrackingConnectorInfo trackingConnectorInfo,
-            MarkPassingRaceFingerprintRegistry markPassingRaceFingerprintRegistry) {
+            boolean useInternalMarkPassingAlgorithm, RaceLogAndTrackedRaceResolver raceLogResolver,
+            TrackingConnectorInfo trackingConnectorInfo, MarkPassingRaceFingerprintRegistry markPassingRaceFingerprintRegistry,
+            ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry) {
         this(trackedRegatta, race, sidelines, windStore, delayToLiveInMillis, millisecondsOverWhichToAverageWind,
                 millisecondsOverWhichToAverageSpeed, delayForWindEstimationCacheInvalidation,
                 useInternalMarkPassingAlgorithm, OneDesignRankingMetric::new, raceLogResolver, trackingConnectorInfo,
-                markPassingRaceFingerprintRegistry);
+                markPassingRaceFingerprintRegistry, maneuverRaceFingerprintRegistry);
     }
 
     /**
@@ -520,7 +524,8 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
             long millisecondsOverWhichToAverageSpeed, long delayForWindEstimationCacheInvalidation,
             boolean useInternalMarkPassingAlgorithm, RankingMetricConstructor rankingMetricConstructor,
             RaceLogAndTrackedRaceResolver raceLogResolver, TrackingConnectorInfo trackingConnectorInfo,
-            MarkPassingRaceFingerprintRegistry markPassingRaceFingerprintRegistry) {
+            MarkPassingRaceFingerprintRegistry markPassingRaceFingerprintRegistry,
+            ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry) {
         super(race, trackedRegatta, windStore, millisecondsOverWhichToAverageWind);
         distancesFromStarboardSideOfStartLineProjectedOntoLineCache = new ConcurrentHashMap<>();
         distancesFromStarboardSideOfStartLineProjectedOntoLineCacheLastAccessTimes = new ConcurrentHashMap<>();
@@ -547,7 +552,7 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
         this.delayToLiveInMillis = delayToLiveInMillis;
         this.startToNextMarkCacheInvalidationListeners = new ConcurrentHashMap<Mark, TrackedRaceImpl.StartToNextMarkCacheInvalidationListener>();
         this.maneuverDetectorPerCompetitorCache = createManeuverDetectorCache();
-        this.maneuverCache = createManeuverCache();
+        this.maneuverCache = createManeuverCache(maneuverRaceFingerprintRegistry);
         this.markTracks = new ConcurrentHashMap<Mark, GPSFixTrack<Mark, GPSFix>>();
         int i = 0;
         for (Waypoint waypoint : race.getCourse().getWaypoints()) {
@@ -580,12 +585,11 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
         }
         markPassingsForCompetitor = new HashMap<>();
         tracks = new HashMap<>();
-        maneuverApproximators = new HashMap<>();
+        maneuverApproximators = new ConcurrentHashMap<>();
         for (Competitor competitor : race.getCompetitors()) {
             markPassingsForCompetitor.put(competitor, new ConcurrentSkipListSet<MarkPassing>(MarkPassingByTimeComparator.INSTANCE));
             final DynamicGPSFixMovingTrackImpl<Competitor> track = new DynamicGPSFixMovingTrackImpl<Competitor>(competitor, millisecondsOverWhichToAverageSpeed);
             tracks.put(competitor, track);
-            maneuverApproximators.put(competitor, new CourseChangeBasedTrackApproximation(track, race.getBoatOfCompetitor(competitor).getBoatClass()));
         }
         markPassingsForWaypoint = new ConcurrentHashMap<Waypoint, NavigableSet<MarkPassing>>();
         for (Waypoint waypoint : race.getCourse().getWaypoints()) {
@@ -789,7 +793,6 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
         competitorRankingsLocks = createCompetitorRankingsLockMap();
         directionFromStartToNextMarkCache = new ConcurrentHashMap<>();
         maneuverDetectorPerCompetitorCache = createManeuverDetectorCache();
-        maneuverCache = createManeuverCache();
         logger.info("Deserialized race " + getRace().getName());
     }
     
@@ -805,7 +808,7 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
         } catch (PatchFailedException e) {
             throw new RuntimeException(e);
         } // a bit unclean: this also tries to work on the DynamicTrackedRaceImpl which isn't fully initialized yet; see also bug6039
-        triggerManeuverCacheRecalculationForAllCompetitors();  // a bit unclean: this also tries to work on the DynamicTrackedRaceImpl which isn't fully initialized yet; see also bug6039
+        ensureManeuverCacheIsFilledForAllCompetitors();  // a bit unclean: this also tries to work on the DynamicTrackedRaceImpl which isn't fully initialized yet; see also bug6039
     }
 
     /**
@@ -851,30 +854,8 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
                 competitor -> new IncrementalManeuverDetectorImpl(TrackedRaceImpl.this, competitor, windEstimation));
     }
 
-    private SmartFutureCache<Competitor, List<Maneuver>, EmptyUpdateInterval> createManeuverCache() {
-        return new SmartFutureCache<Competitor, List<Maneuver>, EmptyUpdateInterval>(
-                new AbstractCacheUpdater<Competitor, List<Maneuver>, EmptyUpdateInterval>() {
-                    @Override
-                    public List<Maneuver> computeCacheUpdate(Competitor competitor, EmptyUpdateInterval updateInterval)
-                            throws NoWindException {
-                        return getTrackedRegatta().callWithCPUMeterWithException(()->{
-                            Duration averageIntervalBetweenRawFixes = getTrack(competitor).getAverageIntervalBetweenRawFixes();
-                            if (averageIntervalBetweenRawFixes != null) {
-                                ManeuverDetector maneuverDetector;
-                                // FIXME The LowGPSSamplingRateManeuverDetectorImpl doesn't work very well; it recognizes many tacks only as bear-away and doesn't seem to have any noticeable benefits... See ORC Worlds 2019 ORC A Long Offshore
-    //                            if (averageIntervalBetweenRawFixes.asSeconds() >= 30) {
-    //                                maneuverDetector = new LowGPSSamplingRateManeuverDetectorImpl(TrackedRaceImpl.this, competitor);
-    //                            } else {
-                                    maneuverDetector = maneuverDetectorPerCompetitorCache.getValue(competitor);
-    //                            }
-                                List<Maneuver> maneuvers = computeManeuvers(competitor, maneuverDetector);
-                                return maneuvers;
-                            } else {
-                                return Collections.emptyList();
-                            }
-                        }, CPUMeteringType.MANEUVER_DETECTION.name());
-                    }
-                }, /* nameForLocks */ "Maneuver cache for race " + getRace().getName());
+    private ManeuverCacheDelegate createManeuverCache(ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry) {
+        return new ManeuverCacheDelegate(this, maneuverRaceFingerprintRegistry);
     }
 
     /**
@@ -2880,34 +2861,43 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
     }
 
     @Override
-    public Iterable<GPSFixMoving> approximate(Competitor competitor, Distance maxDistance, TimePoint from, TimePoint to) {
-        return maneuverApproximators.get(competitor).approximate(from, to);
+    public Iterable<GPSFixMoving> approximate(Competitor competitor, TimePoint from, TimePoint to) {
+        return maneuverApproximators.computeIfAbsent(competitor,
+                c->new CourseChangeBasedTrackApproximation(getTrack(c), race.getBoatOfCompetitor(c).getBoatClass(), /* logFixes */ false))
+                .approximate(from, to);
     }
+    
 
-    protected void triggerManeuverCacheRecalculationForAllCompetitors() {
+    private void ensureManeuverCacheIsFilledForAllCompetitors() {
+        maneuverCache.ensureFilled();
+    }
+    public void triggerManeuverCacheRecalculationForAllCompetitors() {
         if (cachesSuspended) {
             triggerManeuverCacheInvalidationForAllCompetitors = true;
         } else {
-            final List<Competitor> shuffledCompetitors = new ArrayList<>();
-            for (Competitor competitor : (getRace().getCompetitors())) {
-                shuffledCompetitors.add(competitor);
-            }
-            Collections.shuffle(shuffledCompetitors);
-            for (Competitor competitor : shuffledCompetitors) {
+            for (Competitor competitor : getShuffledCompetitors()) {
                 triggerManeuverCacheRecalculation(competitor);
             }
         }
+    }
+
+    public List<Competitor> getShuffledCompetitors() {
+        final List<Competitor> shuffledCompetitors = new ArrayList<>();
+        for (Competitor competitor : (getRace().getCompetitors())) {
+            shuffledCompetitors.add(competitor);
+        }
+        return shuffledCompetitors;
     }
 
     public void triggerManeuverCacheRecalculation(final Competitor competitor) {
         if (cachesSuspended) {
             triggerManeuverCacheInvalidationForAllCompetitors = true;
         } else {
-            maneuverCache.triggerUpdate(competitor, /* updateInterval */null);
+            maneuverCache.recalculate(competitor);
         }
     }
 
-    private List<Maneuver> computeManeuvers(Competitor competitor, ManeuverDetector maneuverDetector)
+    public List<Maneuver> computeManeuvers(Competitor competitor, ManeuverDetector maneuverDetector)
             throws NoWindException {
         logger.finest("computeManeuvers(" + competitor.getName() + ") called in tracked race " + this);
         long startedAt = System.currentTimeMillis();
@@ -2932,8 +2922,8 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
      */
     @Override
     public Iterable<Maneuver> getManeuvers(Competitor competitor, TimePoint from, TimePoint to, boolean waitForLatest) {
-        List<Maneuver> allManeuvers = maneuverCache.get(competitor, waitForLatest);
-        List<Maneuver> result;
+        final List<Maneuver> allManeuvers = maneuverCache.get(competitor, waitForLatest);
+        final List<Maneuver> result;
         if (allManeuvers == null) {
             result = Collections.emptyList();
         } else {
@@ -2944,8 +2934,8 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
 
     @Override
     public Iterable<Maneuver> getManeuvers(Competitor competitor, boolean waitForLatest) {
-        List<Maneuver> allManeuvers = maneuverCache.get(competitor, waitForLatest);
-        List<Maneuver> result;
+        final List<Maneuver> allManeuvers = maneuverCache.get(competitor, waitForLatest);
+        final List<Maneuver> result;
         if (allManeuvers == null) {
             result = Collections.emptyList();
         } else {
@@ -2983,7 +2973,9 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
         Pair<Double, Double> result;
         double defaultAngle = getRace().getBoatClass().getMinimumAngleBetweenDifferentTacksUpwind();
         double threshold = 10;
-        result = usePolarsIfPossible(wind, defaultAngle, LegType.UPWIND, threshold);
+        result = usePolarsIfPossible(wind != null && wind.getKnots()==0?new WindImpl(wind.getPosition(),
+                wind.getTimePoint(), new KnotSpeedWithBearingImpl(10 /* default 10kts */, wind.getBearing())):wind,
+                defaultAngle, LegType.UPWIND, threshold);
         return result;
     }
 
@@ -3105,7 +3097,7 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
         if (newStatus.getStatus() == TrackedRaceStatusEnum.LOADING && oldStatus != TrackedRaceStatusEnum.LOADING) {
             suspendAllCachesNotUpdatingWhileLoading();
         } else if (oldStatus == TrackedRaceStatusEnum.LOADING && newStatus.getStatus() != TrackedRaceStatusEnum.LOADING && newStatus.getStatus() != TrackedRaceStatusEnum.REMOVED) {
-            resumeAllCachesNotUpdatingWhileLoading();
+            resumeAllCachesNotUpdatingWhileLoading(); // TODO how sure can we be that at this point all loading is really done? TracTrac receivers, e.g., run in threads with queues, and fixes may still be processed after the status has changed
         }
     }
 
@@ -3123,6 +3115,37 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
         crossTrackErrorCache.suspend();
         maneuverCache.suspend();
     }
+    
+    public void waitForAllRaceLogsAttached() {
+        final Object latchForRaceLogs = new Object();
+        final Iterable<Triple<Leaderboard, RaceColumn, Fleet>> expectedLinks = TrackedRaceImpl.this.getRaceLogResolver()
+                .getColumnsWithRaceLogForTrackedRace(getRaceIdentifier());
+        final int numberOfExpectedRaceLogs = Util.size(expectedLinks);
+        final AbstractRaceChangeListener raceLogAttachedListener = new AbstractRaceChangeListener() {
+            @Override
+            public void raceLogAttached(RaceLog raceLog) {
+                int numberOfAttachedRaceLogs = Util.size(getAttachedRaceLogs());
+                synchronized (latchForRaceLogs) {
+                    if (numberOfAttachedRaceLogs >= numberOfExpectedRaceLogs) {
+                        latchForRaceLogs.notifyAll();
+                    }
+                }
+            }
+        };
+        this.addListener(raceLogAttachedListener);
+        final int numberOfAttachedRaceLogs = Util.size(getAttachedRaceLogs());
+        try {
+            synchronized (latchForRaceLogs) {
+                while (numberOfAttachedRaceLogs < numberOfExpectedRaceLogs) {
+                    latchForRaceLogs.wait();
+                }
+            }
+        } catch (InterruptedException e) {
+            logger.warning("Interrupted: "+e.getMessage());
+        } finally {
+            removeListener(raceLogAttachedListener);
+        }
+    }
 
     private void resumeAllCachesNotUpdatingWhileLoading() {
         cachesSuspended = false;
@@ -3137,10 +3160,10 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
             markPassingCalculator.resume();
         }
         crossTrackErrorCache.resume();
+        maneuverCache.resume(); // needs to happen before triggering recalculation because this decides about fingerprint matching
         if (triggerManeuverCacheInvalidationForAllCompetitors) {
             triggerManeuverCacheRecalculationForAllCompetitors();
         }
-        maneuverCache.resume();
     }
 
     /**
@@ -3800,7 +3823,6 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
         return legDeterminingDirection;
     }
 
-
     @Override
     public LineDetails getStartLine(TimePoint at) {
         return getLineLengthAndAdvantage(at, getRace().getCourse().getFirstWaypoint());
@@ -4070,8 +4092,8 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
 
     @Override
     public void setWindEstimation(IncrementalWindEstimation windEstimation) {
-        IncrementalWindEstimation previousWindEstimation = this.windEstimation;
-        if (previousWindEstimation != windEstimation) {
+        final IncrementalWindEstimation previousWindEstimation = this.windEstimation;
+        if (previousWindEstimation != windEstimation) { // bug5959 comment #15: if maneuvers were sent during initial load of RacingEventService and they were based on the IncrementalWindEstimation just received through initial load of WindEstimationFactoryService, don't re-compute those maneuvers!
             updateManeuversAndWindWithNewWindEstimation(windEstimation, previousWindEstimation);
         }
     }
@@ -4089,7 +4111,7 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
         // complete maneuver curves can be fed directly into the windEstimation.
         maneuverDetectorPerCompetitorCache.clearCache();
         shortTimeWindCache.clearCache();
-        triggerManeuverCacheRecalculationForAllCompetitors();
+        // no need to trigger maneuver recalculation because it is not using the MANEUVER_BASED_ESTIMATION; see also bug6184
     }
 
     /**
@@ -4432,5 +4454,13 @@ public abstract class TrackedRaceImpl extends TrackedRaceWithWindEssentials impl
             result = null;
         }
         return result;
+    }
+
+    public ShortTimeAfterLastHitCache<Competitor, IncrementalManeuverDetector> getManeuverDetectorPerCompetitorCache() {
+        return maneuverDetectorPerCompetitorCache;
+    }
+
+    public void setManeuverRaceFingerprintRegistry(ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry) {
+        maneuverCache.setManeuverRaceFingerprintRegistry(maneuverRaceFingerprintRegistry);
     }
 }

@@ -166,6 +166,11 @@ public interface LandscapeManagementWriteService extends RemoteService {
             SailingApplicationReplicaSetDTO<String> replicaSet, String instanceTypeName,
             String optionalKeyName, byte[] privateKeyEncryptionPassphrase) throws Exception;
     
+    void createArchiveReplicaSet(
+            String regionId, SailingApplicationReplicaSetDTO<String> applicationReplicaSetToUpgrade, String optionalSharedInstanceType, String releaseOrNullForLatestMaster,
+            String optionalKeyName, byte[] privateKeyEncryptionPassphrase, String securityReplicationBearerToken, String replicaReplicationBearerToken,
+            Integer optionalMemoryInMegabytesOrNull, Integer optionalMemoryTotalSizeFactorOrNull) throws Exception;
+    
     ArrayList<LeaderboardNameDTO> getLeaderboardNames(SailingApplicationReplicaSetDTO<String> replicaSet, String bearerToken) throws Exception;
     
     void addShard(String shardName, ArrayList<LeaderboardNameDTO> selectedLeaderBoardNames, SailingApplicationReplicaSetDTO<String> replicaSet,
@@ -183,4 +188,8 @@ public interface LandscapeManagementWriteService extends RemoteService {
             String optionalKeyName, byte[] privateKeyEncryptionPassphrase) throws Exception;
 
     boolean hasDNSResourceRecordsForReplicaSet(String replicaSetName, String optionalDomainName);
+
+    void makeCandidateArchiveServerGoLive(String regionId,
+            SailingApplicationReplicaSetDTO<String> archiveReplicaSetToUpgrade, String optionalKeyName,
+            byte[] privateKeyEncryptionPassphrase) throws Exception;
 }

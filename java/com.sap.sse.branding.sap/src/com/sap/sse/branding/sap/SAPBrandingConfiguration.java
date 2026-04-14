@@ -107,7 +107,7 @@ public class SAPBrandingConfiguration implements BrandingConfiguration {
 
     @Override
     public String getFooterCopyright() {
-        return "@ 2011-2025 SAP Sailing Analytics";
+        return "\u00A9 2011-2026 SAP Sailing Analytics";
     }
 
     @Override
@@ -181,5 +181,13 @@ public class SAPBrandingConfiguration implements BrandingConfiguration {
     @Override
     public String getInSailingContent(Optional<String> locale) {
         return sailingServerStringMessages.get(locale.map(l -> Locale.forLanguageTag(l)).orElse(Locale.ENGLISH), "inSailingContent");
+    }
+    @Override
+    public String getFollowGitHub(Optional<String> locale) {
+        return sailingServerStringMessages.get(locale.map(l -> Locale.forLanguageTag(l)).orElse(Locale.ENGLISH), "followGitHub");
+    }
+    @Override
+    public String getGitHubLink() {
+        return "https://github.com/SAP/sailing-analytics";
     }
 }

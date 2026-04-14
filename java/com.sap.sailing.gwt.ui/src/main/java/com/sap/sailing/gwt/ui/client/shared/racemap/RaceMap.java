@@ -81,7 +81,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.sap.sailing.domain.common.DetailType;
 import com.sap.sailing.domain.common.ManeuverType;
 import com.sap.sailing.domain.common.NonCardinalBounds;
-import com.sap.sailing.domain.common.Position;
 import com.sap.sailing.domain.common.RegattaAndRaceIdentifier;
 import com.sap.sailing.domain.common.WindSource;
 import com.sap.sailing.domain.common.WindSourceType;
@@ -90,10 +89,6 @@ import com.sap.sailing.domain.common.dto.CompetitorDTO;
 import com.sap.sailing.domain.common.dto.CompetitorWithBoatDTO;
 import com.sap.sailing.domain.common.dto.CourseAreaDTO;
 import com.sap.sailing.domain.common.dto.LeaderboardDTO;
-import com.sap.sailing.domain.common.impl.DegreePosition;
-import com.sap.sailing.domain.common.impl.MeterDistance;
-import com.sap.sailing.domain.common.scalablevalue.impl.ScalableBearing;
-import com.sap.sailing.domain.common.scalablevalue.impl.ScalablePosition;
 import com.sap.sailing.domain.common.security.SecuredDomainType;
 import com.sap.sailing.domain.common.security.SecuredDomainType.TrackedRaceActions;
 import com.sap.sailing.domain.common.windfinder.SpotDTO;
@@ -160,6 +155,7 @@ import com.sap.sse.common.ColorMapper;
 import com.sap.sse.common.ColorMapperChangedListener;
 import com.sap.sse.common.Distance;
 import com.sap.sse.common.Duration;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.TimeRange;
 import com.sap.sse.common.Util;
@@ -168,9 +164,13 @@ import com.sap.sse.common.ValueRangeFlexibleBoundaries;
 import com.sap.sse.common.filter.Filter;
 import com.sap.sse.common.filter.FilterSet;
 import com.sap.sse.common.impl.DegreeBearingImpl;
+import com.sap.sse.common.impl.DegreePosition;
+import com.sap.sse.common.impl.MeterDistance;
 import com.sap.sse.common.impl.MillisecondsTimePoint;
 import com.sap.sse.common.impl.RGBColor;
 import com.sap.sse.common.impl.TimeRangeImpl;
+import com.sap.sse.common.scalablevalue.impl.ScalableBearing;
+import com.sap.sse.common.scalablevalue.impl.ScalablePosition;
 import com.sap.sse.gwt.client.DOMUtils;
 import com.sap.sse.gwt.client.DateAndTimeFormatterUtil;
 import com.sap.sse.gwt.client.ErrorReporter;
@@ -679,7 +679,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
         this.courseAreaCirclesToShow = new HashMap<>();
         this.shareLinkAction = shareLinkAction;
         this.paywallResolver = paywallResolver;
-        this.maneuverMarkersAndLossIndicators = new ManeuverMarkersAndLossIndicators(this, sailingService, errorReporter, stringMessages);
+        this.maneuverMarkersAndLossIndicators = new ManeuverMarkersAndLossIndicators(this, sailingService, errorReporter, stringMessages, asyncActionsExecutor);
         this.showHeaderPanel = showHeaderPanel;
         this.quickFlagDataProvider = quickFlagDataProvider;
         this.raceMapLifecycle = raceMapLifecycle;
@@ -2874,26 +2874,25 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
                     final TimePoint to = new MillisecondsTimePoint(getBoatFix(competitorDTO, timer.getTime()).timepoint);
                     timeRange.put(competitorDTO, new TimeRangeImpl(from, to, true));
                     if (settings.isShowDouglasPeuckerPoints()) {
-                        sailingService.getDouglasPoints(race, timeRange, 3,
-                                new AsyncCallback<Map<CompetitorDTO, List<GPSFixDTOWithSpeedWindTackAndLegType>>>() {
-                                    @Override
-                                    public void onFailure(Throwable caught) {
-                                        errorReporter.reportError("Error obtaining douglas positions: " + caught.getMessage(), true /*silentMode */);
+                        sailingService.getDouglasPoints(race, timeRange, new AsyncCallback<Map<CompetitorDTO, List<GPSFixDTOWithSpeedWindTackAndLegType>>>() {
+                            @Override
+                            public void onFailure(Throwable caught) {
+                                errorReporter.reportError("Error obtaining douglas positions: " + caught.getMessage(), true /*silentMode */);
+                            }
+      
+                            @Override
+                            public void onSuccess(Map<CompetitorDTO, List<GPSFixDTOWithSpeedWindTackAndLegType>> result) {
+                                lastDouglasPeuckerResult = result;
+                                if (douglasMarkers != null) {
+                                    removeAllMarkDouglasPeuckerpoints();
+                                }
+                                if (!(timer.getPlayState() == PlayStates.Playing)) {
+                                    if (settings.isShowDouglasPeuckerPoints()) {
+                                        showMarkDouglasPeuckerPoints(result);
                                     }
-        
-                                    @Override
-                                    public void onSuccess(Map<CompetitorDTO, List<GPSFixDTOWithSpeedWindTackAndLegType>> result) {
-                                        lastDouglasPeuckerResult = result;
-                                        if (douglasMarkers != null) {
-                                            removeAllMarkDouglasPeuckerpoints();
-                                        }
-                                        if (!(timer.getPlayState() == PlayStates.Playing)) {
-                                            if (settings.isShowDouglasPeuckerPoints()) {
-                                                showMarkDouglasPeuckerPoints(result);
-                                            }
-                                        }
-                                    }
-                                });
+                                }
+                            }
+                        });
                     }
                     maneuverMarkersAndLossIndicators.getAndShowManeuvers(race, timeRange);
                 }

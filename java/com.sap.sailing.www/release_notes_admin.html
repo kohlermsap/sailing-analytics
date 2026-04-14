@@ -23,6 +23,43 @@
         <div class="mainContent">
           <h2 class="releaseHeadline">Release Notes - Administration Console</h2>
           <div class="innerContent">
+          <h2 class="articleSubheadline">February 2026</h2>
+          <ul class="bulletList">
+                <li>Implemented an automated procedure for upgrading the ARCHIVE server. This is now available
+                    through the "Upgrade" action icon in the landscape management panel for "phase 1" (launching,
+                    setting https://archive-candidate.sapsailing.com as redirect, and scheduling periodic
+                    checks in the background for completion of loading and calculations as well as a final
+                    "compare servers"), and the "Activate ARCHIVE Candidate" action icon for "phase 2" which
+                    will then, after the user has confirmed having done some manual spot checks, rotate the
+                    new candidate to the live server, and the former live server to the "fail-over" role,
+                    renaming instances, terminating the old "fail-over" instance and updating all
+                    reverse proxies in the landscape accordingly. User information is sent via e-mail.</li>
+          </ul>
+          <h2 class="articleSubheadline">January 2026</h2>
+          <ul class="bulletList">
+                <li>Extended RabbitMQ channel heartbeat interval to 1h. This will suffice even for
+                    longer garbage collection cycles that may happen during replica set start-up.</li>
+                <li>Using explicit ("manual") RabbitMQ message delivery acknowledgements for initial
+                    load when starting up a replica, combined with a "prefetch" (basicQos) value of 1.
+                    This way, when the replica is processing data
+                    and doesn't read fast enough, the RabbitMQ server will wait for the next message
+                    confirmation before sending more messages. This avoids socket buffer overflows
+                    which previously could lead to the RabbitMQ server timing out trying to send
+                    messages to the replica's channel.</li>
+          </ul>
+          <h2 class="articleSubheadline">December 2025</h2>
+          <ul class="bulletList">
+                <li>Added boat class Fareast 28R.</li>
+                <li>Added support for unlocking users under Admin Console >
+                 Advanced > User Management. The lock referred to here is that
+                 placed for multiple unsuccessful login attempts, resembling a
+                 brute force attack, onto an account identified by the used email
+                 address or username, for a duration of time.</li>
+                <li>Added support for unlocking IP addresses under Admin
+                 Console > Advanced > Local Server. The lock referred to here is
+                 that placed for multiple create account API hits or multiple API
+                 hits using an invalid bearer token for a duration of time.</li>
+          </ul>
           <h2 class="articleSubheadline">November 2025</h2>
           <ul class="bulletList">
                 <li>The Landscape Management panel as well as the <tt>refreshInstance.sh</tt> shell script

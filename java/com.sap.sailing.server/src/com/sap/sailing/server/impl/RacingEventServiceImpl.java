@@ -146,14 +146,12 @@ import com.sap.sailing.domain.common.DeviceIdentifier;
 import com.sap.sailing.domain.common.LeaderboardType;
 import com.sap.sailing.domain.common.MaxPointsReason;
 import com.sap.sailing.domain.common.NoWindException;
-import com.sap.sailing.domain.common.Position;
 import com.sap.sailing.domain.common.RaceIdentifier;
 import com.sap.sailing.domain.common.RegattaAndRaceIdentifier;
 import com.sap.sailing.domain.common.RegattaIdentifier;
 import com.sap.sailing.domain.common.RegattaName;
 import com.sap.sailing.domain.common.ScoreCorrectionProvider;
 import com.sap.sailing.domain.common.ScoringSchemeType;
-import com.sap.sailing.domain.common.SpeedWithBearing;
 import com.sap.sailing.domain.common.TackType;
 import com.sap.sailing.domain.common.TrackedRaceStatusEnum;
 import com.sap.sailing.domain.common.Wind;
@@ -196,6 +194,8 @@ import com.sap.sailing.domain.leaderboard.impl.RegattaLeaderboardImpl;
 import com.sap.sailing.domain.leaderboard.impl.RegattaLeaderboardWithOtherTieBreakingLeaderboardImpl;
 import com.sap.sailing.domain.leaderboard.impl.ThresholdBasedResultDiscardingRuleImpl;
 import com.sap.sailing.domain.leaderboard.meta.LeaderboardGroupMetaLeaderboard;
+import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprint;
+import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprintRegistry;
 import com.sap.sailing.domain.markpassinghash.MarkPassingRaceFingerprint;
 import com.sap.sailing.domain.markpassinghash.MarkPassingRaceFingerprintRegistry;
 import com.sap.sailing.domain.orc.ORCPerformanceCurveRankingMetric;
@@ -231,6 +231,7 @@ import com.sap.sailing.domain.tracking.DynamicSensorFixTrack;
 import com.sap.sailing.domain.tracking.DynamicTrackedRace;
 import com.sap.sailing.domain.tracking.DynamicTrackedRegatta;
 import com.sap.sailing.domain.tracking.GPSFixTrack;
+import com.sap.sailing.domain.tracking.Maneuver;
 import com.sap.sailing.domain.tracking.MarkPassing;
 import com.sap.sailing.domain.tracking.RaceChangeListener;
 import com.sap.sailing.domain.tracking.RaceHandle;
@@ -336,7 +337,9 @@ import com.sap.sse.common.Bearing;
 import com.sap.sse.common.Distance;
 import com.sap.sse.common.Duration;
 import com.sap.sse.common.PairingListCreationException;
+import com.sap.sse.common.Position;
 import com.sap.sse.common.Speed;
+import com.sap.sse.common.SpeedWithBearing;
 import com.sap.sse.common.TimePoint;
 import com.sap.sse.common.TypeBasedServiceFinder;
 import com.sap.sse.common.TypeBasedServiceFinderFactory;
@@ -472,6 +475,8 @@ Replicator {
     private final ConcurrentHashMap<UUID, LeaderboardGroup> leaderboardGroupsByID;
 
     private final ConcurrentHashMap<RaceIdentifier, MarkPassingRaceFingerprint> markPassingRaceFingerprints;
+
+    private final ConcurrentHashMap<RaceIdentifier, ManeuverRaceFingerprint> maneuverRaceFingerprints;
 
     /**
      * See {@link #leaderboardsByNameLock}
@@ -911,6 +916,7 @@ Replicator {
         leaderboardsByName = new ConcurrentHashMap<>();
         leaderboardsByNameLock = new NamedReentrantReadWriteLock("leaderboardsByName for " + this, /* fair */false);
         markPassingRaceFingerprints = new ConcurrentHashMap<>();
+        maneuverRaceFingerprints = new ConcurrentHashMap<>();
         courseListeners = new ConcurrentHashMap<>();
         persistentRegattasForRaceIDs = new ConcurrentHashMap<>();
         simulationService = SimulationServiceFactory.INSTANCE.getService(simulatorExecutor, this);
@@ -942,6 +948,7 @@ Replicator {
         loadStoredDeviceConfigurations();
         loadAllRemoteSailingServersAndSchedulePeriodicEventCacheRefresh();
         loadMarkPassingRaceFingerprints();
+        loadManeuverRaceFingerprints();
         // Stores all events which run through a data migration
         // Remark: must be called after loadLinksFromEventsToLeaderboardGroups(), otherwise would loose the Event -> LeaderboardGroup relation
         for (Pair<Event, Boolean> eventAndRequireStoreFlag : loadedEventsWithRequireStoreFlag) {
@@ -990,6 +997,41 @@ Replicator {
         final Map<Competitor, Map<Waypoint, MarkPassing>> result;
         if (markPassingRaceFingerprints.containsKey(raceIdentifier)) {
             result = domainObjectFactory.loadMarkPassings(raceIdentifier, course);
+        } else {
+            result = null;
+        }
+        return result;
+    }
+    
+    private void loadManeuverRaceFingerprints() {
+        maneuverRaceFingerprints.putAll(domainObjectFactory.loadFingerprintsForManeuverHashes());
+    }
+    
+    @Override
+    public void storeManeuvers(RaceIdentifier raceIdentifier, ManeuverRaceFingerprint fingerprint,
+             Map<Competitor, List<Maneuver>> maneuvers, Course course) {
+        maneuverRaceFingerprints.put(raceIdentifier, fingerprint);
+        mongoObjectFactory.storeManeuvers(raceIdentifier, fingerprint, course,  maneuvers );
+    }
+    
+    @Override
+    public ManeuverRaceFingerprint getManeuverRaceFingerprint(RaceIdentifier raceIdentifier) {
+        logger.fine(()->"Getting Maneuver fingerprint for race "+raceIdentifier);
+        return maneuverRaceFingerprints.get(raceIdentifier);
+    }
+    
+    @Override
+    public void removeStoredManeuvers(RaceIdentifier raceIdentifier) {
+        maneuverRaceFingerprints.remove(raceIdentifier);
+        mongoObjectFactory.removeManeuvers(raceIdentifier);
+    }
+    
+    @Override
+    public Map<Competitor, List<Maneuver>> loadManeuvers(TrackedRace trackedRace, Course course) {
+        final Map<Competitor, List<Maneuver>> result;
+        RaceIdentifier raceIdentifier = trackedRace.getRaceIdentifier();
+        if (maneuverRaceFingerprints.containsKey(raceIdentifier)) {
+            result = domainObjectFactory.loadManeuvers(trackedRace, course);
         } else {
             result = null;
         }
@@ -1062,11 +1104,11 @@ Replicator {
                                 DynamicRaceDefinitionSet raceDefinitionSetToUpdate,
                                 boolean useMarkPassingCalculator, RaceLogAndTrackedRaceResolver raceLogResolver,
                                 Optional<ThreadLocalTransporter> threadLocalTransporter,
-                                TrackingConnectorInfo trackingConnectorInfo, MarkPassingRaceFingerprintRegistry markPassingRaceFingerprintRegistry) {
+                                TrackingConnectorInfo trackingConnectorInfo, MarkPassingRaceFingerprintRegistry markPassingRaceFingerprintRegistry, ManeuverRaceFingerprintRegistry maneuverRaceFingerprintRegistry) {
                             final DynamicTrackedRace trackedRace = super.createTrackedRace(trackedRegatta, raceDefinition, sidelines, windStore,
                                             delayToLiveInMillis, millisecondsOverWhichToAverageWind,
                                             millisecondsOverWhichToAverageSpeed, raceDefinitionSetToUpdate,
-                                            useMarkPassingCalculator, raceLogResolver, threadLocalTransporter, trackingConnectorInfo, markPassingRaceFingerprintRegistry);
+                                            useMarkPassingCalculator, raceLogResolver, threadLocalTransporter, trackingConnectorInfo, markPassingRaceFingerprintRegistry, maneuverRaceFingerprintRegistry);
                             getSecurityService().migrateOwnership(trackedRace);
                             trackedRace.runWhenDoneLoading(
                                     ()->numberOfTrackedRacesRestoredDoneLoading.incrementAndGet());
@@ -2045,11 +2087,11 @@ Replicator {
                 if (regatta == null) {
                     // create tracker and use an existing or create a default regatta
                     tracker = params.createRaceTracker(this, windStore, /* raceLogResolver */ this, /* leaderboardGroupResolver */ this, timeoutInMilliseconds,
-                            raceTrackingHandler, /* markPassingRaceFingerprintRegistry */ this);
+                            raceTrackingHandler, /* markPassingRaceFingerprintRegistry */ this, /*maneuverRaceFingerprintRegistry*/ this);
                 } else {
                     // use the regatta selected by the RaceIdentifier regattaToAddTo
                     tracker = params.createRaceTracker(regatta, this, windStore, /* raceLogResolver */ this, /* leaderboardGroupResolver */ this, timeoutInMilliseconds,
-                            raceTrackingHandler, /* markPassingRaceFingerprintRegistry */ this);
+                            raceTrackingHandler, /* markPassingRaceFingerprintRegistry */ this, /*maneuverRaceFingerprintRegistry*/ this);
                     assert tracker.getRegatta() == regatta;
                 }
                 LockUtil.lockForWrite(raceTrackersByRegattaLock);
@@ -2221,7 +2263,7 @@ Replicator {
                 /* raceDefinitionSetToUpdate */null, useMarkPassingCalculator, /* raceLogResolver */ this,
                 Optional.of(this
                         .getThreadLocalTransporterForCurrentlyFillingFromInitialLoadOrApplyingOperationReceivedFromMaster()),
-                trackingConnectorInfo, /* markPassingRaceFingerprintRegistry */ this);
+                trackingConnectorInfo, /* markPassingRaceFingerprintRegistry */ this, /* maneuverRaceFingerprintRegistry */ this);
     }
 
     private void ensureRegattaHasRaceAdditionListener(DynamicTrackedRegatta trackedRegatta) {
@@ -2680,20 +2722,34 @@ Replicator {
      * {@link RaceColumn#getTrackedRace(Fleet) tracked race assigned} and whose
      * {@link RaceColumn#getRaceIdentifier(Fleet) race identifier} equals that of <code>trackedRace</code>.
      */
-    private void linkRaceToConfiguredLeaderboardColumns(TrackedRace trackedRace) {
-        RegattaAndRaceIdentifier trackedRaceIdentifier = trackedRace.getRaceIdentifier();
+    private List<Triple<Leaderboard, RaceColumn, Fleet>> linkRaceToConfiguredLeaderboardColumns(TrackedRace trackedRace) {
+        final RegattaAndRaceIdentifier trackedRaceIdentifier = trackedRace.getRaceIdentifier();
+        final List<Triple<Leaderboard, RaceColumn, Fleet>> trackedRaceLink = getColumnsWithRaceLogForTrackedRace(trackedRaceIdentifier);
+        for (final Triple<Leaderboard, RaceColumn, Fleet> leaderboardRaceColumnAndFleet : trackedRaceLink) {
+            if (leaderboardRaceColumnAndFleet.getB().getTrackedRace(leaderboardRaceColumnAndFleet.getC()) == null) {
+                // attach the tracked race only if not yet attached
+                leaderboardRaceColumnAndFleet.getB().setTrackedRace(leaderboardRaceColumnAndFleet.getC(), trackedRace);
+                replicate(new ConnectTrackedRaceToLeaderboardColumn(leaderboardRaceColumnAndFleet.getA().getName(), leaderboardRaceColumnAndFleet.getB().getName(),
+                        leaderboardRaceColumnAndFleet.getC().getName(), trackedRaceIdentifier));
+            }
+        }
+        return trackedRaceLink;
+    }
+
+    @Override
+    public List<Triple<Leaderboard, RaceColumn, Fleet>> getColumnsWithRaceLogForTrackedRace(
+            final RegattaAndRaceIdentifier trackedRaceIdentifier) {
+        final List<Triple<Leaderboard, RaceColumn, Fleet>> trackedRaceLink = new ArrayList<>();
         for (Leaderboard leaderboard : getLeaderboards().values()) {
             for (RaceColumn column : leaderboard.getRaceColumns()) {
                 for (Fleet fleet : column.getFleets()) {
-                    if (trackedRaceIdentifier.equals(column.getRaceIdentifier(fleet))
-                            && column.getTrackedRace(fleet) == null) {
-                        column.setTrackedRace(fleet, trackedRace);
-                        replicate(new ConnectTrackedRaceToLeaderboardColumn(leaderboard.getName(), column.getName(),
-                                fleet.getName(), trackedRaceIdentifier));
+                    if (trackedRaceIdentifier.equals(column.getRaceIdentifier(fleet))) {
+                        trackedRaceLink.add(new Triple<>(leaderboard, column, fleet));
                     }
                 }
             }
         }
+        return trackedRaceLink;
     }
 
     @Override
@@ -3060,6 +3116,7 @@ Replicator {
         TrackedRace trackedRace = getExistingTrackedRace(regatta, race);
         if (trackedRace != null) {
             removeStoredMarkPassings(trackedRace.getRaceIdentifier());
+            removeStoredManeuvers(trackedRace.getRaceIdentifier());
             TrackedRegatta trackedRegatta = getTrackedRegatta(regatta);
             final boolean isTrackedRacesBecameEmpty;
             if (trackedRegatta != null) {
@@ -3709,6 +3766,7 @@ Replicator {
             try {
                 for (TrackedRace trackedRace : trackedRegatta.getTrackedRaces()) {
                     ((TrackedRaceImpl) trackedRace).setRaceLogResolver(this);
+                    ((TrackedRaceImpl) trackedRace).setManeuverRaceFingerprintRegistry(this);
                     ((TrackedRaceImpl) trackedRace).registerRegattaListener();
                     trackedRace.initializeAfterDeserialization();
                 }
