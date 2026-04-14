@@ -92,6 +92,14 @@ public abstract class RegattaLogDeviceMappings<ItemT extends WithID> {
      */
     private final Map<DeviceIdentifier, Pair<TimeRange, List<DeviceMappingWithRegattaLogEvent<ItemT>>>> cachedMappings = new HashMap<>();
     
+    /**
+     * When the {@link #cachedMappings} are to be updated, the corresponding update job is stored in this field. It must be executed
+     * under the {@link #mappingsLock}'s write lock. However, when other updates to {@link #mappings} or {@link #mappingsByDevice}
+     * are performed (usually by the {@link #updateMappingsInternal()} method), this field will be cleared because the cache update
+     * will most likely be obsolete.
+     */
+    private Runnable cacheUpdateJob;
+    
     private int cacheHits;
     private int cacheMisses;
     
@@ -182,7 +190,13 @@ public abstract class RegattaLogDeviceMappings<ItemT extends WithID> {
     
     /**
      * Calls the given callback for every DeviceMapping that is known for the given {@link DeviceIdentifier} that
-     * includes the given {@link TimePoint}.
+     * includes the given {@link TimePoint}.<p>
+     * 
+     * Searches the {@link #cachedMappings} for a match for the {@code device}; if found, checks whether {@code timePoint}
+     * is within the time range for which device mappings were cached, and if so, uses those device mappings. Otherwise,
+     * the device mappings are calculated and a cache update is carried out after releasing the read-lock of
+     * {@link #mappingsLock} and after obtaining its write-lock. Should an update have been squeezed in between releasing
+     * the read-lock and obtaining the write-lock, the cache update is not carried out.
      * 
      * @param device
      *            the device to get the mappings for
@@ -204,15 +218,14 @@ public abstract class RegattaLogDeviceMappings<ItemT extends WithID> {
                 cachedTimeRangeForDevice.getB().forEach(mapping->callback.accept(mapping));
             } else {
                 final List<DeviceMappingWithRegattaLogEvent<ItemT>> mappingsForDevice = mappingsByDevice.get(device);
-                MultiTimeRange timeRangeForCache = MultiTimeRange.of();
+                TimeRange timeRangeForCache = null;
                 final List<DeviceMappingWithRegattaLogEvent<ItemT>> deviceMappingsForCache = new LinkedList<>();
-                assert timeRangeForCache.isEmpty();
                 cacheMisses++;
                 if (mappingsForDevice != null) {
                     for (final DeviceMappingWithRegattaLogEvent<ItemT> mapping : mappingsForDevice) {
                         if (mapping.getTimeRange().includes(timePoint)) {
-                            if (timeRangeForCache.isEmpty()) {
-                                timeRangeForCache.union(mapping.getTimeRange());
+                            if (timeRangeForCache == null) {
+                                timeRangeForCache = mapping.getTimeRange();
                             } else {
                                 timeRangeForCache = timeRangeForCache.intersection(mapping.getTimeRange());
                             }
@@ -221,12 +234,20 @@ public abstract class RegattaLogDeviceMappings<ItemT extends WithID> {
                         }
                     }
                 }
-                final MultiTimeRange finalTimeRangeForache = timeRangeForCache;
+                final TimeRange finalTimeRangeForCache = timeRangeForCache;
                 logger.fine(() -> "Device mapping cache miss for mapper " + this + " for device " + device
                         + " and time point " + timePoint + ", determined cachable range "
-                        + finalTimeRangeForache + "; " + cacheHits + " hits, " + cacheMisses + " misses");
-                
-                // TODO bug6236 Now issue the caching of the entry (device, (timeRangeForCache, deviceMappingsForCache)) under the mappingsLock's write lock!
+                        + finalTimeRangeForCache + "; " + cacheHits + " hits, " + cacheMisses + " misses");
+                cacheUpdateJob = ()->cachedMappings.put(device, new Pair<>(finalTimeRangeForCache, deviceMappingsForCache));
+            }
+        });
+        LockUtil.executeWithWriteLock(mappingsLock, ()->{
+            if (cacheUpdateJob != null) {
+                logger.fine(()-> "Device mapping cache miss for mapper " + this + " performs cache update.");
+                cacheUpdateJob.run();
+            } else {
+                logger.fine(() -> "Device mapping cache miss for mapper " + this
+                        + " does not update the cache because the mappings were updated in between");
             }
         });
     }
@@ -299,6 +320,7 @@ public abstract class RegattaLogDeviceMappings<ItemT extends WithID> {
             cachedMappings.clear();
             mappings.putAll(newMappings);
             mappingsByDevice.clear();
+            cacheUpdateJob = null;
             for (ItemT item : newMappings.keySet()) {
                 for (DeviceMappingWithRegattaLogEvent<ItemT> mapping : newMappings.get(item)) {
                     List<DeviceMappingWithRegattaLogEvent<ItemT>> list = mappingsByDevice.get(mapping.getDevice());
