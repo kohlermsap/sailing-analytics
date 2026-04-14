@@ -575,6 +575,20 @@
          install-size="0"
          version="1.4.200.v20200828-1034"
          unpack="false"/>
+         
+   <plugin
+         id="org.eclipse.equinox.http.service.api"
+         download-size="0"
+         install-size="0"
+         version="1.2.2.v20231218-2126"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.equinox.http.service.api.source"
+         download-size="0"
+         install-size="0"
+         version="1.2.2.v20231218-2126"
+         unpack="false"/>
 
    <plugin
          id="org.eclipse.equinox.launcher"
