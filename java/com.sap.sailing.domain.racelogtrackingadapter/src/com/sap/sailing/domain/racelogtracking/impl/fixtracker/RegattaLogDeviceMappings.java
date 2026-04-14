@@ -238,18 +238,22 @@ public abstract class RegattaLogDeviceMappings<ItemT extends WithID> {
                 logger.fine(() -> "Device mapping cache miss for mapper " + this + " for device " + device
                         + " and time point " + timePoint + ", determined cachable range "
                         + finalTimeRangeForCache + "; " + cacheHits + " hits, " + cacheMisses + " misses");
-                cacheUpdateJob = ()->cachedMappings.put(device, new Pair<>(finalTimeRangeForCache, deviceMappingsForCache));
+                if (timeRangeForCache != null) {
+                    cacheUpdateJob = ()->cachedMappings.put(device, new Pair<>(finalTimeRangeForCache, deviceMappingsForCache));
+                }
             }
         });
-        LockUtil.executeWithWriteLock(mappingsLock, ()->{
-            if (cacheUpdateJob != null) {
-                logger.fine(()-> "Device mapping cache miss for mapper " + this + " performs cache update.");
-                cacheUpdateJob.run();
-            } else {
-                logger.fine(() -> "Device mapping cache miss for mapper " + this
-                        + " does not update the cache because the mappings were updated in between");
-            }
-        });
+        if (cacheUpdateJob != null) {
+            LockUtil.executeWithWriteLock(mappingsLock, ()->{
+                if (cacheUpdateJob != null) {
+                    logger.fine(()-> "Device mapping cache miss for mapper " + this + " performs cache update.");
+                    cacheUpdateJob.run();
+                } else {
+                    logger.fine(() -> "Device mapping cache miss for mapper " + this
+                            + " does not update the cache because the mappings were updated in between");
+                }
+            });
+        }
     }
     
     public void forEachItemAndCoveredTimeRanges(final BiConsumer<ItemT, Map<RegattaLogDeviceMappingEvent<ItemT>, MultiTimeRange>> consumer) {
