@@ -57,18 +57,20 @@ class App < Precious::App
     redirect uri.to_s()
   end
 
-  get "/cancel" do
-    if session[:logged_in] && session[:prev]
-      newPath = session[:prev].sub(/gollum\/(edit|create|rename)\//, "")
-      redirect newPath
+  get "/callback" do
+    if session[:logged_in]
+      # Ensures cancel works in editor after login.
+      if session[:prev]
+        LOGGER.debug(session[:prev])
+        prev = session[:prev].dup
+        stripped_prev = prev.sub("/gollum/edit", "")
+        redirect stripped_prev
+      end
     end
-  end
-
-  get '/callback' do
     halt 401, params[:error] if params[:error]
-    halt 400, 'Missing code' unless params[:code]
-    halt 403, 'Old state' unless session[:oauth_state][:expiry] > Time.now
-    halt 403, 'Invalid OAuth state' unless session[:oauth_state][:state] ==  params[:state]
+    halt 400, "Missing code" unless params[:code]
+    halt 403, "Old state" unless session[:oauth_state][:expiry] > Time.now
+    halt 403, "Invalid OAuth state" unless session[:oauth_state][:state] == params[:state]
 
     session.delete(:oauth_state)
 
@@ -91,7 +93,7 @@ class App < Precious::App
     end
 
     if session[:prev]
-      redirect session[:prev]
+      redirect session[:prev].sub(/\/gollum\/(rename|delete)/, "")
     end
 
     redirect "/"
