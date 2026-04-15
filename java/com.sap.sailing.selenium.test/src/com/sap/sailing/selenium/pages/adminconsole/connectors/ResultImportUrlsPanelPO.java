@@ -46,6 +46,7 @@ public class ResultImportUrlsPanelPO extends PageArea {
         dialogPO.setUrl(url);
         dialogPO.clickOkButtonOrThrow();
         waitForElementNotExistsBySeleniumId(driver, "ResultImportUrlAddDialog");
+        waitForAjaxRequests();
     }
 
     public void removeUrl(String url) {
