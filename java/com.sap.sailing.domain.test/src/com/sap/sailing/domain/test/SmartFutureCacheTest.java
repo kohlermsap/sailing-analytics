@@ -59,10 +59,12 @@ public class SmartFutureCacheTest {
                     @Override
                     public String computeCacheUpdate(String key, EmptyUpdateInterval updateInterval) {
                         synchronized (SmartFutureCacheTest.this) { // make sure we see the latest change to throwException
-                            if (throwException[0]) {
-                                throw new NullPointerException("Humba");
-                            } else {
-                                return "Humba";
+                            synchronized (SmartFutureCacheTest.this) { // force sync of throwException
+                                if (throwException[0]) {
+                                    throw new NullPointerException("Humba");
+                                } else {
+                                    return "Humba";
+                                }
                             }
                         }
                     }
