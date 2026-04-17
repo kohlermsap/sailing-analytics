@@ -183,7 +183,7 @@ public class IgtimiDevicesPanel extends FlowPanel implements FilterablePanelProv
         devicesControlsPanel.add(busyIndicator);
         buttonPanel.addUnsecuredAction(stringMessages.refresh(), () -> refreshDevices());
         // setup controls
-        final Button removeDeviceButton = buttonPanel.addRemoveAction(stringMessages.remove(), refreshableDevicesSelectionModel,
+        buttonPanel.addRemoveAction(stringMessages.remove(), refreshableDevicesSelectionModel,
                 /* with confirmation */ true, () -> {
             if (refreshableDevicesSelectionModel.getSelectedSet().size() > 0) {
                 if (Window.confirm(stringMessages.doYouReallyWantToRemoveTheSelectedIgtimiDevices())) {
@@ -193,7 +193,6 @@ public class IgtimiDevicesPanel extends FlowPanel implements FilterablePanelProv
                 }
             }
         });
-        removeDeviceButton.setEnabled(false);
         devicesCaptionPanelContents.add(devicesControlsPanel);
         devicesCaptionPanelContents.add(devicesTable);
         add(devicesCaptionPanel);
@@ -230,7 +229,7 @@ public class IgtimiDevicesPanel extends FlowPanel implements FilterablePanelProv
         dawControlsPanel.add(dawButtonPanel);
         dawButtonPanel.addUnsecuredAction(stringMessages.refresh(), () -> refreshDataAccessWindows());
         // setup controls
-        final Button removeDAWButton = dawButtonPanel.addRemoveAction(stringMessages.remove(), refreshableDataAccessWindowsSelectionModel,
+        dawButtonPanel.addRemoveAction(stringMessages.remove(), refreshableDataAccessWindowsSelectionModel,
                 /* with confirmation */ true, () -> {
             if (refreshableDataAccessWindowsSelectionModel.getSelectedSet().size() > 0) {
                 if (Window.confirm(stringMessages.doYouReallyWantToRemoveTheSelectedIgtimiDataAccessWindows())) {
@@ -240,20 +239,14 @@ public class IgtimiDevicesPanel extends FlowPanel implements FilterablePanelProv
                 }
             }
         });
-        removeDAWButton.setEnabled(false);
         refreshableDevicesSelectionModel.addSelectionChangeHandler(
                 e -> {
-                    removeDeviceButton.setEnabled(refreshableDevicesSelectionModel.getSelectedSet().size() > 0);
                     final boolean exactlyOneDeviceSelected = refreshableDevicesSelectionModel.getSelectedSet().size() == 1;
                     dawTable.setVisible(exactlyOneDeviceSelected);
                     dawControlsPanel.setVisible(exactlyOneDeviceSelected);
                     if (exactlyOneDeviceSelected) {
                         filterDataAccessWindowPanel.search(refreshableDevicesSelectionModel.getSelectedSet().iterator().next().getSerialNumber());
                     }
-                });
-        refreshableDataAccessWindowsSelectionModel.addSelectionChangeHandler(
-                e -> {
-                    removeDAWButton.setEnabled(refreshableDataAccessWindowsSelectionModel.getSelectedSet().size() > 0);
                 });
         dataAccessWindowsCaptionPanelContents.add(dawControlsPanel);
         dataAccessWindowsCaptionPanelContents.add(dawTable);

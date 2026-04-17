@@ -16,6 +16,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.SetSelectionModel;
 import com.sap.sse.common.Named;
 import com.sap.sse.security.shared.HasPermissions;
+import com.sap.sse.security.shared.HasPermissions.DefaultActions;
+import com.sap.sse.security.shared.dto.SecuredDTO;
 import com.sap.sse.security.ui.client.UserService;
 import com.sap.sse.security.ui.client.i18n.StringMessages;
 
@@ -30,6 +32,7 @@ public class AccessControlledButtonPanel extends Composite {
     private final HorizontalPanel panel = new HorizontalPanel();
     private final Map<Button, Supplier<Boolean>> buttonToPermissions = new HashMap<>();
 
+    private final UserService userService;
     private final Supplier<Boolean> createPermissionCheck, createPermissionCheckWithoutServerCreateObjectCheck,
             removePermissionCheck, updatePermissionCheck;
     private final BiConsumer<Button, Supplier<Boolean>> visibilityUpdater = (btn, check) -> btn.setVisible(check.get());
@@ -44,6 +47,7 @@ public class AccessControlledButtonPanel extends Composite {
      *            the {@link HasPermissions} representing the type of objects to be secured by this panel
      */
     public AccessControlledButtonPanel(final UserService userService, final HasPermissions type) {
+        this.userService = userService;
         this.createPermissionCheck = () -> userService.hasCurrentUserPermissionToCreateObjectOfType(type);
         this.createPermissionCheckWithoutServerCreateObjectCheck = () -> userService
                 .hasCurrentUserPermissionToCreateObjectOfTypeWithoutServerCreateObjectPermissionCheck(type);
@@ -136,7 +140,7 @@ public class AccessControlledButtonPanel extends Composite {
      *
      * @return the created {@link SelectedElementsCountingButton} instance with optional confirmation
      */
-    public <T extends Named> Button addRemoveAction(final String text, final SetSelectionModel<T> selectionModel,
+    public <T extends Named & SecuredDTO> Button addRemoveAction(final String text, final SetSelectionModel<T> selectionModel,
             boolean withConfirmation, final Command callback) {
         if (selectionModel == null) {
             throw new IllegalArgumentException("Selection model for a remove action must not be null");
@@ -146,6 +150,11 @@ public class AccessControlledButtonPanel extends Composite {
                 ? new SelectedElementsCountingButton<T>(text, selectionModel, StringMessages.INSTANCE::doYouReallyWantToRemoveSelectedElements,
                         handler)
                 : new SelectedElementsCountingButton<T>(text, selectionModel, handler);
+        selectionModel.addSelectionChangeHandler(event -> {
+            final boolean canActOnAllSelected = selectionModel.getSelectedSet().stream()
+                    .allMatch(item -> userService.hasPermission(item, DefaultActions.DELETE));
+            button.setEnabled(!selectionModel.getSelectedSet().isEmpty() && canActOnAllSelected);
+        });
         return resolveButtonVisibility(removePermissionCheck, button);
     }
 
@@ -180,13 +189,18 @@ public class AccessControlledButtonPanel extends Composite {
      *
      * @return the created {@link SelectedElementsCountingButton} instance with optional confirmation
      */
-    public <T extends Named> Button addUpdateAction(final String text, final SetSelectionModel<T> selectionModel,
+    public <T extends Named & SecuredDTO> Button addUpdateAction(final String text, final SetSelectionModel<T> selectionModel,
             final Command callback) {
         if (selectionModel == null) {
             throw new IllegalArgumentException("Selection model for an update action must not be null");
         }
         final ClickHandler handler = wrap(updatePermissionCheck, callback);
         final Button button = new SelectedElementsCountingButton<T>(text, selectionModel, handler);
+        selectionModel.addSelectionChangeHandler(event -> {
+            final boolean canActOnAllSelected = selectionModel.getSelectedSet().stream()
+                    .allMatch(item -> userService.hasPermission(item, DefaultActions.UPDATE));
+            button.setEnabled(!selectionModel.getSelectedSet().isEmpty() && canActOnAllSelected);
+        });
         return resolveButtonVisibility(updatePermissionCheck, button);
     }
 
