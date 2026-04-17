@@ -2107,7 +2107,7 @@ public class MongoObjectFactoryImpl implements MongoObjectFactory {
         final Document fingerprintDoc = Document.parse(fingerprintjson.toString());
         result.put(FieldNames.MANEUVER_FINGERPRINT.name(), fingerprintDoc);
         storeRaceIdentifier(result, raceIdentifier);
-        final List<Document> maneuverDoc = storeManeuvers( maneuvers , raceIdentifier, course);
+        final List<Document> maneuverDoc = storeManeuvers(maneuvers , raceIdentifier, course);
         result.put(FieldNames.MANEUVERS.name(), maneuverDoc);
         maneuverCollection.replaceOne(query, result, new ReplaceOptions().upsert(true));
     }
