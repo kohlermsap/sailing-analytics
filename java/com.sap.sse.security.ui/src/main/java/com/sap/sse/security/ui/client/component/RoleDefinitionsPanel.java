@@ -110,12 +110,10 @@ public class RoleDefinitionsPanel extends VerticalPanel {
                 this::createRoleDefinition);
         createButton.ensureDebugId("CreateRoleButton");
         final Button removeButton = buttonPanel.addRemoveAction(stringMessages.remove(), roleSelectionModel, true,
-                () -> {final String roles = String.join(", ", Util.map(getSelectedRoleDefinitions(), RoleDefinitionDTO::getName));                                                             
-                       if (Window.confirm(stringMessages.doYouReallyWantToRemoveRole(roles))) {      
-                       final Set<RoleDefinitionDTO> selectedRoles = new HashSet<>(getSelectedRoleDefinitions());                                                                           
-                                  filterablePanelRoleDefinitions.removeAll(selectedRoles);                  
-                            }                                                                             
-                         });
+                () -> {
+            final Set<RoleDefinitionDTO> selectedRoles = new HashSet<>(getSelectedRoleDefinitions());
+            filterablePanelRoleDefinitions.removeAll(selectedRoles);
+        });
         removeButton.ensureDebugId("RemoveRoleButton");
         add(buttonPanel);
         add(filterablePanelRoleDefinitions);

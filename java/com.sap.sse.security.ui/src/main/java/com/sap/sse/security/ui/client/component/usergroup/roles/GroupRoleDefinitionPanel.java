@@ -26,6 +26,7 @@ import com.sap.sse.gwt.client.celltable.TableWrapper;
 import com.sap.sse.gwt.client.panels.LabeledAbstractFilterablePanel;
 import com.sap.sse.security.shared.dto.StrippedRoleDefinitionDTO;
 import com.sap.sse.security.shared.dto.UserGroupDTO;
+import com.sap.sse.security.shared.dto.SecuredDTO;
 import com.sap.sse.security.ui.client.UserManagementWriteServiceAsync;
 import com.sap.sse.security.ui.client.UserService;
 import com.sap.sse.security.ui.client.component.AccessControlledButtonPanel;
@@ -122,9 +123,10 @@ public class GroupRoleDefinitionPanel extends Composite
             }
         });
         addButton.ensureDebugId("AddGroupUserButton");
-        final Button removeButton = buttonPanel.addUpdateAction(stringMessages.removeRole(), () -> {
-            Pair<StrippedRoleDefinitionDTO, Boolean> selectedRole = roleDefinitionTableWrapper.getSelectionModel()
-                    .getSelectedObject();
+        buttonPanel.addRemoveAction(stringMessages.removeRole(),
+                roleDefinitionTableWrapper.getSelectionModel(),
+                () -> (SecuredDTO) TableWrapper.getSingleSelectedObjectOrNull(userGroupSelectionModel), () -> {
+            final Pair<StrippedRoleDefinitionDTO, Boolean> selectedRole = TableWrapper.getSingleSelectedObjectOrNull(roleDefinitionTableWrapper.getSelectionModel());
             if (selectedRole == null) {
                 Window.alert(stringMessages.youHaveToSelectAUserGroup());
             } else if (Window.confirm(stringMessages.doYouReallyWantToRemoveRole(selectedRole.getA().getName()))) {
@@ -148,9 +150,6 @@ public class GroupRoleDefinitionPanel extends Composite
                 }
             }
         });
-        roleDefinitionTableWrapper.getSelectionModel().addSelectionChangeHandler(event -> removeButton
-                .setEnabled(!roleDefinitionTableWrapper.getSelectionModel().getSelectedSet().isEmpty()));
-        removeButton.setEnabled(false);
         buttonPanel.insertWidgetAtPosition(suggestRole, 0);
         return buttonPanel;
     }

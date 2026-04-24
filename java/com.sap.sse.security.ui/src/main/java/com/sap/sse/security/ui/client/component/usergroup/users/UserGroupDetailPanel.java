@@ -25,6 +25,7 @@ import com.sap.sse.gwt.client.celltable.CellTableWithCheckboxResources;
 import com.sap.sse.gwt.client.celltable.TableWrapper;
 import com.sap.sse.security.shared.dto.StrippedUserDTO;
 import com.sap.sse.security.shared.dto.UserGroupDTO;
+import com.sap.sse.security.shared.dto.SecuredDTO;
 import com.sap.sse.security.ui.client.UserManagementWriteServiceAsync;
 import com.sap.sse.security.ui.client.UserService;
 import com.sap.sse.security.ui.client.component.AccessControlledButtonPanel;
@@ -97,7 +98,9 @@ public class UserGroupDetailPanel extends Composite
         });
         addButton.ensureDebugId("AddUserButton");
         // add remove button
-        final Button removeButton = buttonPanel.addUpdateAction(stringMessages.actionRemove(), () -> {
+        buttonPanel.addRemoveAction(stringMessages.actionRemove(),
+                tenantUsersTable.getSelectionModel(),
+                () -> (SecuredDTO) TableWrapper.getSingleSelectedObjectOrNull(userGroupSelectionModel), () -> {
             final Set<UserGroupDTO> selectedUserGroups = userGroupSelectionModel.getSelectedSet();
             if (selectedUserGroups != null && selectedUserGroups.size() == 1) {
                 final UserGroupDTO selectedUserGroup = selectedUserGroups.iterator().next();
@@ -134,9 +137,6 @@ public class UserGroupDetailPanel extends Composite
                 }
             }
         });
-        tenantUsersTable.getSelectionModel().addSelectionChangeHandler(
-                event -> removeButton.setEnabled(!tenantUsersTable.getSelectionModel().getSelectedSet().isEmpty()));
-        removeButton.setEnabled(false);
         return buttonPanel;
     }
 

@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.view.client.MultiSelectionModel;
 import com.google.gwt.view.client.SetSelectionModel;
 import com.sap.sse.common.Named;
 import com.sap.sse.security.shared.HasPermissions;
@@ -108,18 +109,36 @@ public class AccessControlledButtonPanel extends Composite {
     }
 
     /**
-     * Adds a secured action button, which is only visible if the current user has any
-     * {@link UserService#hasCurrentUserPermissionToDeleteAnyObjectOfType(HasPermissions) delete permission} for the
-     * {@link HasPermissions type} provided in this {@link AccessControlledButtonPanel}'s constructor.
+     * Like {@link #addRemoveAction(String, SetSelectionModel, boolean, Command)} but for rows that are not
+     * {@link SecuredDTO} instances themselves — use this when the permission to remove entries is governed by a parent
+     * secured object (e.g. UPDATE permission on the owning {@link UserGroup}) rather than per-row permissions. The
+     * button is {@link Button#setEnabled(boolean) enabled} when the selection is non-empty and the current user has
+     * {@link DefaultActions#UPDATE UPDATE} permission on the object supplied by {@code parentSecuredObject}; it shows
+     * the selected count in its label.
      *
      * @param text
      *            the {@link String text} to show on the button
+     * @param selectionModel
+     *            the {@link MultiSelectionModel} of the sub-table; drives the count shown in the button label and the
+     *            enabled state
+     * @param parentSecuredObject
+     *            supplies the parent {@link SecuredDTO} whose UPDATE permission gates the button; may return
+     *            {@code null} when nothing is selected, which disables the button
      * @param callback
      *            the {@link Command callback} to execute on button click, if permission is granted
      * @return the created {@link Button} instance
      */
-    public Button addRemoveAction(final String text, final Command callback) {
-        return addAction(text, removePermissionCheck, callback);
+    public <T> Button addRemoveAction(final String text, final MultiSelectionModel<T> selectionModel,
+            final Supplier<SecuredDTO> parentSecuredObject, final Command callback) {
+        final Button button = resolveButtonVisibility(removePermissionCheck,
+                new Button(text, wrap(removePermissionCheck, callback)));
+        selectionModel.addSelectionChangeHandler(event -> {
+            final int count = selectionModel.getSelectedSet().size();
+            button.setText(count > 0 ? text + " (" + count + ")" : text);
+            button.setEnabled(count > 0 && userService.hasPermission(parentSecuredObject.get(), DefaultActions.UPDATE));
+        });
+        button.setEnabled(false);
+        return button;
     }
 
     /**
