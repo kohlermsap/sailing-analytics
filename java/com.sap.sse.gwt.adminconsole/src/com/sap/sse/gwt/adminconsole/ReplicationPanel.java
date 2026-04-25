@@ -208,6 +208,12 @@ public class ReplicationPanel extends FlowPanel {
         }
     }
 
+    /**
+     * Creates and configures the replicas {@link FlushableCellTable}, including sortable columns for hostname,
+     * identifier, registration time, throughput statistics, and an actions column for dropping connections.
+     * The table is backed by {@link #replicasDataProvider} and uses a {@link SelectionCheckboxColumn} for
+     * multi-row selection.
+     */
     private FlushableCellTable<ReplicaDTO> createReplicasTable(final AdminConsoleTableResources tableResources, final UserService userService) {
         final FlushableCellTable<ReplicaDTO> table = new FlushableCellTable<>(/* pageSize */ 50, tableResources);
         replicasDataProvider.addDataDisplay(table);
@@ -272,6 +278,10 @@ public class ReplicationPanel extends FlowPanel {
         table.setSelectionModel(checkboxColumn.getSelectionModel(), checkboxColumn.getSelectionManager());
         return table;
     }
+    /**
+     * Populates {@link #replicaDetailPanel} with the details of the given replica and makes it visible.
+     * Called when exactly one row is selected in {@link #replicasTable}.
+     */
     private void refreshReplicaDetail(final ReplicaDTO replica) {
         replicaDetailPanel.setCaptionText(replica.getHostname() + " (" + replica.getIdentifier() + ")");
         int row = 0;
@@ -299,12 +309,19 @@ public class ReplicationPanel extends FlowPanel {
         replicaDetailGrid.setWidget(row, 1, new Label(replica.getNumberOfBytesSent() + "B (" + (replica.getNumberOfBytesSent() / 1024 / 1024) + "MB)"));
         replicaDetailPanel.setVisible(true);
     }
+    /**
+     * Drops the replication connection for every replica currently selected in {@link #replicasTable}.
+     */
     private void dropSelectedReplicas() {
         final Set<ReplicaDTO> selected = new HashSet<>(replicaSelectionModel.getSelectedSet());
         for (final ReplicaDTO replica : selected) {
             dropSingleReplica(replica);
         }
     }
+    /**
+     * Calls {@link RemoteReplicationServiceAsync#stopSingleReplicaInstance} for the given replica and
+     * refreshes the list on both success and failure.
+     */
     private void dropSingleReplica(final ReplicaDTO replica) {
         replicationServiceAsync.stopSingleReplicaInstance(replica.getIdentifier(), new AsyncCallback<Void>() {
             @Override

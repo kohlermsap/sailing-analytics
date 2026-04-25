@@ -4,7 +4,7 @@ import com.sap.sse.gwt.client.IconResources;
 import com.sap.sse.gwt.client.celltable.ImagesBarCell;
 
 /**
- * Action cell for replica table rows with a "Details" and a "Drop connection" action.
+ * Action cell for replica table rows providing a "Drop connection" action.
  */
 public class ReplicaImagesBarCell extends ImagesBarCell {
 
