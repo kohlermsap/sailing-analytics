@@ -176,7 +176,11 @@ public class EventListComposite extends Composite {
         final Button create = buttonPanel.addCreateAction(stringMessages.actionAddEvent(), this::openCreateEventDialog);
         create.ensureDebugId("CreateEventButton");
         final Button remove = buttonPanel.addRemoveAction(stringMessages.remove(), refreshableEventSelectionModel, true,
-                () -> removeEvents(refreshableEventSelectionModel.getSelectedSet()));
+                () -> {
+            final List<EventDTO> selected = new ArrayList<>(refreshableEventSelectionModel.getSelectedSet());
+            refreshableEventSelectionModel.clear();
+            removeEvents(selected);
+        });
         remove.ensureDebugId("RemoveEventsButton");
         buttonPanel.addUnsecuredWidget(new HelpButton(HelpButtonResources.INSTANCE,
                 stringMessages.videoGuide(), "https://sapsailing-documentation.s3-eu-west-1.amazonaws.com/adminconsole/CreatingYourFirstEvent.mp4"));
@@ -465,6 +469,7 @@ public class EventListComposite extends Composite {
 
             @Override
             public void onSuccess(Void result) {
+                refreshableEventSelectionModel.clear();
                 presenter.getEventsRefresher().remove(event);
                 presenter.getEventsRefresher().callAllFill();
             }

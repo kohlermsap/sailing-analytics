@@ -3,6 +3,7 @@ package com.sap.sse.security.ui.client.component.usergroup.users;
 import static com.sap.sse.security.shared.HasPermissions.DefaultActions.UPDATE;
 import static com.sap.sse.security.shared.impl.SecuredSecurityTypes.USER_GROUP;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -104,11 +105,12 @@ public class UserGroupDetailPanel extends Composite
             final Set<UserGroupDTO> selectedUserGroups = userGroupSelectionModel.getSelectedSet();
             if (selectedUserGroups != null && selectedUserGroups.size() == 1) {
                 final UserGroupDTO selectedUserGroup = selectedUserGroups.iterator().next();
-                Set<StrippedUserDTO> users = tenantUsersTable.getSelectionModel().getSelectedSet();
+                final List<StrippedUserDTO> users = new ArrayList<>(tenantUsersTable.getSelectionModel().getSelectedSet());
                 if (selectedUserGroups == null || selectedUserGroups.isEmpty()) {
                     Window.alert(stringMessages.youHaveToSelectAUserGroup());
                     return;
                 }
+                tenantUsersTable.getSelectionModel().clear();
                 for (StrippedUserDTO user : users) {
                     final String username = user.getName();
                     userManagementService.removeUserFromUserGroup(selectedUserGroup.getId().toString(), username,

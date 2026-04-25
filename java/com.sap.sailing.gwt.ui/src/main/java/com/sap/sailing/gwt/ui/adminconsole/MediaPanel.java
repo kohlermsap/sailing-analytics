@@ -196,7 +196,9 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
                 /* with confirmation */ true, new Command() {
             @Override
             public void execute() {
-                for (final MediaTrackWithSecurityDTO track : refreshableSelectionModel.getSelectedSet()) {
+                final List<MediaTrackWithSecurityDTO> selected = new ArrayList<>(refreshableSelectionModel.getSelectedSet());
+                refreshableSelectionModel.clear();
+                for (final MediaTrackWithSecurityDTO track : selected) {
                     removeMediaTrack(track);
                 }
             }
@@ -511,6 +513,7 @@ public class MediaPanel extends FlowPanel implements FilterablePanelProvider<Med
                 new DefaultActionsImagesBarCell(stringMessages), userService);
         actionsColumn.addAction(ACTION_DELETE, DELETE, mediaTrack -> {
             if (Window.confirm(stringMessages.reallyRemoveMediaTrack(mediaTrack.title))) {
+                refreshableSelectionModel.clear();
                 removeMediaTrack(mediaTrack);
             }
         });

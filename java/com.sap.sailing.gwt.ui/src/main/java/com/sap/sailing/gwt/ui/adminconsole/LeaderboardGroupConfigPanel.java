@@ -552,6 +552,7 @@ public class LeaderboardGroupConfigPanel extends AbstractRegattaPanel
                 this::openEditLeaderboardGroupDialog);
         actionsColumn.addAction(LeaderboardGroupConfigImagesBarCell.ACTION_DELETE, DELETE, group -> {
             if (Window.confirm(stringMessages.doYouReallyWantToRemoveLeaderboardGroup(group.getName()))) {
+                refreshableGroupsSelectionModel.clear();
                 removeLeaderboardGroup(group);
             }
         });
@@ -610,7 +611,11 @@ public class LeaderboardGroupConfigPanel extends AbstractRegattaPanel
         groupsTable.addColumnSortHandler(leaderboardGroupsListHandler);
         refreshableGroupsSelectionModel = leaderboardTableSelectionColumn.getSelectionModel();
         removeButton = buttonPanel.addRemoveAction(stringMessages.remove(), refreshableGroupsSelectionModel, true,
-                () -> removeLeaderboardGroups(refreshableGroupsSelectionModel.getSelectedSet()));
+                () -> {
+            final List<LeaderboardGroupDTO> selectedGroups = new ArrayList<>(refreshableGroupsSelectionModel.getSelectedSet());
+            refreshableGroupsSelectionModel.clear();
+            removeLeaderboardGroups(selectedGroups);
+        });
         removeButton.ensureDebugId("RemoveLeaderboardButton");
         refreshableGroupsSelectionModel.addSelectionChangeHandler(event -> groupSelectionChanged());
         groupsTable.setSelectionModel(refreshableGroupsSelectionModel, leaderboardTableSelectionColumn.getSelectionManager());

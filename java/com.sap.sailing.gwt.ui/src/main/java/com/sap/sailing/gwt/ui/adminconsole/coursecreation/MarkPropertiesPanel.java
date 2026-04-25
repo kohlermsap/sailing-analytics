@@ -110,8 +110,10 @@ public class MarkPropertiesPanel extends FlowPanel implements FilterablePanelPro
         buttonAndFilterPanel.addCreateAction(stringMessages.add(),
                 () -> openEditMarkPropertiesDialog(new MarkPropertiesDTO()));
         buttonAndFilterPanel.addRemoveAction(stringMessages.remove(), refreshableSelectionModel, true,
-                () -> removeMarkProperties(refreshableSelectionModel.getSelectedSet().stream()
-                        .map(markPropertiesDTO -> markPropertiesDTO.getUuid()).collect(Collectors.toList())));
+                () -> { final List<UUID> uuids = refreshableSelectionModel.getSelectedSet().stream().map(markPropertiesDTO -> markPropertiesDTO.getUuid()).collect(Collectors.toList());
+            refreshableSelectionModel.clear();
+            removeMarkProperties(uuids);
+        });
         buttonAndFilterPanel.addUnsecuredWidget(lblFilterRaces);
         filterableMarkProperties.getTextBox().ensureDebugId("MarkPropertiesFilterTextBox");
         buttonAndFilterPanel.addUnsecuredWidget(filterableMarkProperties);

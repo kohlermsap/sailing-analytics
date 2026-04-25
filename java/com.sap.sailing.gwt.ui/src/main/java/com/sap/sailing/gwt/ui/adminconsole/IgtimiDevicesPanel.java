@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.google.gwt.cell.client.SafeHtmlCell;
@@ -187,7 +188,9 @@ public class IgtimiDevicesPanel extends FlowPanel implements FilterablePanelProv
                 /* with confirmation */ true, () -> {
             if (refreshableDevicesSelectionModel.getSelectedSet().size() > 0) {
                 if (Window.confirm(stringMessages.doYouReallyWantToRemoveTheSelectedIgtimiDevices())) {
-                    for (IgtimiDeviceWithSecurityDTO device : refreshableDevicesSelectionModel.getSelectedSet()) {
+                    final List<IgtimiDeviceWithSecurityDTO> selected = new ArrayList<>(refreshableDevicesSelectionModel.getSelectedSet());
+                    refreshableDevicesSelectionModel.clear();
+                    for (IgtimiDeviceWithSecurityDTO device : selected) {
                         removeDevice(device, filteredDevices);
                     }
                 }
@@ -233,7 +236,9 @@ public class IgtimiDevicesPanel extends FlowPanel implements FilterablePanelProv
                 /* with confirmation */ true, () -> {
             if (refreshableDataAccessWindowsSelectionModel.getSelectedSet().size() > 0) {
                 if (Window.confirm(stringMessages.doYouReallyWantToRemoveTheSelectedIgtimiDataAccessWindows())) {
-                    for (IgtimiDataAccessWindowWithSecurityDTO daw : refreshableDataAccessWindowsSelectionModel.getSelectedSet()) {
+                    final List<IgtimiDataAccessWindowWithSecurityDTO> selected = new ArrayList<>(refreshableDataAccessWindowsSelectionModel.getSelectedSet());
+                    refreshableDataAccessWindowsSelectionModel.clear();
+                    for (IgtimiDataAccessWindowWithSecurityDTO daw : selected) {
                         removeDataAccessWindow(daw, filteredDAWs);
                     }
                 }
