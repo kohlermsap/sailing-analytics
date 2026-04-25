@@ -72,8 +72,8 @@ public class SmartFutureCacheTest {
         sfc.triggerUpdate("humba", /* update interval */ null);
         try {
             // during the first call, expecting exception
-            sfc.get("humba", /* waitForLatest */ true);
-            fail("Expected RuntimeException because computeCacheUpdate threw one");
+            final String result = sfc.get("humba", /* waitForLatest */ true);
+            fail("Expected RuntimeException because computeCacheUpdate threw one; instead, it returned "+result);
         } catch (RuntimeException expected) {
             assertSame(ExecutionException.class, expected.getCause().getClass());
         }

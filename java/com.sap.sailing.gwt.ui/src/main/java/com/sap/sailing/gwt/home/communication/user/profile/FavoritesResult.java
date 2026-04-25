@@ -13,6 +13,7 @@ public class FavoritesResult implements Result {
     public FavoritesResult(FavoriteBoatClassesDTO favoriteBoatClasses, FavoriteCompetitorsDTO favoriteCompetitors, boolean isSubscribedToFeatureAndCommunityUpdates) {
         this.favoriteBoatClasses = favoriteBoatClasses;
         this.favoriteCompetitors = favoriteCompetitors;
+        this.isSubscribedToFeatureAndCommunityUpdates = isSubscribedToFeatureAndCommunityUpdates;
     }
     
     public FavoriteBoatClassesDTO getFavoriteBoatClasses() {
@@ -26,5 +27,4 @@ public class FavoritesResult implements Result {
     public boolean getIsSubscribedToFeatureAndCommunityUpdates() {
         return isSubscribedToFeatureAndCommunityUpdates;
     }
-
 }
