@@ -2559,9 +2559,9 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages,
     String miscellaneous();
     String securityUpdates();
     String featureAndCommunityUpdates();
-    String youWillNowReceiveFeatureAndCommunityUpdates();
-    String youWillNotReceiveFeatureAndCommunityUpdatesAnymore();
-    String failedToSetStatusOfFeatureAndCommunityUpdates();
+    String optedOutOfFeatureAndCommunityUpdates();
+    String optedInToFeatureAndCommunityUpdates();
+    String couldNotOptOutOfFeatureAndCommunityUpdates();
     String youWillNowReceiveNotificationsForFavoriteCompetitors();
     String youWillNotReceiveNotificationsForFavoriteCompetitorsAnymore();
     String failedToSetStatusOfNotificationsForFavoriteCompetitors();

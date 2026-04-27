@@ -18,7 +18,6 @@ public class MiscellaneousDisplayImpl {
 
     public MiscellaneousDisplayImpl(final MiscPreferencesPresenter presenter) {
         presenter.registerDisplay(this);
-        // compose ui
         final String securityUpdatesTitle = StringMessages.INSTANCE.securityUpdates();
         final CheckBoxTile securityUpdates = new CheckBoxTile(securityUpdatesTitle, true, null);
         featureAndCommunityUpdates = composeFeatureAndCommunityUpdatesTile(presenter);
@@ -29,7 +28,7 @@ public class MiscellaneousDisplayImpl {
         selectionUi = new LabeledBox(boxTitle, tileList);
     }
     
-    public void setIsSubscribedToFeatureAndCommunityUpdates(final boolean b, final boolean fireChangeHandlers) {
+    public void setDidOptOutOfFeatureAndCommunityEmails(final boolean b, final boolean fireChangeHandlers) {
         featureAndCommunityUpdates.setValue(b, fireChangeHandlers);
     }
 
@@ -38,7 +37,7 @@ public class MiscellaneousDisplayImpl {
         final AsyncCallback<VoidResult> callbackWrappedWithToastNotification = new AsyncCallback<VoidResult>() {
             @Override
             public void onFailure(Throwable caught) {
-                final String failText = StringMessages.INSTANCE.failedToSetStatusOfFeatureAndCommunityUpdates();
+                final String failText = StringMessages.INSTANCE.couldNotOptOutOfFeatureAndCommunityUpdates();
                 Notification.notify(failText, NotificationType.ERROR);
                 if (callback != null) {
                     callback.onFailure(caught);
@@ -47,9 +46,9 @@ public class MiscellaneousDisplayImpl {
 
             @Override
             public void onSuccess(VoidResult result) {
-                final String passAndTrue = StringMessages.INSTANCE.youWillNowReceiveFeatureAndCommunityUpdates();
+                final String passAndTrue = StringMessages.INSTANCE.optedOutOfFeatureAndCommunityUpdates();
                 final String passAndFalse = StringMessages.INSTANCE
-                        .youWillNotReceiveFeatureAndCommunityUpdatesAnymore();
+                        .optedInToFeatureAndCommunityUpdates();
                 final String message = isNowTrue ? passAndTrue : passAndFalse;
                 Notification.notify(message, NotificationType.SUCCESS);
                 if (callback != null) {
@@ -63,7 +62,7 @@ public class MiscellaneousDisplayImpl {
     private CheckBoxTile composeFeatureAndCommunityUpdatesTile(final MiscPreferencesPresenter presenter) {
         final BiConsumer<Boolean, AsyncCallback<VoidResult>> onToggle = (isNowTrue, callback) -> {
             final AsyncCallback<VoidResult> wrappedCallback = wrapCallbackWithToastResponse(isNowTrue, callback);
-            presenter.updateIsSubscribedToFeatureAndCommunityUpdates(isNowTrue, wrappedCallback);
+            presenter.updateDidOptOutOfFeatureAndCommunityEmails(isNowTrue, wrappedCallback);
         };
         final String title = StringMessages.INSTANCE.featureAndCommunityUpdates();
         return new CheckBoxTile(title, false, onToggle);
