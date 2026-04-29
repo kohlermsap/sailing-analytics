@@ -99,9 +99,10 @@ public class UserGroupDetailPanel extends Composite
         });
         addButton.ensureDebugId("AddUserButton");
         // add remove button
-        buttonPanel.addRemoveAction(stringMessages.actionRemove(),
+        // Removing a user from a group is semantically an UPDATE to the UserGroup, not a per-user DELETE.
+        buttonPanel.addCountingActionWithParentPermission(stringMessages.actionRemove(),
                 tenantUsersTable.getSelectionModel(),
-                () -> (SecuredDTO) TableWrapper.getSingleSelectedObjectOrNull(userGroupSelectionModel), () -> {
+                () -> (SecuredDTO) TableWrapper.getSingleSelectedObjectOrNull(userGroupSelectionModel), UPDATE, () -> {
             final Set<UserGroupDTO> selectedUserGroups = userGroupSelectionModel.getSelectedSet();
             if (selectedUserGroups != null && selectedUserGroups.size() == 1) {
                 final UserGroupDTO selectedUserGroup = selectedUserGroups.iterator().next();

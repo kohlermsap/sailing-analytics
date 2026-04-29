@@ -111,10 +111,13 @@ public class AccessControlledButtonPanel extends Composite {
     /**
      * Like {@link #addRemoveAction(String, SetSelectionModel, boolean, Command)} but for rows that are not
      * {@link SecuredDTO} instances themselves — use this when the permission to remove entries is governed by a parent
-     * secured object (e.g. UPDATE permission on the owning {@link UserGroup}) rather than per-row permissions. The
-     * button is {@link Button#setEnabled(boolean) enabled} when the selection is non-empty and the current user has
-     * {@link DefaultActions#UPDATE UPDATE} permission on the object supplied by {@code parentSecuredObject}; it shows
-     * the selected count in its label.
+     * secured object rather than per-row permissions. The button is {@link Button#setEnabled(boolean) enabled} when the
+     * selection is non-empty and the current user has the specified {@code permissionAction} on the object supplied by
+     * {@code parentSecuredObject}; it shows the selected count in its label.
+     *
+     * <p>Example: removing a role or user from a {@code UserGroup} is semantically an UPDATE to that group, so the
+     * caller should pass {@link DefaultActions#UPDATE} as {@code permissionAction} even though the button is labelled
+     * "Remove".
      *
      * @param text
      *            the {@link String text} to show on the button
@@ -122,20 +125,23 @@ public class AccessControlledButtonPanel extends Composite {
      *            the {@link MultiSelectionModel} of the sub-table; drives the count shown in the button label and the
      *            enabled state
      * @param parentSecuredObject
-     *            supplies the parent {@link SecuredDTO} whose UPDATE permission gates the button; may return
-     *            {@code null} when nothing is selected, which disables the button
+     *            supplies the parent {@link SecuredDTO} whose permission gates the button; may return {@code null} when
+     *            nothing is selected, which disables the button
+     * @param permissionAction
+     *            the {@link DefaultActions action} to check on the parent secured object (e.g.
+     *            {@link DefaultActions#UPDATE} or {@link DefaultActions#DELETE})
      * @param callback
      *            the {@link Command callback} to execute on button click, if permission is granted
      * @return the created {@link Button} instance
      */
-    public <T> Button addRemoveAction(final String text, final MultiSelectionModel<T> selectionModel,
-            final Supplier<SecuredDTO> parentSecuredObject, final Command callback) {
+    public <T> Button addCountingActionWithParentPermission(final String text, final MultiSelectionModel<T> selectionModel,
+            final Supplier<SecuredDTO> parentSecuredObject, final DefaultActions permissionAction, final Command callback) {
         final Button button = resolveButtonVisibility(removePermissionCheck,
                 new Button(text, wrap(removePermissionCheck, callback)));
         selectionModel.addSelectionChangeHandler(event -> {
             final int count = selectionModel.getSelectedSet().size();
             button.setText(count > 0 ? text + " (" + count + ")" : text);
-            button.setEnabled(count > 0 && userService.hasPermission(parentSecuredObject.get(), DefaultActions.UPDATE));
+            button.setEnabled(count > 0 && userService.hasPermission(parentSecuredObject.get(), permissionAction));
         });
         button.setEnabled(false);
         return button;

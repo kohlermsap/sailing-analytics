@@ -123,9 +123,10 @@ public class GroupRoleDefinitionPanel extends Composite
             }
         });
         addButton.ensureDebugId("AddGroupUserButton");
-        buttonPanel.addRemoveAction(stringMessages.removeRole(),
+        // Removing a role from a group is semantically an UPDATE to the UserGroup, not a per-role DELETE.
+        buttonPanel.addCountingActionWithParentPermission(stringMessages.removeRole(),
                 roleDefinitionTableWrapper.getSelectionModel(),
-                () -> (SecuredDTO) TableWrapper.getSingleSelectedObjectOrNull(userGroupSelectionModel), () -> {
+                () -> (SecuredDTO) TableWrapper.getSingleSelectedObjectOrNull(userGroupSelectionModel), UPDATE, () -> {
             final Pair<StrippedRoleDefinitionDTO, Boolean> selectedRole = TableWrapper.getSingleSelectedObjectOrNull(roleDefinitionTableWrapper.getSelectionModel());
             if (selectedRole == null) {
                 Window.alert(stringMessages.youHaveToSelectAUserGroup());
