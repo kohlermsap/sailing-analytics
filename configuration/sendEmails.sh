@@ -93,21 +93,38 @@ $(echo -n "$BODY" | base64 -w76)
 MIME
     )
 
-    if echo "$MIME_MSG" | curl --silent --show-error \
-        --url "$SMTP_URL" \
-        --ssl-reqd \
-        --mail-from "support@sapsailing.com" \
-        --mail-rcpt "$EMAIL" \
-        --user "${SMTP_USER}:${SMTP_PASS}" \
-        --upload-file -; then
-        echo "Sent to $EMAIL ($NAME)"
-        SENT=$((SENT + 1))
-    else
+    RETRIES=0
+    MAX_RETRIES=3
+    SEND_OK=false
+    while [[ $RETRIES -le $MAX_RETRIES ]]; do
+        if echo "$MIME_MSG" | curl --silent --show-error \
+            --url "$SMTP_URL" \
+            --ssl-reqd \
+            --mail-from "support@sapsailing.com" \
+            --mail-rcpt "$EMAIL" \
+            --user "${SMTP_USER}:${SMTP_PASS}" \
+            --upload-file - 2>/tmp/curl_err.txt; then
+            echo "Sent to $EMAIL ($NAME)"
+            SENT=$((SENT + 1))
+            SEND_OK=true
+            break
+        else
+            if grep -q "421" /tmp/curl_err.txt 2>/dev/null; then
+                RETRIES=$((RETRIES + 1))
+                WAIT=$((RETRIES * 5))
+                echo "  Rate limited, retrying in ${WAIT}s... (attempt $((RETRIES))/$MAX_RETRIES)" >&2
+                sleep "$WAIT"
+            else
+                break
+            fi
+        fi
+    done
+    if [[ "$SEND_OK" == false ]]; then
         echo "FAILED: $EMAIL ($NAME)" >&2
         FAILED=$((FAILED + 1))
     fi
 
-    sleep 1
+    sleep 3
 done < "$CSV"
 
 echo ""
