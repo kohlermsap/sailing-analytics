@@ -1,5 +1,6 @@
 package com.sap.sse.gwt.client.celltable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.view.client.ListDataProvider;
@@ -129,14 +130,30 @@ public class RefreshableMultiSelectionModel<T> extends MultiSelectionModelWithSe
             try {
                 if (!isEmpty()) {
                     for (T it : newObjects) {
-                        if (isSelected(it)) { 
+                        if (isSelected(it)) {
                             setSelected(it, true); // this updates matching elements in the selection model
                         }
                     }
-                    // elements that were selected before and that don't have a corresponding element in newObjects
-                    // will just be left alone; they will probably remain in selectedSet, and they were probably not in
-                    // newObjects because a filter removed them. But when they re-appear, e.g., because the filter is
-                    // removed, the elements will naturally be selected again.
+                    // Deselect items that are no longer present in newObjects (e.g. because they were deleted).
+                    // newObjects comes from getAllListDataProvider() (the unfiltered list), so absence here means
+                    // true deletion, not just a filter hiding the item.
+                    // Snapshot first to avoid ConcurrentModificationException while calling super.setSelected below.
+                    final List<T> selectedSnapshot = new ArrayList<>();
+                    for (final T s : getSelectedElements()) {
+                        selectedSnapshot.add(s);
+                    }
+                    for (final T selected : selectedSnapshot) {
+                        boolean foundInNew = false;
+                        for (final T candidate : newObjects) {
+                            if (comp != null ? comp.representSameEntity(selected, candidate) : selected.equals(candidate)) {
+                                foundInNew = true;
+                                break;
+                            }
+                        }
+                        if (!foundInNew) {
+                            super.setSelected(selected, false);
+                        }
+                    }
                     SelectionChangeEvent.fire(this);
                 }
             } finally {
