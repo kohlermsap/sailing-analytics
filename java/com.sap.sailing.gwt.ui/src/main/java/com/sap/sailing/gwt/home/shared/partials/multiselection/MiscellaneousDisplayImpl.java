@@ -37,7 +37,7 @@ public class MiscellaneousDisplayImpl {
         final AsyncCallback<VoidResult> callbackWrappedWithToastNotification = new AsyncCallback<VoidResult>() {
             @Override
             public void onFailure(Throwable caught) {
-                final String failText = StringMessages.INSTANCE.couldNotOptOutOfFeatureAndCommunityUpdates();
+                final String failText = StringMessages.INSTANCE.couldNotToggleFeatureAndCommunityUpdates();
                 Notification.notify(failText, NotificationType.ERROR);
                 if (callback != null) {
                     callback.onFailure(caught);
