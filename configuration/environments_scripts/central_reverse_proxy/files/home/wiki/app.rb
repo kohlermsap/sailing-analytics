@@ -85,8 +85,8 @@ class App < Precious::App
     scopes = result["scope"].split(",")
     if scopes.include?("user:email") && scopes.include?("public_repo") && result["access_token"]
       access_token = result["access_token"]
-      fetch_and_set_user_email()
-      fetch_and_set_user_name_and_id()
+      fetch_and_set_user_email(access_token)
+      fetch_and_set_user_name_and_id(access_token)
       session[:logged_in] = true
       revoke_access_token(access_token)
       session.delete(:access_token)
@@ -155,8 +155,8 @@ class App < Precious::App
       result.dig("user", "permissions", "push") == true
     end
 
-    def fetch_and_set_user_email()
-      response = github_api_get("/user/emails")
+    def fetch_and_set_user_email(access_token)
+      response = github_api_get("/user/emails", access_token)
       return unless response
       emails = JSON.parse(response)
       if emails[0] && emails[0]["email"]
@@ -165,8 +165,8 @@ class App < Precious::App
       end
     end
 
-    def fetch_and_set_user_name_and_id()
-      response = github_api_get("/user")
+    def fetch_and_set_user_name_and_id(access_token)
+      response = github_api_get("/user", access_token)
       return unless response
       user_details = JSON.parse(response)
       if user_details["login"] && user_details["id"]
@@ -176,14 +176,14 @@ class App < Precious::App
       end
     end
 
-    def github_api_get(path)
+    def github_api_get(path, access_token = ACCESS_TOKEN)
       uri = URI::HTTPS.build(
         host: "api.github.com",
         path: path,
       )
       RestClient.get(uri.to_s(),
                      {
-        :Authorization => "Bearer #{ACCESS_TOKEN}",
+        :Authorization => "Bearer #{access_token}",
       })
     rescue RestClient::Unauthorized, RestClient::Forbidden
       LOGGER.warn("GitHub auth failed for #{path}")
