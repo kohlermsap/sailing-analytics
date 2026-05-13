@@ -15,7 +15,7 @@ class App < Precious::App
   CLIENT_ID = ENV["CLIENT_ID"]
   CLIENT_SECRET = ENV["CLIENT_SECRET"]
   REDIRECT_URL = "https://wiki.sapsailing.com/callback"
-  ACCESS_TOKEN = ""
+  ACCESS_TOKEN = ENV["ACCESS_TOKEN"]
 
   REPO_OWNER = "SAP"
   REPO_NAME = "sailing-analytics"
