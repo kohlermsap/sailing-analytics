@@ -145,7 +145,8 @@ class App < Precious::App
 
     def user_can_write()
       return false unless session[:logged_in] && session[:name]
-      response = github_api_get("/repos/#{REPO_OWNER}/#{REPO_NAME}/collaborators/#{session[:name]}/permission")
+      response = github_api_get("/repos/#{REPO_OWNER}/#{REPO_NAME}/collaborators/#{session[:name]}/permission",
+                                ACCESS_TOKEN)
       return false unless response
       LOGGER.debug("response received")
       result = JSON.parse(response)
@@ -174,7 +175,7 @@ class App < Precious::App
       end
     end
 
-    def github_api_get(path, access_token = ACCESS_TOKEN)
+    def github_api_get(path, access_token)
       uri = URI::HTTPS.build(
         host: "api.github.com",
         path: path,
