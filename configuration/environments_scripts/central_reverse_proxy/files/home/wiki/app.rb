@@ -67,7 +67,7 @@ class App < Precious::App
         redirect stripped_prev
       end
     end
-    halt 401, params[:error] if params[:error]
+    halt 400, "error" if params[:error]
     halt 400, "Missing code" unless params[:code]
     halt 403, "Old state" unless session[:oauth_state][:expiry] > Time.now
     halt 403, "Invalid OAuth state" unless session[:oauth_state][:state] == params[:state]
@@ -132,7 +132,7 @@ class App < Precious::App
         session[:prev] = path
         return
       end
-      halt 403, "Forbidden - You can not access anything outside wiki/ path."
+      halt 404, "You can not access anything outside wiki/ path."
     end
 
     def authorize_write
