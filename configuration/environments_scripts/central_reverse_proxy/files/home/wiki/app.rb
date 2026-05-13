@@ -6,10 +6,11 @@ require "rack/session/redis"
 require "base64"
 
 class App < Precious::App
-  #   use Rack::Session::Pool, :cookie_only => false
-  use Rack::Session::Redis,
-      :redis_server => "redis://127.0.0.1:6379/0",
-      :expires_in => 3600
+    use Rack::Session::Pool, expire_after: 3600, httponly: true #, secure: true
+
+#   use Rack::Session::Redis,
+#       :redis_server => "redis://127.0.0.1:6379/0",
+#       :expires_in => 3600
 
   LOGGER = Logger.new("/home/wiki/wiki_log.txt")
   CLIENT_ID = ENV["CLIENT_ID"]
