@@ -14,7 +14,7 @@ class App < Precious::App
   LOGGER = Logger.new("/home/wiki/wiki_log.txt")
   CLIENT_ID = ENV["CLIENT_ID"]
   CLIENT_SECRET = ENV["CLIENT_SECRET"]
-  REDIRECT_URL = "https://git.sapsailing.com/cgi-bin/github_oauth.sh"
+  REDIRECT_URL = "https://wiki.sapsailing.com/callback"
   ACCESS_TOKEN = ""
 
   REPO_OWNER = "SAP"
