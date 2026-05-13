@@ -123,7 +123,7 @@ class App < Precious::App
     end
 
     def check!
-      path = self.env["PATH_INFO"].dup
+      path = env["PATH_INFO"].dup
       return if login_path?(path)
       return if asset_path?(path)
       isPublicPath = public_path?(path)
