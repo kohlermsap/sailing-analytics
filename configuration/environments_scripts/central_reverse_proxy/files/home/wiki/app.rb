@@ -45,7 +45,7 @@ class App < Precious::App
     }
     params = {
       client_id: CLIENT_ID,
-      scope: "public_repo user:email",
+      scope: "user:email",
       state: session[:oauth_state][:state],
       redirect_uri: REDIRECT_URL,
     }
@@ -83,7 +83,7 @@ class App < Precious::App
     },
                                         :accept => :json))
     scopes = result["scope"].split(",")
-    if scopes.include?("user:email") && scopes.include?("public_repo") && result["access_token"]
+    if scopes.include?("user:email") && result["access_token"]
       access_token = result["access_token"]
       fetch_and_set_user_email(access_token)
       fetch_and_set_user_name_and_id(access_token)
