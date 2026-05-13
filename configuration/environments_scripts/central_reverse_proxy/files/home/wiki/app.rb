@@ -69,8 +69,8 @@ class App < Precious::App
     end
     halt 400, "error" if params[:error]
     halt 400, "Missing code" unless params[:code]
-    halt 403, "Old state" unless session[:oauth_state][:expiry] > Time.now
-    halt 403, "Invalid OAuth state" unless session[:oauth_state][:state] == params[:state]
+    halt 403, "Old state" unless session[:oauth_state] && session[:oauth_state][:expiry] > Time.now
+    halt 403, "Invalid OAuth state" unless session[:oauth_state] && session[:oauth_state][:state] == params[:state]
 
     session.delete(:oauth_state)
 
