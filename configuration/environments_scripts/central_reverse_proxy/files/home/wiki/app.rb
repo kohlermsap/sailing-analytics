@@ -125,6 +125,7 @@ class App < Precious::App
 
     def check!
       path = env["PATH_INFO"].dup
+      LOGGER.debug(path)
       return if login_path?(path)
       return if asset_path?(path)
       isPublicPath = public_path?(path)
@@ -133,7 +134,7 @@ class App < Precious::App
         session[:prev] = path
         return
       end
-      halt 404, "You can not access anything outside wiki/ path."
+      halt 404, "You cannot access anything outside wiki/ path."
     end
 
     def authorize_write
