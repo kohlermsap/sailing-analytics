@@ -65,6 +65,7 @@ yum group install -y "Development Tools"
 yum install -y ruby ruby-devel libicu libicu-devel zlib zlib-devel git cmake openssl-devel libyaml-devel
 gem install gollum -v 5.3.2
 gem update --system 3.5.7
+su - wiki -c "cd /home/wiki && bundle install"
 cd /home
 # copy bugzilla
 scp -o StrictHostKeyChecking=no  root@sapsailing.com:/var/www/static/bugzilla-5.2.tar.gz /usr/local/src
