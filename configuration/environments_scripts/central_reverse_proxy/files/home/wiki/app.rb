@@ -115,7 +115,7 @@ class App < Precious::App
     end
 
     def auth_path?(path)
-      auth_paths = [%r{\A/gollum/(edit|create|rename|delete)/.*\z}, %r{\A/gollum/(overview|preview)}]
+      auth_paths = [%r{\A/gollum/(edit|create|rename|delete)/.*\z}, %r{\A/gollum/(overview|preview)}, %r{\A/gollum/create}]
       auth_paths.any? { |pattern| pattern.match(path) }
     end
 
