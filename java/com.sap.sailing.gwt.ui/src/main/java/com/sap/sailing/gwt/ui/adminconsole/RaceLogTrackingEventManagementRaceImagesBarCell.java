@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.core.client.GWT;
+import com.sap.sailing.domain.common.racelog.tracking.RaceLogTrackingState;
 import com.sap.sailing.gwt.ui.adminconsole.AbstractLeaderboardConfigPanel.RaceColumnDTOAndFleetDTOWithNameBasedEquality;
 import com.sap.sailing.gwt.ui.client.StringMessages;
 import com.sap.sse.gwt.client.IconResources;
@@ -58,10 +59,11 @@ public class RaceLogTrackingEventManagementRaceImagesBarCell extends ImagesBarCe
         result.add(new ImageSpec(ACTION_SET_FINISHING_AND_FINISH_TIME, stringMessages.setFinishingAndFinishTime(), makeImagePrototype(resources.blueSmall())));
         result.add(new ImageSpec(ACTION_SHOW_RACELOG, stringMessages.raceLog(), makeImagePrototype(resources.flagIcon())));
         result.add(new ImageSpec(ACTION_SET_TRACKING_TIMES, stringMessages.setTrackingTimes(), makeImagePrototype(resources.setTrackingTimes())));
-        boolean isForTracking = object.getA().getRaceLogTrackingInfo(object.getB()).raceLogTrackingState.isForTracking();
-        if (!isForTracking) {
+        final boolean trackerExists = object.getA().getRaceLogTrackingInfo(object.getB()).raceLogTrackerExists;
+        final RaceLogTrackingState trackingState = object.getA().getRaceLogTrackingInfo(object.getB()).raceLogTrackingState;
+        if (trackingState == RaceLogTrackingState.AWAITING_RACE_DEFINITION || (trackingState == RaceLogTrackingState.TRACKING && !trackerExists)) {
             result.add(new ImageSpec(ACTION_START_TRACKING, stringMessages.startTracking(), makeImagePrototype(resources.startRaceLogTracking())));
-        } else {
+        } else if (trackingState == RaceLogTrackingState.TRACKING && trackerExists) {
             result.add(new ImageSpec(ACTION_STOP_TRACKING, stringMessages.stopTracking(), makeImagePrototype(resources.stopRaceLogTracking())));
         }
         if (smartphoneTrackingEventManagementPanel.getSelectedLeaderboard().canBoatsOfCompetitorsChangePerRace) {

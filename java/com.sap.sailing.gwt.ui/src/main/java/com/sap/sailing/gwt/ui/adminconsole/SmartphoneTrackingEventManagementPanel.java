@@ -578,12 +578,14 @@ public class SmartphoneTrackingEventManagementPanel extends AbstractLeaderboardC
     
     private void stopTracking(
             final Set<RaceColumnDTOAndFleetDTOWithNameBasedEquality> selectedSet) {
-        final List<RegattaAndRaceIdentifier> racesToStopTracking = new ArrayList<RegattaAndRaceIdentifier>();        
+        final List<RegattaAndRaceIdentifier> racesToStopTracking = new ArrayList<RegattaAndRaceIdentifier>();
         for (RaceColumnDTOAndFleetDTOWithNameBasedEquality raceColumnDTOAndFleetDTOWithNameBasedEquality : selectedSet) {
-            RaceDTO race = raceColumnDTOAndFleetDTOWithNameBasedEquality.getA().getRace(raceColumnDTOAndFleetDTOWithNameBasedEquality.getB());
-            if (race != null && race.isTracked){
-                racesToStopTracking.add(race.getRaceIdentifier());
-            }   
+            if (doesTrackerExist(raceColumnDTOAndFleetDTOWithNameBasedEquality)) {
+                final RaceDTO race = raceColumnDTOAndFleetDTOWithNameBasedEquality.getA().getRace(raceColumnDTOAndFleetDTOWithNameBasedEquality.getB());
+                if (race != null) {
+                    racesToStopTracking.add(race.getRaceIdentifier());
+                }
+            }
         }
         sailingServiceWrite.stopTrackingRaces(racesToStopTracking, new MarkedAsyncCallback<Void>(
                 new AsyncCallback<Void>() {
@@ -663,6 +665,12 @@ public class SmartphoneTrackingEventManagementPanel extends AbstractLeaderboardC
                     raceColumnsAndFleets.add(new Triple<String, String, String>(selectedLeaderboard.getName(), raceColumn.getName(), fleet.getName()));
                 }
             }
+            raceColumnTable.getDataProvider().getList().clear();
+            for (RaceColumnDTO raceColumn : selectedLeaderboard.getRaceList()) {
+                for (FleetDTO fleet : raceColumn.getFleets()) {
+                    raceColumnTable.getDataProvider().getList().add(new RaceColumnDTOAndFleetDTOWithNameBasedEquality(raceColumn, fleet, selectedLeaderboard));
+                }
+            }
             sailingServiceWrite.getTrackingTimes(raceColumnsAndFleets,
                     new AsyncCallback<Map<Triple<String, String, String>, Pair<TimePointSpecificationFoundInLog, TimePointSpecificationFoundInLog>>>() {
                 @Override
@@ -673,13 +681,6 @@ public class SmartphoneTrackingEventManagementPanel extends AbstractLeaderboardC
                 @Override
                 public void onSuccess(Map<Triple<String, String, String>, Pair<TimePointSpecificationFoundInLog, TimePointSpecificationFoundInLog>> result) {
                     raceWithStartAndEndOfTrackingTime = result;
-                    raceColumnTable.getDataProvider().getList().clear();
-                    for (RaceColumnDTO raceColumn : selectedLeaderboard.getRaceList()) {
-                        for (FleetDTO fleet : raceColumn.getFleets()) {
-                            RaceColumnDTOAndFleetDTOWithNameBasedEquality raceColumnDTOAndFleet2 = new RaceColumnDTOAndFleetDTOWithNameBasedEquality(raceColumn, fleet, getSelectedLeaderboard());
-                            raceColumnTable.getDataProvider().getList().add(raceColumnDTOAndFleet2);
-                        }
-                    }
                 }
             });
             selectedLeaderBoardPanel.setVisible(true);
