@@ -560,12 +560,13 @@ public class SmartphoneTrackingEventManagementPanel extends AbstractLeaderboardC
         startStopTrackingButton.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                if (startStopTrackingButton.isDown()){
-                    startTracking(raceColumnTableSelectionModel.getSelectedSet(), trackWind.getValue(), correctWindDirectionForDeclination.getValue());
-                } else {
+                final boolean anyTrackerExists = raceColumnTableSelectionModel.getSelectedSet().stream()
+                        .anyMatch(race -> doesTrackerExist(race));
+                if (anyTrackerExists) {
                     stopTracking(raceColumnTableSelectionModel.getSelectedSet());
+                } else {
+                    startTracking(raceColumnTableSelectionModel.getSelectedSet(), trackWind.getValue(), correctWindDirectionForDeclination.getValue());
                 }
-                refreshTrackingActionButtons();
             }
         });
         raceColumnTableSelectionModel.addSelectionChangeHandler(new Handler() {
@@ -606,40 +607,34 @@ public class SmartphoneTrackingEventManagementPanel extends AbstractLeaderboardC
     }
 
     private void enableStartTrackingButtonIfAppropriateRacesSelected() {
-        boolean onlyUntrackedRacesPresent = raceColumnTableSelectionModel.getSelectedSet().size() > 0;
-        boolean onlyTrackedRacesPresent = raceColumnTableSelectionModel.getSelectedSet().size() > 0;
-        boolean onlyRacesWithNonExistentTracker = raceColumnTableSelectionModel.getSelectedSet().size() > 0;
-        for (RaceColumnDTOAndFleetDTOWithNameBasedEquality race : raceColumnTableSelectionModel.getSelectedSet()) {
-            if (getTrackingState(race).isForTracking() && isFinished(race)) {
-                onlyUntrackedRacesPresent = false;
-                onlyTrackedRacesPresent = false;
-            }
-            if (!getTrackingState(race).isForTracking() || doesTrackerExist(race) || isFinished(race)) {
-                onlyUntrackedRacesPresent = false;
+        final Set<RaceColumnDTOAndFleetDTOWithNameBasedEquality> selected = raceColumnTableSelectionModel.getSelectedSet();
+        boolean allCanStart = selected.size() > 0;
+        boolean allCanStop = selected.size() > 0;
+        for (final RaceColumnDTOAndFleetDTOWithNameBasedEquality race : selected) {
+            if (doesTrackerExist(race)) {
+                allCanStart = false;
+            } else if (!getTrackingState(race).isForTracking()) {
+                allCanStart = false;
+                allCanStop = false;
             } else {
-                onlyTrackedRacesPresent = false;
-            }
-            if (trackerExists(race)) {
-                onlyRacesWithNonExistentTracker = false;
+                allCanStop = false;
             }
         }
-        boolean hasPermissionToChange = leaderboardSelectionModel.getSelectedSet().stream()
+        final boolean hasPermissionToChange = leaderboardSelectionModel.getSelectedSet().stream()
                 .filter(new Predicate<StrippedLeaderboardDTO>() {
                     @Override
                     public boolean test(StrippedLeaderboardDTO t) {
                         return userService.hasPermission(t, DefaultActions.UPDATE);
                     }
                 }).count() > 0;
-        if ((!onlyTrackedRacesPresent && !onlyUntrackedRacesPresent)) {
-            startStopTrackingButton.setEnabled(false);
-        }
-        if (onlyTrackedRacesPresent) {
-            startStopTrackingButton.setDown(true);
-            startStopTrackingButton.setEnabled(hasPermissionToChange);
-        }
-        if (onlyUntrackedRacesPresent || onlyRacesWithNonExistentTracker) {
+        if (allCanStart) {
             startStopTrackingButton.setDown(false);
             startStopTrackingButton.setEnabled(hasPermissionToChange);
+        } else if (allCanStop) {
+            startStopTrackingButton.setDown(true);
+            startStopTrackingButton.setEnabled(hasPermissionToChange);
+        } else {
+            startStopTrackingButton.setEnabled(false);
         }
     }
 
