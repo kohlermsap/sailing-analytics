@@ -199,9 +199,6 @@ public abstract class AbstractFilterablePanel<T> extends HorizontalPanel {
     }
 
     private void setAll(Iterable<? extends T> all) {
-        if (getCellTable() != null) {
-            deselectAll();
-        }
         this.all.getList().clear();
         if (all != null) {
             for (T t : all) {
