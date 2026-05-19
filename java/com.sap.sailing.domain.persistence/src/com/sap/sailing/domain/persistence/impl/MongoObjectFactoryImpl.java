@@ -2048,7 +2048,7 @@ public class MongoObjectFactoryImpl implements MongoObjectFactory {
                     final Document maneuverDoc = new Document();
                     maneuverDoc.put(FieldNames.SIMPLE_CLASS_NAME.name(), maneuver.getClass().getSimpleName());
                     maneuverDoc.put(FieldNames.TYPE.name(), maneuver.getType().name());
-                    maneuverDoc.put(FieldNames.TACK.name(), maneuver.getNewTack().name());
+                    maneuverDoc.put(FieldNames.TACK.name(), maneuver.getNewTack()==null?null:maneuver.getNewTack().name());
                     maneuverDoc.put(FieldNames.POSITION_LAT_RAD.name(), maneuver.getPosition().getLatRad());
                     maneuverDoc.put(FieldNames.POSITION_LNG_RAD.name(), maneuver.getPosition().getLngRad());
                     maneuverDoc.put(FieldNames.TIMEPOINT.name(), maneuver.getTimePoint().asMillis());
@@ -2107,7 +2107,7 @@ public class MongoObjectFactoryImpl implements MongoObjectFactory {
         final Document fingerprintDoc = Document.parse(fingerprintjson.toString());
         result.put(FieldNames.MANEUVER_FINGERPRINT.name(), fingerprintDoc);
         storeRaceIdentifier(result, raceIdentifier);
-        final List<Document> maneuverDoc = storeManeuvers( maneuvers , raceIdentifier, course);
+        final List<Document> maneuverDoc = storeManeuvers(maneuvers , raceIdentifier, course);
         result.put(FieldNames.MANEUVERS.name(), maneuverDoc);
         maneuverCollection.replaceOne(query, result, new ReplaceOptions().upsert(true));
     }

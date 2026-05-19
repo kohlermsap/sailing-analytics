@@ -110,8 +110,8 @@ public class ManagementConsoleClientFactoryImpl implements ManagementConsoleClie
             private void changeDefaultTenantForCurrentUser(final StrippedUserGroupDTO serverTenant) {
                 final UserDTO user = getUserService().getCurrentUser();
                 getUserManagementWriteService().updateUserProperties(user.getName(), user.getFullName(),
-                        user.getCompany(), user.getLocale(), serverTenant.getId().toString(),
-                        new AsyncCallback<UserDTO>() {
+                        user.getCompany(), user.getLocale(), user.getDidOptOutOfFeatureAndCommunityEmails(),
+                        serverTenant.getId().toString(), new AsyncCallback<UserDTO>() {
                             @Override
                             public void onFailure(Throwable caught) {
                                 Window.alert(caught.getMessage());

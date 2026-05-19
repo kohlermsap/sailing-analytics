@@ -1079,7 +1079,7 @@ public interface RacingEventService extends TrackedRegattaRegistry, RegattaFetch
      * Identifies all Events, that use the given {@link Leaderboard}'s {@link CourseArea}s and contain it in their
      * {@link LeaderboardGroup}
      * 
-     * @return A Set of Events, may be empty, but never {@code null}
+     * @return A Set of Events, may be empty, but never {@code null}; search is restricted to only these events
      */
     Set<Event> findEventsContainingLeaderboardAndMatchingAtLeastOneCourseArea(Leaderboard leaderboard, Iterable<Event> events);
 

@@ -283,6 +283,27 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
      * The leeward of two Polylines representing a triangle between startline and first mark.
      */
     private Polyline leewardStartLineMarkToFirstMarkLine;
+    
+    /**
+     * True once a selection-dependent tail/map refresh has already been scheduled for the current
+     * event cycle. This is used to coalesce many add/remove selection callbacks into one final refresh
+     * instead of running the expensive refresh logic once per competitor.
+     */
+    private boolean selectionDependentRefreshScheduled;
+    
+    /**
+     * True once a selection-dependent tail/map refresh needs redraw.
+     * For example, we avoid redraw in this situation:
+     * no helper lines, all competitors shown, one is getting deselected.
+     */
+    private boolean selectionDependentRefreshNeedsRedraw;
+
+    /**
+     * Remembers the last tail display mode applied per competitor id. This allows us to skip
+     * reapplying tail styles for competitors whose visual tail state did not change between two
+     * refreshes. The optimization is especially useful when no detail-based tail coloring is active.
+     */
+    private final Map<String, DisplayMode> lastAppliedTailDisplayModes = new HashMap<>();
 
     private class AdvantageLineMouseOverMapHandler implements MouseOverMapHandler {
         private double trueWindAngle;
@@ -2006,11 +2027,16 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
                     boatCanvas.removeFromMap();
                     boatOverlaysByCompetitorIdsAsStrings.remove(unusedBoatCanvasCompetitorDTO);
                 }
-                for (String unusedTailCompetitorDTO : competitorIdsAsStringOfUnusedTails) {
-                    fixesAndTails.removeTail(unusedTailCompetitorDTO);
+                for (String unusedTailCompetitorIdAsString : competitorIdsAsStringOfUnusedTails) {
+                    removeTail(unusedTailCompetitorIdAsString);
                 }
             }
         }
+    }
+    
+    private void removeTail(String competitorIdAsString) {
+        fixesAndTails.removeTail(competitorIdAsString);
+        lastAppliedTailDisplayModes.remove(competitorIdAsString);
     }
 
     /**
@@ -2638,22 +2664,22 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
     }
 
     private DisplayMode displayHighlighted(CompetitorDTO competitorDTO) {
-        boolean competitorisSelected = competitorSelection.isSelected(competitorDTO);
+        final DisplayMode result;
+        final boolean competitorisSelected = competitorSelection.isSelected(competitorDTO);
         if (!settings.isShowOnlySelectedCompetitors()) {
             if (competitorisSelected) {
-                return DisplayMode.SELECTED;
+                result = DisplayMode.SELECTED;
             } else {
                 if (isSomeOtherCompetitorSelected()) {
-                    return DisplayMode.NOT_SELECTED;
+                    result = DisplayMode.NOT_SELECTED;
                 } else {
-                    return DisplayMode.DEFAULT;
+                    result = DisplayMode.DEFAULT;
                 }
             }
+        } else {
+            result = competitorSelection.isSelected(competitorDTO) ? DisplayMode.SELECTED : DisplayMode.DEFAULT;
         }
-        else{
-            return competitorSelection.isSelected(competitorDTO) ? DisplayMode.SELECTED : DisplayMode.DEFAULT;
-        }
-       
+        return result;
     }
     
     private boolean isSomeOtherCompetitorSelected(){
@@ -2867,14 +2893,14 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
         if (raceIdentifier != null) {
             final RegattaAndRaceIdentifier race = raceIdentifier;
             if (race != null) {
-                final Map<CompetitorDTO, TimeRange> timeRange = new HashMap<>();
+                final Map<String, TimeRange> competitorIdsAsStringsAndTimeRanges = new HashMap<>();
                 final Integer firstShownFix = fixesAndTails.getFirstShownFix(competitorDTO);
                 if (firstShownFix != null) {
                     final TimePoint from = new MillisecondsTimePoint(fixesAndTails.getFixes(competitorDTO).get(firstShownFix).timepoint);
                     final TimePoint to = new MillisecondsTimePoint(getBoatFix(competitorDTO, timer.getTime()).timepoint);
-                    timeRange.put(competitorDTO, new TimeRangeImpl(from, to, true));
+                    competitorIdsAsStringsAndTimeRanges.put(competitorDTO.getIdAsString(), new TimeRangeImpl(from, to, true));
                     if (settings.isShowDouglasPeuckerPoints()) {
-                        sailingService.getDouglasPoints(race, timeRange, new AsyncCallback<Map<CompetitorDTO, List<GPSFixDTOWithSpeedWindTackAndLegType>>>() {
+                        sailingService.getDouglasPoints(race, competitorIdsAsStringsAndTimeRanges, new AsyncCallback<Map<CompetitorDTO, List<GPSFixDTOWithSpeedWindTackAndLegType>>>() {
                             @Override
                             public void onFailure(Throwable caught) {
                                 errorReporter.reportError("Error obtaining douglas positions: " + caught.getMessage(), true /*silentMode */);
@@ -2894,7 +2920,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
                             }
                         });
                     }
-                    maneuverMarkersAndLossIndicators.getAndShowManeuvers(race, timeRange);
+                    maneuverMarkersAndLossIndicators.getAndShowManeuvers(race, competitorIdsAsStringsAndTimeRanges);
                 }
             }
         }
@@ -3120,6 +3146,62 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
     public RaceMapSettings getSettings() {
         return settings;
     }
+    
+    /**
+     * Schedules a single consolidated refresh of selection-dependent tail and map state.
+     *
+     * <p>Selection changes are delivered per competitor, so bulk selection can trigger many
+     * added/removed callbacks in the same event cycle. Running the expensive tail/map refresh
+     * immediately in every callback caused repeated redraw and restyling work. This method batches
+     * those callbacks by marking a refresh as pending and scheduling exactly one final refresh via
+     * {@link Scheduler#scheduleFinally(Scheduler.ScheduledCommand)}.</p>
+     *
+     * <p>If multiple selection events arrive before the scheduled command runs, they only set the
+     * pending flag again; no additional scheduled refresh is created. When the scheduled command
+     * executes, it performs one call to {@code refreshSelectionDependentTailAndMapState()} if a
+     * refresh is still pending.</p>
+     */
+    private void scheduleSelectionDependentTailAndMapStateRefresh() {
+        if (!selectionDependentRefreshScheduled) {
+            selectionDependentRefreshScheduled = true;
+            Scheduler.get().scheduleFinally(new Scheduler.ScheduledCommand() {
+                @Override
+                public void execute() {
+                    selectionDependentRefreshScheduled = false;
+                    refreshSelectionDependentTailAndMapState();
+                }
+            });
+        }
+    }
+    
+    private void refreshSelectionDependentTailAndMapState() {
+        if (selectedDetailType != null && !selectedDetailTypeChanged) {
+            // assumes that the detail values have already been loaded, as the detail type hasn't changed
+            fixesAndTails.updateDetailValueBoundaries(competitorSelection.getSelectedCompetitors());
+        }
+        // update tails for all competitors because selection change may also affect all unselected competitors
+        for (CompetitorDTO oneOfAllCompetitors : competitorSelection.getAllCompetitors()) {
+            Colorline tail = fixesAndTails.getTail(oneOfAllCompetitors);
+            if (tail != null) {
+                final DisplayMode newDisplayMode = displayHighlighted(oneOfAllCompetitors);
+                final String competitorId = oneOfAllCompetitors.getIdAsString();
+                if (lastAppliedTailDisplayModes.get(competitorId) != newDisplayMode) {
+                    lastAppliedTailDisplayModes.put(competitorId, newDisplayMode);
+                    ColorlineOptions newOptions = createTailStyle(oneOfAllCompetitors, newDisplayMode);
+                    tail.setOptions(newOptions);
+                }
+            }
+        }
+        // Trigger auto-zoom if needed
+        final RaceMapZoomSettings zoomSettings = settings.getZoomSettings();
+        if (!zoomSettings.containsZoomType(ZoomTypes.NONE) && zoomSettings.isZoomToSelectedCompetitors()) {
+            zoomMapToNewBounds(zoomSettings.getNewBounds(this));
+        }
+        if (selectionDependentRefreshNeedsRedraw) {
+            redraw();
+            selectionDependentRefreshNeedsRedraw = false;
+        }
+    }
 
     @Override
     public void addedToSelection(CompetitorDTO competitor) {
@@ -3132,7 +3214,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
                     if (!next.getKey().equals(competitor.getIdAsString())) {
                         CanvasOverlayV3 boatOverlay = next.getValue();
                         boatOverlay.removeFromMap();
-                        fixesAndTails.removeTail(next.getKey());
+                        removeTail(next.getKey());
                         i.remove(); // only this way a ConcurrentModificationException while looping can be avoided
                     }
                 }
@@ -3147,24 +3229,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
                 showCompetitorInfoOnMap(timer.getTime(), -1, competitorSelection.getSelectedFilteredCompetitors());
             }
         }
-        if (selectedDetailType != null && !selectedDetailTypeChanged) {
-            // assumes that the detail values have already been loaded, as the detail type hasn't changed
-            fixesAndTails.updateDetailValueBoundaries(competitorSelection.getSelectedCompetitors());
-        }
-        // update tails for all competitors because selection change may also affect all unselected competitors
-        for (CompetitorDTO oneOfAllCompetitors : competitorSelection.getAllCompetitors()) {
-            Colorline tail = fixesAndTails.getTail(oneOfAllCompetitors);
-            if (tail != null) {
-                ColorlineOptions newOptions = createTailStyle(oneOfAllCompetitors, displayHighlighted(oneOfAllCompetitors));
-                tail.setOptions(newOptions); // depends on the min/max boundaries computed above
-            }
-        }
-        // Trigger auto-zoom if needed
-        final RaceMapZoomSettings zoomSettings = settings.getZoomSettings();
-        if (!zoomSettings.containsZoomType(ZoomTypes.NONE) && zoomSettings.isZoomToSelectedCompetitors()) {
-            zoomMapToNewBounds(zoomSettings.getNewBounds(this));
-        }
-        redraw(); 
+        scheduleSelectionDependentTailAndMapStateRefresh();
     }
     
     @Override
@@ -3172,20 +3237,20 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
         if (isShowAnyHelperLines()) {
             // helper lines depend on which competitor is visible, because the *visible* leader is used for
             // deciding which helper lines to show:
-            redraw();
+            selectionDependentRefreshNeedsRedraw = true;
         } else {
             // try a more incremental update otherwise
             if (settings.isShowOnlySelectedCompetitors()) {
                 // if selection is now empty, show all competitors
                 if (Util.isEmpty(competitorSelection.getSelectedCompetitors())) {
-                    redraw();
+                    selectionDependentRefreshNeedsRedraw = true;
                 } else {
                     // otherwise remove only deselected competitor's boat images and tail
                     final BoatOverlay removedBoatOverlay = boatOverlaysByCompetitorIdsAsStrings.remove(competitor.getIdAsString());
                     if (removedBoatOverlay != null) {
                         removedBoatOverlay.removeFromMap();
                     }
-                    fixesAndTails.removeTail(competitor.getIdAsString());
+                    removeTail(competitor.getIdAsString());
                     showCompetitorInfoOnMap(timer.getTime(), -1, competitorSelection.getSelectedFilteredCompetitors());
                 }
             } else {
@@ -3199,21 +3264,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
             }
         }
         // Now update tails for all competitors because selection change may also affect all unselected competitors
-        if (selectedDetailType != null && !selectedDetailTypeChanged) {
-            fixesAndTails.updateDetailValueBoundaries(competitorSelection.getSelectedCompetitors());
-        }
-        for (CompetitorDTO oneOfAllCompetitors : competitorSelection.getAllCompetitors()) {
-            Colorline tail = fixesAndTails.getTail(oneOfAllCompetitors);
-            if (tail != null) {
-                ColorlineOptions newOptions = createTailStyle(oneOfAllCompetitors, displayHighlighted(oneOfAllCompetitors));
-                tail.setOptions(newOptions);
-            }
-        }
-        // Trigger auto-zoom if needed
-        RaceMapZoomSettings zoomSettings = settings.getZoomSettings();
-        if (!zoomSettings.containsZoomType(ZoomTypes.NONE) && zoomSettings.isZoomToSelectedCompetitors()) {
-            zoomMapToNewBounds(zoomSettings.getNewBounds(this));
-        }
+        scheduleSelectionDependentTailAndMapStateRefresh();
     }
 
     private boolean isShowAnyHelperLines() {
@@ -3546,7 +3597,27 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
             }
         }
     }
-
+    /**
+     * Creates the visual style for one competitor tail based on the current display mode.
+     *
+     * <p>The three display modes are:</p>
+     * <ul>
+     *   <li><b>DEFAULT</b>: normal competitor-colored tail with standard stroke width</li>
+     *   <li><b>SELECTED</b>: highlighted tail with thicker stroke</li>
+     *   <li><b>NOT_SELECTED</b>: lowlighted grey tail for competitors that are currently not selected</li>
+     * </ul>
+     *
+     * <p>A selected tail uses {@link ColorlineMode#POLYCHROMATIC} only when detail-based coloring is
+     * actually active and detail values are available. Otherwise it stays
+     * {@link ColorlineMode#MONOCHROMATIC}. This avoids unnecessary switching between monochromatic and
+     * polychromatic rendering, which would force {@code Colorline.setOptions(...)} to rebuild the tail
+     * polyline structure via {@code setPath(...)} and was identified as a significant performance cost
+     * during selection updates. See also bug 6214.</p>
+     *
+     * @param competitor the competitor whose tail is being styled
+     * @param displayMode the desired display mode for this competitor tail
+     * @return the configured {@link ColorlineOptions} for the tail
+     */
     @Override
     public ColorlineOptions createTailStyle(CompetitorDTO competitor, DisplayMode displayMode) {
         final ColorlineOptions options = new ColorlineOptions();
@@ -3560,19 +3631,21 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
             options.setStrokeWeight(1);
             break;
         case SELECTED:
-            options.setColorMode(ColorlineMode.POLYCHROMATIC);
-            options.setColorProvider(fixIndexInTail -> {
-                final String resultColor;
-                final Double detailValue;
-                // If a DetailType has been selected and we are not currently waiting for the first update with the new values
-                if (selectedDetailType != null && !selectedDetailTypeChanged && (detailValue = fixesAndTails.getDetailValueAt(competitor, fixIndexInTail)) != null) {
-                    resultColor = tailColorMapper.getColor(detailValue);
-                } else {
-                    resultColor = competitorSelection.getColor(competitor, raceIdentifier).getAsHtml();
-                }
-                return resultColor;
-            });
             options.setStrokeWeight(2);
+            if (selectedDetailType != null && !selectedDetailTypeChanged) {
+                options.setColorMode(ColorlineMode.POLYCHROMATIC);
+                options.setColorProvider(fixIndexInTail -> {
+                    final Double detailValue = fixesAndTails.getDetailValueAt(competitor, fixIndexInTail);
+                    if (detailValue != null) {
+                        return tailColorMapper.getColor(detailValue);
+                    }
+                    return competitorSelection.getColor(competitor, raceIdentifier).getAsHtml();
+                });
+            } else {
+                options.setColorMode(ColorlineMode.MONOCHROMATIC);
+                final String selectedColor = competitorSelection.getColor(competitor, raceIdentifier).getAsHtml();
+                options.setColorProvider(fixIndexInTail -> selectedColor);
+            }
             break;
         case NOT_SELECTED:
             options.setColorMode(ColorlineMode.MONOCHROMATIC);

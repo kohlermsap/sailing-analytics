@@ -59,6 +59,7 @@ import com.sap.sailing.gwt.ui.shared.RaceLogSetFinishingAndFinishTimeDTO;
 import com.sap.sailing.gwt.ui.shared.RaceLogSetStartTimeAndProcedureDTO;
 import com.sap.sailing.gwt.ui.shared.RegattaDTO;
 import com.sap.sailing.gwt.ui.shared.StrippedLeaderboardDTO;
+import com.sap.sailing.gwt.ui.shared.TrackingTimesRevocationReportDTO;
 import com.sap.sse.common.Distance;
 import com.sap.sse.common.Util;
 import com.sap.sse.common.Util.Pair;
@@ -148,7 +149,7 @@ public class SmartphoneTrackingEventManagementPanel extends AbstractLeaderboardC
             ListDataProvider<StrippedLeaderboardDTO> listDataProvider) {
         ListHandler<StrippedLeaderboardDTO> leaderboardColumnListHandler = new ListHandler<StrippedLeaderboardDTO>(
                 filteredLeaderboardList.getList());
-        SelectionCheckboxColumn<StrippedLeaderboardDTO> selectionCheckboxColumn = createSortableSelectionCheckboxColumn(
+        SelectionCheckboxColumn<StrippedLeaderboardDTO> selectionCheckboxColumn = createSelectionCheckboxColumn(
                 leaderboardTable, tableResources, leaderboardColumnListHandler, listDataProvider);
         TextColumn<StrippedLeaderboardDTO> leaderboardNameColumn = new TextColumn<StrippedLeaderboardDTO>() {
             @Override
@@ -208,11 +209,12 @@ public class SmartphoneTrackingEventManagementPanel extends AbstractLeaderboardC
                 DefaultActions.UPDATE, t -> openChooseEventDialogAndSendMails(t.getName()));
         leaderboardActionColumn.addAction(RaceLogTrackingEventManagementImagesBarCell.ACTION_SHOW_REGATTA_LOG,
                 DefaultActions.UPDATE, t -> showRegattaLog());
+        leaderboardActionColumn.addAction(RaceLogTrackingEventManagementImagesBarCell.ACTION_REVOKE_EXPLICIT_TRACKING_TIMES,
+                DefaultActions.UPDATE, t -> revokeExplicitTrackingTimes());
         leaderboardActionColumn.addAction(DefaultActionsImagesBarCell.ACTION_CHANGE_OWNERSHIP, DefaultActions.UPDATE,
                 configOwnership::openOwnershipDialog);
         leaderboardActionColumn.addAction(DefaultActionsImagesBarCell.ACTION_CHANGE_ACL, DefaultActions.UPDATE,
                 configACL::openDialog);
-        leaderboardTable.addColumn(selectionCheckboxColumn, selectionCheckboxColumn.getHeader());
         leaderboardTable.addColumn(leaderboardNameColumn, stringMessages.name());
         leaderboardTable.addColumn(leaderboardDisplayNameColumn, stringMessages.displayName());
         leaderboardTable.addColumn(leaderboardCanBoatsOfCompetitorsChangePerRaceColumn,
@@ -224,6 +226,66 @@ public class SmartphoneTrackingEventManagementPanel extends AbstractLeaderboardC
                 selectionCheckboxColumn.getSelectionManager());
     }
     
+    private void revokeExplicitTrackingTimes() {
+        if (Window.confirm(stringMessages.confirmRevokeExplicitTrackingTimes(getSelectedLeaderboard().getName()))) {
+            sailingServiceWrite.revokeExplicitTrackingTimes(getSelectedLeaderboard().getName(), new AsyncCallback<TrackingTimesRevocationReportDTO>() {
+                @Override
+                public void onFailure(Throwable caught) {
+                    errorReporter.reportError(stringMessages.errorRevokingExplicitTrackingTimes(getSelectedLeaderboard().getName(), caught.getMessage()));
+                }
+
+                @Override
+                public void onSuccess(TrackingTimesRevocationReportDTO result) {
+                    Window.alert(result.getErrorCode() == null ?
+                            stringMessages.successfullyRevokedExplicitTrackingTimes(getSelectedLeaderboard().getName(), i18n(result)) :
+                            stringMessages.errorRevokingExplicitTrackingTimes(getSelectedLeaderboard().getName(), i18n(result)));
+                    loadAndRefreshLeaderboard(getSelectedLeaderboard().getName());
+                }
+
+                private String i18n(TrackingTimesRevocationReportDTO report) {
+                    final StringBuilder result = new StringBuilder();
+                    if (report.getErrorCode() != null) {
+                        switch (report.getErrorCode()) {
+                            case NO_REGATTA_LEADERBOARD:
+                                result.append(stringMessages.noRegattaLeaderboard(getSelectedLeaderboard().getName())).append("\n");
+                                break;
+                            case NO_AUTOMATED_TRACKING_TIMES:
+                                result.append(stringMessages.noAutomatedTrackingTimes(getSelectedLeaderboard().getName())).append("\n");
+                                break;
+                            default:
+                                result.append(stringMessages.unknownError(report.getErrorCode().name())).append("\n");
+                        }
+                    } else {
+                        result.append(stringMessages.revokedTrackingTimesForEvents()).append("\n");
+                        report.getRevokedEvents().forEach((raceColumnAndFleet, events)->{
+                            final String raceColumnName = raceColumnAndFleet.getA().getName();
+                            final String fleetName = raceColumnAndFleet.getB().getName();
+                            result.append(" - ").append(raceColumnName).append(" / ").append(fleetName).append("\n");
+                            events.forEach(event->{
+                                result.append("    - ").append(event.getType()).append(" (").append(event.getLogicalTimePoint()).append(")\n");
+                            });
+                        });
+                        result.append(stringMessages.notRevokedTrackingTimesBecauseNotForTracking()).append("\n");
+                        report.getNotRevokedBecauseNotForTracking().forEach(raceColumnAndFleet->{
+                            final String raceColumnName = raceColumnAndFleet.getA().getName();
+                            final String fleetName = raceColumnAndFleet.getB().getName();
+                            result.append(" - ").append(raceColumnName).append(" / ").append(fleetName).append("\n");
+                        });
+                        result.append(stringMessages.notRevokedTrackingTimesBecauseOfMissingStartOrFinishTime()).append("\n");
+                        report.getNotRevokedBecauseOfMissingStartOrFinishTime().forEach((raceColumnAndFleet, startAndEndTime)->{
+                            final String raceColumnName = raceColumnAndFleet.getA().getName();
+                            final String fleetName = raceColumnAndFleet.getB().getName();
+                            result.append(" - ").append(raceColumnName).append(" / ").append(fleetName)
+                                .append(" (").append(stringMessages.startTime()).append(": ").append(startAndEndTime.getA())
+                                .append(", ").append(stringMessages.finishedTime()).append(": ").append(startAndEndTime.getB()).append(")\n");
+                        });
+                    }
+                    return result.toString();
+                }
+            });
+        }
+    }
+
     private RaceLogTrackingState getTrackingState(
             RaceColumnDTOAndFleetDTOWithNameBasedEquality race) {
         return race.getA().getRaceLogTrackingInfo(race.getB()).raceLogTrackingState;
