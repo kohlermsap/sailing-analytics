@@ -20,10 +20,8 @@ import com.google.gwt.view.client.MultiSelectionModel;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 import com.sap.sse.common.Util.Pair;
-import com.sap.sse.common.Util;
 import com.sap.sse.gwt.client.ErrorReporter;
 import com.sap.sse.gwt.client.celltable.CellTableWithCheckboxResources;
-import com.sap.sse.gwt.client.celltable.RefreshableMultiSelectionModel;
 import com.sap.sse.gwt.client.celltable.TableWrapper;
 import com.sap.sse.gwt.client.panels.LabeledAbstractFilterablePanel;
 import com.sap.sse.security.shared.dto.StrippedRoleDefinitionDTO;
@@ -126,29 +124,26 @@ public class GroupRoleDefinitionPanel extends Composite
         });
         addButton.ensureDebugId("AddGroupUserButton");
         // Removing a role from a group is semantically an UPDATE to the UserGroup, not a per-role DELETE.
-        final Button removeButton = buttonPanel.addCountingActionWithParentPermission(stringMessages.removeRole(),
+        final Button removeButton = buttonPanel.addRemoveActionWithParentPermission(stringMessages.removeRole(),
                 roleDefinitionTableWrapper.getSelectionModel(),
+                pair -> pair.getA().getName(),
                 () -> (SecuredDTO) TableWrapper.getSingleSelectedObjectOrNull(userGroupSelectionModel), UPDATE, () -> {
             final UserGroupDTO selectedObject = TableWrapper.getSingleSelectedObjectOrNull(userGroupSelectionModel);
             if (selectedObject != null) {
-                final RefreshableMultiSelectionModel<Pair<StrippedRoleDefinitionDTO, Boolean>> rolesSelectionModel = roleDefinitionTableWrapper.getSelectionModel();
-                final String roleNames = Util.joinStrings("\n", Util.mapToArrayList(rolesSelectionModel.getSelectedElements(), pair -> pair.getA().getName()));
-                if (Window.confirm(stringMessages.doYouReallyWantToRemoveSelectedElements(roleNames))) {
-                    for (final Pair<StrippedRoleDefinitionDTO, Boolean> selectedRole : rolesSelectionModel.getSelectedElements()) {
-                        userManagementService.removeRoleDefinitionFromUserGroup(selectedObject.getId().toString(),
-                                selectedRole.getA().getId().toString(), new AsyncCallback<Void>() {
-                                    @Override
-                                    public void onFailure(Throwable caught) {
-                                        Window.alert(stringMessages.couldNotDeleteRole(selectedRole.getA().getName()));
-                                    }
+                for (final Pair<StrippedRoleDefinitionDTO, Boolean> selectedRole : roleDefinitionTableWrapper.getSelectionModel().getSelectedElements()) {
+                    userManagementService.removeRoleDefinitionFromUserGroup(selectedObject.getId().toString(),
+                            selectedRole.getA().getId().toString(), new AsyncCallback<Void>() {
+                                @Override
+                                public void onFailure(Throwable caught) {
+                                    Window.alert(stringMessages.couldNotDeleteRole(selectedRole.getA().getName()));
+                                }
 
-                                    @Override
-                                    public void onSuccess(Void result) {
-                                        selectedObject.remove(selectedRole.getA());
-                                        updateUserGroups();
-                                    }
-                                });
-                    }
+                                @Override
+                                public void onSuccess(Void result) {
+                                    selectedObject.remove(selectedRole.getA());
+                                    updateUserGroups();
+                                }
+                            });
                 }
             }
         });
