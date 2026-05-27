@@ -54,7 +54,7 @@ If you are on Linux you can:<br>
 * Following a refresh in the browser (F5) the video file should appear in the list:
 ![](nginx-a.JPG)
 <br><br>
-* Click on it to verify it is reachable, note that depending on the browser 360� videos will look distorted.
+* Click on it to verify it is reachable, note that depending on the browser 360° videos will look distorted.
 ![](nginx-b.JPG)
 <br><br>
 
