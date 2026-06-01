@@ -473,7 +473,7 @@
   function titleCase(s) { return s.replace(/\b\w/g, c => c.toUpperCase()); }
 
   // ── Load page ─────────────────────────────────────────────────────────────
-  const REPO_RAW = 'https://raw.githubusercontent.com/SAP/sailing-analytics/main/wiki/';
+  const REPO_RAW = 'https://wiki.sapsailing.com/wiki/';
 
   function showLoading() {
     document.getElementById('content-area').innerHTML =
@@ -484,7 +484,7 @@
       <div class="status">
         <div class="status__icon">📄</div>
         <h2>Page not found</h2>
-        <p>The file <code>wiki/${path}.md</code> doesn't exist in the repository, or failed to load.</p>
+        <p>The page <code>${path}</code> could not be loaded from the wiki server.</p>
         <p style="margin-top:8px;">
           <a href="https://github.com/SAP/sailing-analytics/tree/main/wiki" target="_blank" rel="noopener">Browse all wiki files on GitHub →</a>
         </p>
