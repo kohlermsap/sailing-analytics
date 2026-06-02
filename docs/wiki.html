@@ -361,7 +361,7 @@
     const t = title ? ` title="${title}"` : '';
     if (href && href.endsWith('.md') && !href.startsWith('http')) {
       const clean = href.replace(/^\.\.\//, '').replace(/^\.\//, '').replace(/\.md$/, '');
-      return `<a href="wiki.html?page=${clean}"${t}>${text}</a>`;
+      return `<a href="https://wiki.sapsailing.com/wiki/${clean}.md"${t}>${text}</a>`;
     }
     const ext = href && !href.startsWith('http') ? '' : ' target="_blank" rel="noopener"';
     return `<a href="${href || '#'}"${t}${ext}>${text}</a>`;
@@ -397,7 +397,7 @@
         const a = document.createElement('a');
         a.className = 'sidebar__item' + (page.path === currentPath ? ' active' : '');
         a.textContent = page.label;
-        a.href = 'wiki.html?page=' + page.path;
+        a.href = 'https://wiki.sapsailing.com/wiki/'.md + page.path;
         a.dataset.label = page.label.toLowerCase();
         a.dataset.path = page.path;
         body.appendChild(a);
@@ -499,12 +499,12 @@
         <p>Welcome to the project documentation. Choose a topic from the sidebar, or start with the onboarding guide.</p>
         <h2>Popular pages</h2>
         <ul>
-          <li><a href="wiki.html?page=howto/onboarding">Developer Onboarding</a> — first stop for contributors</li>
-          <li><a href="wiki.html?page=howto/glossary">Sailing Glossary</a> — sailing terminology explained</li>
-          <li><a href="wiki.html?page=howto/tutorials/home">App Tutorials</a> — all tutorials in one place</li>
-          <li><a href="wiki.html?page=howto/development/super-dev-mode">GWT Super Dev Mode</a> — fast front-end iteration</li>
-          <li><a href="wiki.html?page=howto/tutorials/sailinganalytics/create-regattas">Create Regattas</a> — event management walkthrough</li>
-          <li><a href="wiki.html?page=howto/tutorials/sailinganalytics/data-mining-tool">Data Mining Tool</a> — race analytics deep-dive</li>
+          <li><a href="https://wiki.sapsailing.com/wiki/howto/onboarding.md">Developer Onboarding</a> — first stop for contributors</li>
+          <li><a href="https://wiki.sapsailing.com/wiki/howto/glossary.md">Sailing Glossary</a> — sailing terminology explained</li>
+          <li><a href="https://wiki.sapsailing.com/wiki/howto/tutorials/home.md">App Tutorials</a> — all tutorials in one place</li>
+          <li><a href="https://wiki.sapsailing.com/wiki/howto/development/super-dev-mode.md">GWT Super Dev Mode</a> — fast front-end iteration</li>
+          <li><a href="https://wiki.sapsailing.com/wiki/howto/tutorials/sailinganalytics/create-regattas.md">Create Regattas</a> — event management walkthrough</li>
+          <li><a href="https://wiki.sapsailing.com/wiki/howto/tutorials/sailinganalytics/data-mining-tool.md">Data Mining Tool</a> — race analytics deep-dive</li>
         </ul>
       </div>`;
   }
