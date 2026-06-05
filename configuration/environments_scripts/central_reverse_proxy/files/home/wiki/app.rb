@@ -6,7 +6,11 @@ require "rack/session/redis"
 require "base64"
 
 class App < Precious::App
-    use Rack::Session::Pool, expire_after: 3600, httponly: true #, secure: true
+  use Rack::Session::Cookie,
+    secret: ENV["SESSION_SECRET"],
+    expire_after: 3600,
+    httponly: true,
+    same_site: :lax
 
 #   use Rack::Session::Redis,
 #       :redis_server => "redis://127.0.0.1:6379/0",
