@@ -33,7 +33,7 @@ class App < Precious::App
 
   get "/logout" do
     if session[:access_token]
-      revoke_access_token(token)
+      revoke_access_token(session[:access_token])
     end
     session.clear()
     "logged out"
