@@ -81,6 +81,8 @@ class App < Precious::App
       :client_secret => CLIENT_SECRET,
       :code => params[:code],
       :redirect_uri => REDIRECT_URL,
+      :timeout => 5,
+      :open_timeout => 3,
     },
                                         :accept => :json))
     scopes = result["scope"].split(",")
@@ -142,7 +144,7 @@ class App < Precious::App
 
       if !session[:logged_in]
         if env["PATH_INFO"].dup.match(%r{/gollum/delete/.*})
-            halt 401, "Unauthorized"
+          halt 401, "Unauthorized"
         end
         redirect "/login"
       end
@@ -189,6 +191,8 @@ class App < Precious::App
       RestClient.get(uri.to_s(),
                      {
         :Authorization => "Bearer #{access_token}",
+        :timeout => 5,
+        :open_timeout => 3,
       })
     rescue RestClient::Unauthorized, RestClient::Forbidden
       LOGGER.warn("GitHub auth failed for #{path}")
@@ -217,6 +221,8 @@ class App < Precious::App
           :Authorization => "Basic #{basicAuth}",
           :accept => "application/vnd.github.v3+json",
         },
+        timeout: 5,
+        open_timeout: 3,
       )
     end
   end
