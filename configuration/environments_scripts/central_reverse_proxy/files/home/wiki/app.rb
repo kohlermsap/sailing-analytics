@@ -24,15 +24,19 @@ class App < Precious::App
   REPO_OWNER = "SAP"
   REPO_NAME = "sailing-analytics"
   before { check! }
-  before "/gollum/(edit|create|rename|delete)/*" do authorize_write end
-  before do
-    if session[:email] && session[:name]
-      session["gollum.author"] = {
-        :name => session[:name],
-        :email => session[:email],
-      }
-    end
+  before "/gollum/(edit|create|rename|delete)/*" do
+    session[:prev]=env["PATH_INFO"]
+    authorize_write
+    session["gollum.author"] = {
+      :name => session[:name],
+      :email => session[:email],
+    }
   end
+  PUBLIC_STARTS = ["/Home", "/wiki", "/favicon.ico"].freeze
+  NON_PAGE_PATTERNS = %r{\A/gollum/(assets|commit|history|last_commit_info|search|search|latest_changes)}
+  AUTH_PATHS = %r{\A/gollum/(edit|create|rename|delete|overview|preview|create)}
+  LOGIN_PATHS = %r{\A/(login|callback|logout|cancel)}
+
 
   get "/logout" do
     if session[:access_token]
@@ -111,33 +115,28 @@ class App < Precious::App
       if path == "/"
         return true
       end
-      public_starts = ["/Home", "/wiki", "/favicon.ico"]
-      public_starts.any? { |link| path.start_with?(link) }
+      PUBLIC_STARTS.any? { |link| path.start_with?(link) }
     end
 
     def asset_path?(path)
-      non_page_patterns = [%r{\A/gollum/(assets|commit|history|last_commit_info).*}, %r{\A/gollum/search}, %r{\A/gollum/latest_changes\z}]
-      non_page_patterns.any? { |pattern| pattern.match(path) }
+      NON_PAGE_PATTERNS.match?(path)
     end
 
     def auth_path?(path)
-      auth_paths = [%r{\A/gollum/(edit|create|rename|delete)/.*\z}, %r{\A/gollum/(overview|preview)}, %r{\A/gollum/create}]
-      auth_paths.any? { |pattern| pattern.match(path) }
+      AUTH_PATHS.match?(path) 
     end
 
     def login_path?(path)
-      %r{\A/(login|callback|logout|cancel)\z}.match?(path)
+      LOGIN_PATHS.match?(path)
     end
 
     def check!
-      path = env["PATH_INFO"].dup
-      LOGGER.debug(path)
+      path = env["PATH_INFO"]
       return if login_path?(path)
       return if asset_path?(path)
       isPublicPath = public_path?(path)
       isAuthPath = auth_path?(path)
       if isPublicPath || isAuthPath
-        session[:prev] = path
         return
       end
       halt 404, "You cannot access anything outside wiki/ path."
