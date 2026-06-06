@@ -2,7 +2,6 @@ require "gollum/app"
 require "digest/sha1"
 require "logger"
 require "rest-client"
-require "rack/session/redis"
 require "base64"
 
 class App < Precious::App
@@ -147,7 +146,7 @@ class App < Precious::App
       LOGGER.debug("Checking auth before writing")
 
       if !session[:logged_in]
-        if env["PATH_INFO"].dup.match(%r{/gollum/delete/.*})
+        if env["PATH_INFO"].match(%r{/gollum/delete/.*})
           halt 401, "Unauthorized"
         end
         redirect "/login"
