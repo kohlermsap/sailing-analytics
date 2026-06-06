@@ -33,9 +33,9 @@ class App < Precious::App
     }
   end
   PUBLIC_STARTS = ["/Home", "/wiki", "/favicon.ico"].freeze
-  NON_PAGE_PATTERNS = %r{\A/gollum/(assets|commit|history|last_commit_info|search|search|latest_changes)}
-  AUTH_PATHS = %r{\A/gollum/(edit|create|rename|delete|overview|preview|create)}
-  LOGIN_PATHS = %r{\A/(login|callback|logout|cancel)}
+  NON_PAGE_PATTERNS = %r{\A/gollum/(assets|commit|history|last_commit_info|search|search|latest_changes)}.freeze
+  AUTH_PATHS = %r{\A/gollum/(edit|create|rename|delete|overview|preview|create)}.freeze
+  LOGIN_PATHS = %r{\A/(login|callback|logout|cancel)}.freeze
 
 
   get "/logout" do
