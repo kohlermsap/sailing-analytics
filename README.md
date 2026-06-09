@@ -155,7 +155,6 @@ The build runs integration tests against [geonames.org](https://geonames.org). U
 ### Get the GitHub Actions build to work in your forked repository
 
 Assign the IDs and secrets from the prerequisites to repository secrets in your forked repository as follows:
-
 ```
 AWS_S3_TEST_S3ACCESSID: {your-S3-test-bucket-upload-token-ID}
 AWS_S3_TEST_S3ACCESSKEY: {key-for-your-S3-token}
