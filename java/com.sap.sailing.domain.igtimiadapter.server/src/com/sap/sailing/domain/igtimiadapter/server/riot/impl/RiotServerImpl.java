@@ -426,11 +426,17 @@ public class RiotServerImpl extends AbstractReplicableWithObjectInputStream<Repl
     
     @Override
     public synchronized Device internalCreateDevice(String deviceSerialNumber) {
-        final long id = devices.isEmpty() ? 1 : Collections.max(devices.keySet()) + 1;
-        final Device device = Device.create(id, deviceSerialNumber);
-        devices.put(device.getId(), device);
-        devicesBySerialNumber.put(device.getSerialNumber(), device);
-        mongoObjectFactory.storeDevice(device, /* clientSessionOrNull */ null);
+        final Device existingDevice = devicesBySerialNumber.get(deviceSerialNumber);
+        final Device device; 
+        if (existingDevice != null) {
+            device = existingDevice;
+        } else {
+            final long id = devices.isEmpty() ? 1 : Collections.max(devices.keySet()) + 1;
+            device = Device.create(id, deviceSerialNumber);
+            devices.put(device.getId(), device);
+            devicesBySerialNumber.put(device.getSerialNumber(), device);
+            mongoObjectFactory.storeDevice(device, /* clientSessionOrNull */ null);
+        }
         return device;
     }
 
