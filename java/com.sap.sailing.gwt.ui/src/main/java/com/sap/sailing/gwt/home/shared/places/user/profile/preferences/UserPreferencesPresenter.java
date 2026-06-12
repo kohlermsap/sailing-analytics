@@ -56,7 +56,7 @@ public class UserPreferencesPresenter<C extends ClientFactoryWithDispatch & Erro
                 final FavoriteBoatClassesDTO favoriteBoatClasses = result.getFavoriteBoatClasses();
                 boatClassSelectionPresenter.initNotifications(favoriteBoatClasses.isNotifyAboutUpcomingRaces(),
                         favoriteBoatClasses.isNotifyAboutResults(), favoriteBoatClasses.getSelectedBoatClasses());
-                miscPresenter.initIsSubscribedToFeatureAndCommunityUpdates(result.getIsSubscribedToFeatureAndCommunityUpdates());
+                miscPresenter.initDidOptOutOfFeatureAndCommunityEmails(result.getDidOptOutOfFeatureAndCommunityEmails());
             }
         };
         clientFactory.getDispatch().execute(new GetFavoritesAction(), callback);
@@ -76,15 +76,15 @@ public class UserPreferencesPresenter<C extends ClientFactoryWithDispatch & Erro
         }
 
         @Override
-        public void initIsSubscribedToFeatureAndCommunityUpdates(final boolean b) {
+        public void initDidOptOutOfFeatureAndCommunityEmails(final boolean didOptOutOfFeatureAndCommunityEmails) {
             if (display != null) {
-                display.setIsSubscribedToFeatureAndCommunityUpdates(b, false);
+                display.setDidOptOutOfFeatureAndCommunityEmails(didOptOutOfFeatureAndCommunityEmails, false);
             }
         }
         
         @Override
-        public void updateIsSubscribedToFeatureAndCommunityUpdates(final boolean b, final AsyncCallback<VoidResult> callback) {
-            clientFactory.getDispatch().execute(new SaveMiscEmailPreferences(b), callback);
+        public void updateDidOptOutOfFeatureAndCommunityEmails(final boolean didOptOutOfFeatureAndCommunityEmails, final AsyncCallback<VoidResult> callback) {
+            clientFactory.getDispatch().execute(new SaveMiscEmailPreferences(didOptOutOfFeatureAndCommunityEmails), callback);
         }
     }
     
@@ -195,5 +195,4 @@ public class UserPreferencesPresenter<C extends ClientFactoryWithDispatch & Erro
     public CompetitorSelectionPresenter getFavoriteCompetitorsDataProvider() {
         return competitorPresenter;
     }
-
 }

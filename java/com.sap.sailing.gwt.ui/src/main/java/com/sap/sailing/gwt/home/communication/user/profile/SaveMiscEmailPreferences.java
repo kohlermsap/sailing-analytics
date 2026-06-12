@@ -9,13 +9,13 @@ import com.sap.sse.gwt.dispatch.shared.exceptions.DispatchException;
 import com.sap.sse.security.shared.UserManagementException;
 
 public class SaveMiscEmailPreferences implements SailingAction<VoidResult>, HasWriteAction {
-    private Boolean subscribeToFeatureAndCommunityUpdates;
+    private Boolean didOptOutOfFeatureAndCommunityEmails;
 
     protected SaveMiscEmailPreferences() {
     }
 
-    public SaveMiscEmailPreferences(final Boolean subscribeToFeatureAndCommunityUpdates) {
-        this.subscribeToFeatureAndCommunityUpdates = subscribeToFeatureAndCommunityUpdates;
+    public SaveMiscEmailPreferences(final Boolean didOptOutOfFeatureAndCommunityEmails) {
+        this.didOptOutOfFeatureAndCommunityEmails = didOptOutOfFeatureAndCommunityEmails;
     }
 
     @Override
@@ -24,7 +24,7 @@ public class SaveMiscEmailPreferences implements SailingAction<VoidResult>, HasW
         try {
             final String username = ctx.getSecurityService().getCurrentUser().getName();
             ctx.getSecurityService().updateUserProperties(username, null, null, null,
-                    !subscribeToFeatureAndCommunityUpdates);
+                    didOptOutOfFeatureAndCommunityEmails);
         } catch (UserManagementException e) {
             throw new DispatchException(e.getMessage());
         }

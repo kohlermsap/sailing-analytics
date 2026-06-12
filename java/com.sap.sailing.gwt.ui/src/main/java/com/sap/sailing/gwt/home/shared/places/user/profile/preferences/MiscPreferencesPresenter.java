@@ -6,9 +6,9 @@ import com.sap.sse.gwt.dispatch.shared.commands.VoidResult;
 
 public interface MiscPreferencesPresenter {
     void registerDisplay(MiscellaneousDisplayImpl display);
-    
-    void updateIsSubscribedToFeatureAndCommunityUpdates(final boolean b, final AsyncCallback<VoidResult> callback);
+
+    void updateDidOptOutOfFeatureAndCommunityEmails(final boolean didOptOutOfFeatureAndCommunityEmails, final AsyncCallback<VoidResult> callback);
 
     /** get value via dispatch method, set first correct value onto checkbox */
-    void initIsSubscribedToFeatureAndCommunityUpdates(final boolean b);
+    void initDidOptOutOfFeatureAndCommunityEmails(final boolean didOptOutOfFeatureAndCommunityEmails);
 }
