@@ -26,7 +26,7 @@ More background information is available in the project's Wiki which is currentl
 
 To run the latest release build (currently available for linux/amd64 and linux/arm64 architectures), try this:
 ```
-    wget "https://github.com/eclipse-sailing-analytics/sailing-analytics/raw/refs/heads/main/docker/docker-compose.yml"
+    wget "https://github.com/SAP/sailing-analytics/raw/refs/heads/main/docker/docker-compose.yml"
     docker-compose up
 ```
 Based on the ``docker/docker-compose.yml`` definition you should end up with three running Docker containers:
@@ -38,7 +38,7 @@ Try a request to [``http://127.0.0.1:8888/index.html``](http://127.0.0.1:8888/in
 
 To use Java 25, use the ``docker-compose-25.yml`` file instead:
 ```
-    wget "https://github.com/eclipse-sailing-analytics/sailing-analytics/raw/refs/heads/main/docker/docker-compose-25.yml"
+    wget "https://github.com/SAP/sailing-analytics/raw/refs/heads/main/docker/docker-compose-25.yml"
     docker-compose -f docker-compose-25.yml up
 ```
 
@@ -77,7 +77,7 @@ See [here](https://www.sapsailing.com/gwt/Home.html#/imprint/:) for a list of co
 
 ## Building and Running
 
-Builds usually run on [GitHub Actions](https://github.com/eclipse-sailing-analytics/sailing-analytics/actions/workflows/release.yml) upon every push. A few repository secrets ensure that the build process has the permissions it needs. Pushes to the ``main``, ``docker-25`` and ``releases/*`` branches also publish a [release](https://github.com/eclipse-sailing-analytics/sailing-analytics/releases) after a successful build.
+Builds usually run on [GitHub Actions](https://github.com/SAP/sailing-analytics/actions/workflows/release.yml) upon every push. A few repository secrets ensure that the build process has the permissions it needs. Pushes to the ``main``, ``docker-25`` and ``releases/*`` branches also publish a [release](https://github.com/SAP/sailing-analytics/releases) after a successful build.
 
 There are two options for building, detailed below; for both, you need to fulfill a few prerequisites.
 
@@ -215,7 +215,7 @@ Run the ``buildAndUpdateProduct.sh`` without any arguments to see the sub-comman
 
 You need to have Java 8 installed. Get one from, e.g., [here](https://tools.eu1.hana.ondemand.com/#cloud). Either ensure that this JVM's ``java`` executable in on the ``PATH`` or set ``JAVA_HOME`` appropriately.
 
-At [https://github.com/eclipse-sailing-analytics/sailing-analytics/releases](https://github.com/eclipse-sailing-analytics/sailing-analytics/releases) you find official product builds. To fetch and install one of them, make an empty directory, change into it and run the ``refreshInstance.sh`` command, e.g., like this:
+At [https://github.com/SAP/sailing-analytics/releases](https://github.com/SAP/sailing-analytics/releases) you find official product builds. To fetch and install one of them, make an empty directory, change into it and run the ``refreshInstance.sh`` command, e.g., like this:
 ```
     mkdir sailinganalytics
     cd sailinganalytics
