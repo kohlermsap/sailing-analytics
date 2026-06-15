@@ -4,11 +4,8 @@
 # shall be synchronized to the Github repo at github.com/SAP/sailing-analytics
 name: Merge main from trac@sapsailing.com:/home/trac/git
 on:
-  # In the upstream repo, we currently don't want to fetch/merge any downstream branches;
-  # this may change again when, e.g., the Wiki at https://wiki.sapsailing.com uses a
-  # Git workspace that synchronizes with this upstream repo.
-  #schedule:
-  #  - cron: "53 * * * *"   # every hour, at :53 minutes
+  schedule:
+    - cron: "53 * * * *"   # every hour, at :53 minutes
   workflow_dispatch: {}
 jobs:
   merge-master-from-sapsailing-com:

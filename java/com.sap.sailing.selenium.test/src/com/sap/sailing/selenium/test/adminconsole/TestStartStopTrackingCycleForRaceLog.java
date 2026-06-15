@@ -58,7 +58,7 @@ public class TestStartStopTrackingCycleForRaceLog extends AbstractSeleniumTest {
         smartphonePanel.stopTrackingForRace(smartphonePanel.waitForRaceRow(R3));
         smartphonePanel.selectRaceRowsByName(R1, R2);
         smartphonePanel.clickStartTrackingButton();
-        // undenote all races to reset state for next cycle
+        // undenote all races to reset state for next cycle (PO dismisses notifications before each click to avoid CI overlay interception)
         smartphonePanel.removeDenotationForRace(smartphonePanel.waitForRaceRow(R1));
         smartphonePanel.removeDenotationForRace(smartphonePanel.waitForRaceRow(R2));
         smartphonePanel.removeDenotationForRace(smartphonePanel.waitForRaceRow(R3));

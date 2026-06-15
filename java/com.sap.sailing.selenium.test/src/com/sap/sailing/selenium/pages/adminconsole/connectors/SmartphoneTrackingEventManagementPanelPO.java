@@ -83,21 +83,29 @@ public class SmartphoneTrackingEventManagementPanelPO extends PageArea {
     }
 
     public void startTrackingForRace(DataEntryPO aRaceRow) {
+        // Notifications from previous actions may cover the button on CI
+        dismissAllExistingNotifications();
         aRaceRow.clickActionImage(ACTION_START_TRACKING);
         waitForAjaxRequests();
     }
 
     public void stopTrackingForRace(DataEntryPO aRaceRow) {
+        // Notifications from previous actions may cover the button on CI
+        dismissAllExistingNotifications();
         aRaceRow.clickActionImage(ACTION_STOP_TRACKING);
         waitForAjaxRequests();
     }
 
     public void clickStartTrackingButton() {
+        // Notifications from previous actions may cover the button on CI
+        dismissAllExistingNotifications();
         this.startTrackingButton.click();
         waitForAjaxRequests();
     }
 
     public void removeDenotationForRace(DataEntryPO aRaceRow) {
+        // Notifications from previous actions may cover the button on CI
+        dismissAllExistingNotifications();
         aRaceRow.clickActionImage(ACTION_REMOVE_DENOTATION);
         waitForAjaxRequests();
     }
