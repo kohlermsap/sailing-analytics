@@ -23,6 +23,16 @@
         <div class="mainContent">
           <h2 class="releaseHeadline">Release Notes - Administration Console</h2>
           <div class="innerContent">
+          <h2 class="articleSubheadline">June 2026</h2>
+          <ul class="bulletList">
+                <li>Fixed a server crash occurring when computing maneuvers for races with a large number of competitors
+                    (e.g. 163 competitors in 505 Pre-Worlds 2014). All competitors' maneuvers were previously stored in a
+                    single MongoDB document, which exceeded MongoDB's 16&nbsp;MB BSON document size limit and caused the
+                    server to crash with a <tt>BsonMaximumSizeExceededException</tt>. Maneuvers are now stored in one
+                    document per competitor, keeping each document well within the size limit regardless of fleet size.
+                    See also <a href="https://bugzilla.sapsailing.com/bugzilla/show_bug.cgi?id=6226">bug 6226</a>.
+                </li>
+          </ul>
           <h2 class="articleSubheadline">April 2026</h2>
           <ul class="bulletList">
                 <li>Tables with multi-selection support now have a select/de-select all checkbox in the table header.
