@@ -2096,7 +2096,8 @@ public class MongoObjectFactoryImpl implements MongoObjectFactory {
         } catch (org.bson.BsonMaximumSizeExceededException e) {
             logger.log(Level.WARNING, "Maneuver document for competitor "+competitor.getName()+
                     " in race "+raceIdentifier+
-                    " got too big; what about bug 6226?", e);
+                    " got too big; we identified "+competitorManeuvers.size()+
+                    " maneuvers for that competitor alone. What about bug 6226?", e);
             throw e;
         }
     }
