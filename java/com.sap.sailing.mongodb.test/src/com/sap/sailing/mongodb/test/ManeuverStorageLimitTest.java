@@ -1,5 +1,6 @@
 package com.sap.sailing.mongodb.test;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -15,6 +16,7 @@ import org.json.simple.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -26,6 +28,7 @@ import com.sap.sailing.domain.common.ManeuverType;
 import com.sap.sailing.domain.common.RegattaNameAndRaceName;
 import com.sap.sailing.domain.common.Tack;
 import com.sap.sailing.domain.maneuverhash.ManeuverRaceFingerprint;
+import com.sap.sailing.domain.persistence.FieldNames;
 import com.sap.sailing.domain.persistence.impl.MongoObjectFactoryImpl;
 import com.sap.sailing.domain.tracking.Maneuver;
 import com.sap.sailing.domain.tracking.ManeuverCurveBoundaries;
@@ -40,19 +43,17 @@ import com.sap.sse.mongodb.MongoDBConfiguration;
 
 /**
  * Regression test for bug 6226 (https://github.com/eclipse-sailing-analytics/sailing-analytics/issues/6226):
- * {@link BsonMaximumSizeExceededException} storing maneuvers for large races with many competitors.
+ * {@link BsonMaximumSizeExceededException} storing maneuvers for large races.
  * <p>
  *
- * The old implementation stored all competitors' maneuvers in a single MongoDB document, which exceeded the 16MB BSON
- * limit for races with ~163 competitors. The fix stores one document per competitor instead.
- * <p>
- *
- * This test uses a synthetic dataset (200 competitors x 500 maneuvers each) to trigger the original issue and verify
- * that the new implementation handles it correctly.
+ * The original fix stored one document per competitor instead of one per race. This test also covers the follow-up
+ * case: a single competitor with enough maneuvers to exceed 16MB in one document. The implementation paginates
+ * across multiple documents keyed by (EVENT_NAME, RACE_NAME, COMPETITOR_ID, MANEUVER_PAGE_INDEX).
  */
 public class ManeuverStorageLimitTest {
     private static final int COMPETITOR_COUNT = 200;
     private static final int MANEUVERS_PER_COMPETITOR = 500;
+    private static final int MANEUVERS_PER_PAGE = 1000;
 
     private MongoDBConfiguration dbConfiguration;
     private MongoDatabase database;
@@ -66,9 +67,7 @@ public class ManeuverStorageLimitTest {
     }
 
     /**
-     * Verifies that the new per-competitor document storage does not exceed MongoDB's 16MB limit
-     * even for a large race (200 competitors, 500 maneuvers each).
-     * Verifies document count equals competitor count after storing.
+     * Verifies that competitors with fewer than 1000 maneuvers each produce one document per competitor.
      */
     @Test
     public void testNewImplementationStoresOneDocumentPerCompetitor() {
@@ -78,9 +77,56 @@ public class ManeuverStorageLimitTest {
         final Course course = mock(Course.class);
         new MongoObjectFactoryImpl(database).storeManeuvers(raceIdentifier, fingerprint, course, maneuvers);
         final MongoCollection<Document> collection = database.getCollection("MANEUVERS");
-        final long documentCount = collection.countDocuments();
-        assertEquals(COMPETITOR_COUNT, documentCount,
+        assertEquals(COMPETITOR_COUNT, collection.countDocuments(),
                 "Expected one document per competitor in the MANEUVERS collection");
+    }
+
+    /**
+     * Verifies that a competitor with 15000 maneuvers (enough to exceed the 16MB BSON limit in one document)
+     * is split into 15 pages of 1000 maneuvers each, and all maneuvers are stored successfully.
+     */
+    @Test
+    public void testPaginationSplitsLargeCompetitorAcrossMultipleDocuments() {
+        final int totalManeuvers = 15000;
+        final RegattaNameAndRaceName raceIdentifier = new RegattaNameAndRaceName("505 Pre-Worlds 2014 synthetic", "Race 1");
+        final Competitor competitor = mock(CompetitorImpl.class);
+        when(competitor.getId()).thenReturn("competitor-0");
+        final Map<Competitor, List<Maneuver>> maneuvers = new HashMap<>();
+        maneuvers.put(competitor, buildManeuverList(totalManeuvers));
+        final ManeuverRaceFingerprint fingerprint = buildMockFingerprint();
+        final Course course = mock(Course.class);
+        new MongoObjectFactoryImpl(database).storeManeuvers(raceIdentifier, fingerprint, course, maneuvers);
+        final MongoCollection<Document> collection = database.getCollection("MANEUVERS");
+        final int expectedPages = (int) Math.ceil((double) totalManeuvers / MANEUVERS_PER_PAGE);
+        assertEquals(expectedPages, collection.countDocuments(), "Expected " + expectedPages + " page documents for one competitor with " + totalManeuvers + " maneuvers");
+        final FindIterable<Document> docs = collection.find(new Document(FieldNames.COMPETITOR_ID.name(), "competitor-0"));
+        int totalManeuversLoaded = 0;
+        for (final Document doc : docs) {
+            final List<Document> page = doc.getList(FieldNames.MANEUVERS.name(), Document.class);
+            totalManeuversLoaded += page != null ? page.size() : 0;
+        }
+        assertEquals(totalManeuvers, totalManeuversLoaded, "Expected all maneuvers to be stored across pages");
+    }
+
+    /**
+     * Demonstrates that the pre-pagination implementation fails with BsonMaximumSizeExceededException
+     * for a competitor with 15000 maneuvers (matching Axel's real-world case of 18,270). The old code
+     * stored all maneuvers in one document with no page splitting, reproduced here via
+     * OldSinglePageMongoObjectFactoryForBug6226Test.
+     */
+    @Test
+    public void testOldSinglePageImplementationFailsWithBsonLimitExceeded() {
+        final RegattaNameAndRaceName raceIdentifier = new RegattaNameAndRaceName("505 Pre-Worlds 2014 synthetic", "Race 1");
+        final Competitor competitor = mock(CompetitorImpl.class);
+        when(competitor.getId()).thenReturn("competitor-0");
+        final Map<Competitor, List<Maneuver>> maneuvers = new HashMap<>();
+        maneuvers.put(competitor, buildManeuverList(15000));
+        final ManeuverRaceFingerprint fingerprint = buildMockFingerprint();
+        final Course course = mock(Course.class);
+        assertThrows(BsonMaximumSizeExceededException.class, () ->
+            new OldSinglePageMongoObjectFactoryForBug6226Test(database).storeManeuvers(raceIdentifier, fingerprint, course, maneuvers),
+            "Old single-page implementation must throw BsonMaximumSizeExceededException for a competitor with 2500 maneuvers"
+        );
     }
 
     private ManeuverRaceFingerprint buildMockFingerprint() {

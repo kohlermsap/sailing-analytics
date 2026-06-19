@@ -3309,13 +3309,19 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
     @Override
     public Map<RaceIdentifier, ManeuverRaceFingerprint> loadFingerprintsForManeuverHashes() {
         final MongoCollection<Document> maneuversCollection = database.getCollection(CollectionNames.MANEUVERS.name());
+        try {
+            maneuversCollection.dropIndex("maneuversbyeventraceandcompetitor");
+        } catch (final Exception e) {
+            // index does not exist yet, nothing to drop
+        }
         maneuversCollection.createIndex(new Document()
                 .append(FieldNames.EVENT_NAME.name(), 1)
                 .append(FieldNames.RACE_NAME.name(), 1)
-                .append(FieldNames.COMPETITOR_ID.name(), 1),
+                .append(FieldNames.COMPETITOR_ID.name(), 1)
+                .append(FieldNames.MANEUVER_PAGE_INDEX.name(), 1),
             new IndexOptions()
                 .unique(true)
-                .name("maneuversbyeventraceandcompetitor")
+                .name("maneuversbyeventracecompetitorandpage")
                 .background(false));
         final Map<RaceIdentifier, ManeuverRaceFingerprint> fingerprintHashMap = new HashMap<>();
         for (final Document currentDocument : maneuversCollection.find()) {

@@ -171,6 +171,7 @@ import com.sap.sse.shared.media.VideoDescriptor;
 
 public class MongoObjectFactoryImpl implements MongoObjectFactory {
     private static Logger logger = Logger.getLogger(MongoObjectFactoryImpl.class.getName());
+    private static final int MANEUVERS_PER_PAGE = 1000;
     private final MongoDatabase database;
     private final CompetitorWithBoatRefJsonSerializer competitorWithBoatRefSerializer = CompetitorWithBoatRefJsonSerializer.create(/* serializeNonPublicCompetitorFields */ true);
     private final CompetitorJsonSerializer competitorSerializer = CompetitorJsonSerializer.create(
@@ -2071,24 +2072,35 @@ public class MongoObjectFactoryImpl implements MongoObjectFactory {
         final JSONObject fingerprintjson = fingerprint.toJson();
         final Document fingerprintDoc = Document.parse(fingerprintjson.toString());
         for (final Entry<Competitor, List<Maneuver>> e : maneuvers.entrySet()) {
-            storeCompetitorManeuvers(maneuverCollection, raceIdentifier, fingerprintDoc, course, e.getKey(), e.getValue());
+            final List<Maneuver> competitorManeuvers = e.getValue() != null ? e.getValue() : new ArrayList<>();
+            final int pageCount = Math.max(1, (int) Math.ceil((double) competitorManeuvers.size() / MANEUVERS_PER_PAGE));
+            if (pageCount > 1) {
+                logger.warning("Competitor " + e.getKey().getName() + " in race " + raceIdentifier
+                        + " has " + competitorManeuvers.size() + " maneuvers, splitting into " + pageCount
+                        + " documents of up to " + MANEUVERS_PER_PAGE + " maneuvers each (bug 6226).");
+            }
+            for (int pageIndex = 0; pageIndex < pageCount; pageIndex++) {
+                final int from = pageIndex * MANEUVERS_PER_PAGE;
+                final int to = Math.min(from + MANEUVERS_PER_PAGE, competitorManeuvers.size());
+                storeCompetitorManeuvers(maneuverCollection, raceIdentifier, fingerprintDoc, course, e.getKey(), competitorManeuvers.subList(from, to), pageIndex);
+            }
         }
     }
 
     private void storeCompetitorManeuvers(MongoCollection<Document> maneuverCollection, RaceIdentifier raceIdentifier,
-            Document fingerprintDoc, Course course, Competitor competitor, List<Maneuver> competitorManeuvers) {
+            Document fingerprintDoc, Course course, Competitor competitor, List<Maneuver> competitorManeuvers, final int pageIndex) {
         final Document query = new Document();
         DomainObjectFactoryImpl.addRaceIdentifierToQuery(query, raceIdentifier);
         query.put(FieldNames.COMPETITOR_ID.name(), competitor.getId());
+        query.put(FieldNames.MANEUVER_PAGE_INDEX.name(), pageIndex);
         final Document result = new Document();
         result.put(FieldNames.MANEUVER_FINGERPRINT.name(), fingerprintDoc);
         storeRaceIdentifier(result, raceIdentifier);
         result.put(FieldNames.COMPETITOR_ID.name(), competitor.getId());
+        result.put(FieldNames.MANEUVER_PAGE_INDEX.name(), pageIndex);
         final List<Document> maneuverList = new ArrayList<>();
-        if (competitorManeuvers != null) {
-            for (final Maneuver maneuver : competitorManeuvers) {
-                maneuverList.add(generateManeuverDoc(maneuver, course));
-            }
+        for (final Maneuver maneuver : competitorManeuvers) {
+            maneuverList.add(generateManeuverDoc(maneuver, course));
         }
         result.put(FieldNames.MANEUVERS.name(), maneuverList);
         try {
