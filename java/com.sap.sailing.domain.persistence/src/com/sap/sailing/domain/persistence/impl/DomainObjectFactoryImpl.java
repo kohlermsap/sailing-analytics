@@ -3310,6 +3310,11 @@ public class DomainObjectFactoryImpl implements DomainObjectFactory {
     public Map<RaceIdentifier, ManeuverRaceFingerprint> loadFingerprintsForManeuverHashes() {
         final MongoCollection<Document> maneuversCollection = database.getCollection(CollectionNames.MANEUVERS.name());
         try {
+            maneuversCollection.dropIndex("maneuversbyeventandrace");
+        } catch (final Exception e) {
+            // index does not exist yet, nothing to drop
+        }
+        try {
             maneuversCollection.dropIndex("maneuversbyeventraceandcompetitor");
         } catch (final Exception e) {
             // index does not exist yet, nothing to drop
