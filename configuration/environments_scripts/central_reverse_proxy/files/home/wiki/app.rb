@@ -95,8 +95,6 @@ class App < Precious::App
       :client_secret => CLIENT_SECRET,
       :code => params[:code],
       :redirect_uri => REDIRECT_URL,
-      :timeout => 5,
-      :open_timeout => 3,
     },
                                         :accept => :json))
     scopes = result["scope"].split(",")
@@ -200,8 +198,6 @@ class App < Precious::App
       RestClient.get(uri.to_s(),
                      {
         :Authorization => "Bearer #{access_token}",
-        :timeout => 5,
-        :open_timeout => 3,
       })
     rescue RestClient::Unauthorized, RestClient::Forbidden
       LOGGER.warn("GitHub auth failed for #{path}")
