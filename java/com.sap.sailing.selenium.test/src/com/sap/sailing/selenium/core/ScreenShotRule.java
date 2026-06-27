@@ -77,13 +77,13 @@ public class ScreenShotRule implements TestExecutionExceptionHandler {
                         final File destinationDir = new File(screenshotFolder, context.getRequiredTestClass().getName());
                         destinationDir.mkdirs();
                         final File destination = new File(destinationDir, filename + SCREENSHOT_FILE_EXTENSION); //$NON-NLS-1$
-                        final Path workspace = Paths.get(System.getProperty("user.dir"));
-                        final Path relative = workspace.relativize(destination.toPath());
+                        final Path workspace = Paths.get(System.getProperty("user.dir")).toAbsolutePath().normalize();
+                        final Path absoluteFile = destination.getCanonicalFile().toPath().toAbsolutePath().normalize();
+                        final Path relativePath = workspace.relativize(absoluteFile);
                         final Path path = destination.toPath();
                         Files.copy(source, path, StandardCopyOption.REPLACE_EXISTING);
                         // ATTENTION: Do not remove this line because it is needed for the JUnit Attachment Plugin!
-                        System.out.println(String.format(ATTACHMENT_FORMAT, relative.toString().replace("\\", "/")));
-                    } catch (IOException exception) {
+                        System.out.println(String.format(ATTACHMENT_FORMAT, relativePath.toString().replace("\\", "/")));                    } catch (IOException exception) {
                         throw new RuntimeException(exception);
                     }
                 } catch (Exception e) {
