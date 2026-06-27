@@ -54,7 +54,7 @@ class App < Precious::App
       revoke_access_token(session[:access_token])
     end
     session.clear()
-    "logged out"
+    "Logged out"
   end
 
   get "/login" do
@@ -143,13 +143,11 @@ class App < Precious::App
     def check!
       path = env["PATH_INFO"]
       return if login_path?(path)
+      return if path == "/robots.txt"
+      return if public_path?(path)
       return if asset_path?(path)
-      isPublicPath = public_path?(path)
-      isAuthPath = auth_path?(path)
-      if isPublicPath || isAuthPath
-        return
-      end
-      halt 404, "You cannot access anything outside wiki/ path."
+      return if auth_path?(path)
+      halt 403, "You cannot access anything outside wiki/ path."
     end
 
     def authorize_write
