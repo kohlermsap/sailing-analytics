@@ -2814,19 +2814,19 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
 
     @Override
     public Map<CompetitorDTO, List<GPSFixDTOWithSpeedWindTackAndLegType>> getDouglasPoints(
-            RegattaAndRaceIdentifier raceIdentifier, Map<CompetitorDTO, TimeRange> competitorTimeRanges)
+            RegattaAndRaceIdentifier raceIdentifier, Map<String, TimeRange> competitorIdsAsStringsAndTimeRanges)
             throws NoWindException {
         final Map<CompetitorDTO, List<GPSFixDTOWithSpeedWindTackAndLegType>> result = new HashMap<>();
         final TrackedRace trackedRace = getExistingTrackedRace(raceIdentifier);
         getSecurityService().checkCurrentUserReadPermission(trackedRace);
         if (trackedRace != null) {
             for (Competitor competitor : trackedRace.getRace().getCompetitors()) {
-                final CompetitorDTO competitorDTO = baseDomainFactory.convertToCompetitorDTO(competitor);
-                if (competitorTimeRanges.containsKey(competitorDTO)) {
+                final String competitorIdAsString = competitor.getId().toString();
+                if (competitorIdsAsStringsAndTimeRanges.containsKey(competitorIdAsString)) {
                     // get Track of competitor
                     final GPSFixTrack<Competitor, GPSFixMoving> gpsFixTrack = trackedRace.getTrack(competitor);
                     // Distance for DouglasPeucker
-                    final TimeRange timeRange = competitorTimeRanges.get(competitorDTO);
+                    final TimeRange timeRange = competitorIdsAsStringsAndTimeRanges.get(competitorIdAsString);
                     final Iterable<GPSFixMoving> gpsFixApproximation = trackedRace.approximate(competitor, timeRange.from(),
                             timeRange.to());
                     final List<GPSFixDTOWithSpeedWindTackAndLegType> gpsFixDouglasList = new ArrayList<>();
@@ -2846,6 +2846,7 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
                         final SpeedWithBearing speedWithBearing = gpsFixTrack.getEstimatedSpeed(fix.getTimePoint());
                         gpsFixDouglasList.add(createDouglasPeuckerGPSFixDTO(trackedRace, competitor, fix, speedWithBearing));
                     }
+                    final CompetitorDTO competitorDTO = baseDomainFactory.convertToCompetitorDTO(competitor);
                     result.put(competitorDTO, gpsFixDouglasList);
                 }
             }
@@ -2874,17 +2875,17 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
     }
 
     @Override
-    public Map<CompetitorDTO, List<ManeuverDTO>> getManeuvers(RegattaAndRaceIdentifier raceIdentifier,
-            Map<CompetitorDTO, TimeRange> competitorTimeRanges) throws NoWindException {
-        final Map<CompetitorDTO, List<ManeuverDTO>> result = new HashMap<>();
+    public Map<String, List<ManeuverDTO>> getManeuvers(RegattaAndRaceIdentifier raceIdentifier,
+            Map<String, TimeRange> competitorIdsAsStringsAndTimeRanges) throws NoWindException {
+        final Map<String, List<ManeuverDTO>> result = new HashMap<>();
         final TrackedRace trackedRace = getExistingTrackedRace(raceIdentifier);
         getSecurityService().checkCurrentUserReadPermission(trackedRace);
         if (trackedRace != null) {
-            final Map<CompetitorDTO, Future<List<ManeuverDTO>>> futures = new HashMap<>();
+            final Map<String, Future<List<ManeuverDTO>>> futures = new HashMap<>();
             for (Competitor competitor : trackedRace.getRace().getCompetitors()) {
-                final CompetitorDTO competitorDTO = baseDomainFactory.convertToCompetitorDTO(competitor);
-                if (competitorTimeRanges.containsKey(competitorDTO)) {
-                    final TimeRange timeRange = competitorTimeRanges.get(competitorDTO);
+                final String competitorIdAsString = competitor.getId().toString();
+                if (competitorIdsAsStringsAndTimeRanges.containsKey(competitorIdAsString)) {
+                    final TimeRange timeRange = competitorIdsAsStringsAndTimeRanges.get(competitorIdAsString);
                     final TimePoint from = timeRange.from(), to = timeRange.to();
                     final RunnableFuture<List<ManeuverDTO>> future = new FutureTask<>(() -> {
                         // We're on a web server request thread. Try not to take too long for this,
@@ -2894,13 +2895,12 @@ public class SailingServiceImpl extends ResultCachingProxiedRemoteServiceServlet
                         return createManeuverDTOsForCompetitor(maneuvers, trackedRace, competitor);
                     });
                     executor.execute(future); // security checks happen before; no need to associate future with Subject
-                    futures.put(competitorDTO, future);
+                    futures.put(competitorIdAsString, future);
                 }
             }
-            for (Map.Entry<CompetitorDTO, Future<List<ManeuverDTO>>> competitorAndFuture : futures.entrySet()) {
+            for (Map.Entry<String, Future<List<ManeuverDTO>>> competitorIdAsStringAndFuture : futures.entrySet()) {
                 try {
-                    final List<ManeuverDTO> maneuversForCompetitor = competitorAndFuture.getValue().get();
-                    result.put(competitorAndFuture.getKey(), maneuversForCompetitor);
+                    result.put(competitorIdAsStringAndFuture.getKey(), competitorIdAsStringAndFuture.getValue().get());
                 } catch (InterruptedException | ExecutionException e) {
                     throw new RuntimeException(e);
                 }

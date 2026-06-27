@@ -48,6 +48,7 @@ import com.sap.sailing.domain.common.racelog.Flags;
 import com.sap.sailing.domain.common.tracking.GPSFix;
 import com.sap.sailing.domain.common.tracking.GPSFixMoving;
 import com.sap.sailing.domain.common.tracking.SensorFix;
+import com.sap.sailing.domain.leaderboard.HasCourseAreasListener;
 import com.sap.sailing.domain.leaderboard.ScoringScheme;
 import com.sap.sailing.domain.leaderboard.caching.LeaderboardDTOCalculationReuseCache;
 import com.sap.sailing.domain.leaderboard.impl.CompetitorAndRankComparable;
@@ -648,6 +649,14 @@ public class MockedTrackedRace implements DynamicTrackedRace {
                     @Override
                     public void setAutoRestartTrackingUponCompetitorSetChange(
                             boolean autoRestartTrackingUponCompetitorSetChange) {
+                    }
+
+                    @Override
+                    public void addCourseAreaChangeListener(HasCourseAreasListener listener) {
+                    }
+
+                    @Override
+                    public void removeCourseAreaChangeListener(HasCourseAreasListener listener) {
                     }
                 };
             }
