@@ -85,7 +85,12 @@ public class ScreenShotRule implements TestExecutionExceptionHandler {
                         // relative path for Jenkins attachment plugin
                         final Path relative = base.relativize(file);
                         // ATTENTION: required for JUnit Attachment Plugin
-                        System.out.println(String.format(ATTACHMENT_FORMAT, relative.toString().replace("\\", "/")));                 
+                        final String attachmentLine = String.format(ATTACHMENT_FORMAT, relative.toString().replace("\\", "/"));
+                        System.out.println(attachmentLine);
+                        System.out.flush(); // replaced System.out may not auto-flush
+                        // duplicate to System.err because tycho-surefire may read test stuff from there
+                        System.err.println(attachmentLine);
+                        System.err.flush(); // replaced System.err may not auto-flush
                     } catch (IOException exception) {
                         throw new RuntimeException(exception);
                     }
