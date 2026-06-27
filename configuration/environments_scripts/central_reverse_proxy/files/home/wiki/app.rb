@@ -23,9 +23,9 @@ class App < Precious::App
 
   REPO_OWNER = "SAP"
   REPO_NAME = "sailing-analytics"
+  LOGIN_LINK = "<a href='/login'>Login (will redirect to GitHub)</a>".freeze
   before { check! }
-  before "/gollum/(edit|create|rename|delete)/*" do
-    session[:prev]=env["PATH_INFO"]
+  before "/gollum/(edit|create|rename|delete|history)/*" do
     authorize_write
     session["gollum.author"] = {
       :name => session[:name],
@@ -69,7 +69,6 @@ class App < Precious::App
     if session[:logged_in]
       # Ensures cancel works in editor after login.
       if session[:prev]
-        LOGGER.debug(session[:prev])
         prev = session[:prev].dup
         stripped_prev = prev.sub("/gollum/edit", "")
         redirect stripped_prev
@@ -119,11 +118,11 @@ class App < Precious::App
     end
 
     def asset_path?(path)
-      NON_PAGE_PATTERNS.match?(path)
+      NON_PAGE_PATTERNS.any? {|link| link.match?(path)}
     end
 
     def auth_path?(path)
-      AUTH_PATHS.match?(path) 
+      AUTH_PATHS.any?{ |link| link.match?(path) }
     end
 
     def login_path?(path)
@@ -146,10 +145,11 @@ class App < Precious::App
       LOGGER.debug("Checking auth before writing")
 
       if !session[:logged_in]
-        if env["PATH_INFO"].match(%r{/gollum/delete/.*})
+        if env["PATH_INFO"].start_with?("/gollum/delete")
           halt 401, "Unauthorized"
         end
-        redirect "/login"
+        session[:prev] = env["PATH_INFO"]
+        halt 401, LOGIN_LINK
       end
       halt 403, "Forbidden" unless user_can_write()
     end
