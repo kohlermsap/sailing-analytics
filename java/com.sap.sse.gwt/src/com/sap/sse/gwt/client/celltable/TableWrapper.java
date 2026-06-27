@@ -6,6 +6,7 @@ import java.util.function.Function;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.cellview.client.ColumnSortEvent.ListHandler;
+import com.google.gwt.user.cellview.client.Header;
 import com.google.gwt.user.cellview.client.SimplePager;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -236,17 +237,17 @@ public abstract class TableWrapper<T, S extends RefreshableSelectionModel<T>, SM
             selectionCheckboxColumn = new SelectionCheckboxColumn<T>(
                     getTableRes().cellTableStyle().cellTableCheckboxSelected(),
                     getTableRes().cellTableStyle().cellTableCheckboxDeselected(),
-                    getTableRes().cellTableStyle().cellTableCheckboxColumnCell(), entityIdentityComparator, dataProvider,
-                    table);
+                    getTableRes().cellTableStyle().cellTableCheckboxColumnCell(), entityIdentityComparator, dataProvider);
             columnSortHandler.setComparator(selectionCheckboxColumn, selectionCheckboxColumn.getComparator());
             @SuppressWarnings("unchecked")
-            S typedSelectionModel = (S) selectionCheckboxColumn.getSelectionModel();
+            final S typedSelectionModel = (S) selectionCheckboxColumn.getSelectionModel();
             selectionModel = typedSelectionModel;
             table.setSelectionModel(selectionModel, selectionCheckboxColumn.getSelectionManager());
-            table.addColumn(selectionCheckboxColumn, selectionCheckboxColumn.getHeader());
+            final Header<Boolean> selectAllHeader = selectionCheckboxColumn.createHeader();
+            table.addColumn(selectionCheckboxColumn, selectAllHeader);
         } else {
             @SuppressWarnings("unchecked")
-            S typedSelectionModel = (S) new RefreshableSingleSelectionModel<T>(entityIdentityComparator, dataProvider);
+            final S typedSelectionModel = (S) new RefreshableSingleSelectionModel<T>(entityIdentityComparator, dataProvider);
             selectionModel = typedSelectionModel;
             table.setSelectionModel(selectionModel);
         }

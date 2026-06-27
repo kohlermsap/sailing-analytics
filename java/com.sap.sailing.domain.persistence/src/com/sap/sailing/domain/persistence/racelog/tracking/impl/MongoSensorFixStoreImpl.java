@@ -192,7 +192,6 @@ public class MongoSensorFixStoreImpl extends MongoFixHandler implements MongoSen
             }
         }
         progressConsumer.accept(1d);
-        
         return fixLoaded;
     }
 
@@ -257,7 +256,8 @@ public class MongoSensorFixStoreImpl extends MongoFixHandler implements MongoSen
         });
         for (FixT fix : fixes) {
             for (FixReceivedListener<FixT> listener : listenersToInform) {
-                final Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> racesWithManeuverChangeFromListener = listener.fixReceived(device, fix, returnManeuverChanges, returnLiveDelay);
+                final Iterable<Triple<RegattaAndRaceIdentifier, Boolean, Duration>> racesWithManeuverChangeFromListener =
+                        listener.fixReceived(device, fix, returnManeuverChanges, returnLiveDelay);
                 Util.addAll(racesWithManeuverChangeFromListener, raceWithChangedManeuver);
             }
         }

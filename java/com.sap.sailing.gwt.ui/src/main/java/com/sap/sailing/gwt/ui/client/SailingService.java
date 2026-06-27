@@ -212,11 +212,11 @@ public interface SailingService extends RemoteService, RemoteReplicationService 
     SwissTimingEventRecordDTO getRacesOfSwissTimingEvent(String eventJsonURL) throws UnauthorizedException, Exception;
 
     Map<CompetitorDTO, List<GPSFixDTOWithSpeedWindTackAndLegType>> getDouglasPoints(
-            RegattaAndRaceIdentifier raceIdentifier, Map<CompetitorDTO, TimeRange> competitorTimeRanges)
+            RegattaAndRaceIdentifier raceIdentifier, Map<String, TimeRange> competitorIdsAsStringsAndTimeRanges)
             throws NoWindException, UnauthorizedException;
 
-    Map<CompetitorDTO, List<ManeuverDTO>> getManeuvers(RegattaAndRaceIdentifier raceIdentifier,
-            Map<CompetitorDTO, TimeRange> competitorTimeRanges) throws NoWindException, UnauthorizedException;
+    Map<String, List<ManeuverDTO>> getManeuvers(RegattaAndRaceIdentifier raceIdentifier,
+            Map<String, TimeRange> competitorIdsAsStringsAndTimeRanges) throws NoWindException, UnauthorizedException;
 
     List<LeaderboardGroupDTO> getLeaderboardGroups(boolean withGeoLocationData) throws UnauthorizedException;
 
