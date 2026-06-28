@@ -18,7 +18,10 @@ public class ReplicaDTO implements IsSerializable, Named {
     private long totalNumberOfBytesSent;
     private String[] replicableIdsAsStrings;
     private String additionalInformation;
-    ReplicaDTO() {}
+
+    @Deprecated // GWT serialization only
+    ReplicaDTO() {
+    }
 
     public ReplicaDTO(String hostname, Date registrationTime, String identifier, String[] replicableIdsAsStrings,
             String additionalInformation, Map<String, Integer> operationCountByOperationClassName,
@@ -35,37 +38,48 @@ public class ReplicaDTO implements IsSerializable, Named {
         this.averageMessageSizeInBytes = averageMessageSizeInBytes;
         this.totalNumberOfBytesSent = totalNumberOfBytesSent;
     }
+
     @Override
     public String getName() {
         return hostname;
     }
+
     public String getHostname() {
         return hostname;
     }
+
     public Date getRegistrationTime() {
         return registrationTime;
     }
+
     public String getAdditionalInformation() {
         return additionalInformation;
     }
+
     public Map<String, Integer> getOperationCountByOperationClassName() {
         return operationCountByOperationClassName;
     }
+
     public double getAverageNumberOfOperationsPerMessage() {
         return averageNumberOfOperationsPerMessage;
     }
+
     public long getNumberOfMessagesSent() {
         return numberOfMessagesSent;
     }
+
     public long getNumberOfBytesSent() {
         return totalNumberOfBytesSent;
     }
+
     public double getAverageMessageSizeInBytes() {
         return averageMessageSizeInBytes;
     }
+
     public String getIdentifier() {
         return identifier;
     }
+
     public String[] getReplicableIdsAsStrings() {
         return replicableIdsAsStrings;
     }
