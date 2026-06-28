@@ -7,6 +7,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 import com.sap.sse.common.Named;
 
 public class ReplicaDTO implements IsSerializable, Named {
+    private static final long serialVersionUID = -5858453191501469637L;
     private String hostname;
     private String identifier;
     private Date registrationTime;
