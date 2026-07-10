@@ -56,7 +56,7 @@ jobs:
           JAVA17_HOME: ${{env.JAVA_HOME_17_X64}}
         run: |
             ./java/com.amazon.aws.aws-java-api/createLocalAwsApiP2Repository.sh 2>&1 | tee build.log
-            echo "VERSION=$( cat build.gradle | grep "implementation platform('software.amazon.awssdk:bom:[0-9.]*')" | sed -e 's/^\s*implementation platform('\''software\.amazon\.awssdk:bom:\([0-9.]*\)'\'')/\1/' )" >>${GITHUB_ENV}
+            echo "VERSION=$( cat java/com.amazon.aws.aws-java-api/build.gradle | grep "implementation platform('software.amazon.awssdk:bom:[0-9.]*')" | sed -e 's/^\s*implementation platform('\''software\.amazon\.awssdk:bom:\([0-9.]*\)'\'')/\1/' )" >>${GITHUB_ENV}
       - name: Upload build log
         uses: actions/upload-artifact@v4
         if: always()
