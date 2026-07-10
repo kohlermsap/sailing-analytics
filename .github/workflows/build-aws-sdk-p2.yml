@@ -77,4 +77,5 @@ jobs:
           key: ${{ secrets.SCP_KEY }}
           passphrase: ${{ secrets.SCP_PASSPHRASE }}
           source: "java/com.amazon.aws.aws-java-api.updatesite/target/repository"
-          target: "/home/data/httpd/sailing-analytics/p2/aws-sdk"
+          target: "/home/data/httpd/download.eclipse.org/sailing-analytics/p2/aws-sdk"
+          rm: true
