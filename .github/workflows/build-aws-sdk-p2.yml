@@ -56,9 +56,6 @@ jobs:
           POLAR_DATA_BASE_URL: ${{ vars.POLAR_DATA_BASE_URL }}
           JAVA8_HOME: ${{env.JAVA_HOME_8_X64}}
           JAVA17_HOME: ${{env.JAVA_HOME_17_X64}}
-          SCP_USERNAME: ${{ vars.SCP_USERNAME }}
-          SCP_KEY: ${{ secrets.SCP_KEY }}
-          SCP_PASSPHRASE: ${{ secrets.SCP_PASSPHRASE }}
         run: |
             ./java/com.amazon.aws.aws-java-api/createLocalAwsApiP2Repository.sh 2>&1 >build.log
       - name: Upload build log
