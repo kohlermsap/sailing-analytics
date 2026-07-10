@@ -289,10 +289,51 @@ public class LoadApi {
         otherParams += "&language=" + language.getValue();
     }
 
-    AjaxLoaderOptions settings = AjaxLoaderOptions.newInstance();
-    settings.setOtherParms(otherParams);
-    AjaxLoader.loadApi("maps", API_VERSION, onLoad, settings);
+    if (isMapLibreRequested()) {
+      loadMapLibre(onLoad);
+    } else {
+      setGoogleProvider();
+      final AjaxLoaderOptions settings = AjaxLoaderOptions.newInstance();
+      settings.setOtherParms(otherParams);
+      AjaxLoader.loadApi("maps", API_VERSION, onLoad, settings);
+    }
   }
+
+  private static native boolean isMapLibreRequested() /*-{
+    return new $wnd.URLSearchParams($wnd.location.search).get('maps') === 'maplibre';
+  }-*/;
+
+  private static native void setGoogleProvider() /*-{
+    $wnd.__mapsProvider = { provider: 'google', loaded: false };
+  }-*/;
+
+  private static native void loadMapLibre(Runnable onLoad) /*-{
+    var run = function() {
+      onLoad.@java.lang.Runnable::run()();
+    };
+    if ($wnd.google && $wnd.google.maps && $wnd.google.maps.Map) {
+      run();
+      return;
+    }
+    var loadScript = function(src, callback) {
+      var script = $doc.createElement('script');
+      script.src = src;
+      script.onload = callback;
+      script.onerror = function() { throw new Error('Failed to load ' + src); };
+      $doc.head.appendChild(script);
+    };
+    var css = $doc.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.css';
+    $doc.head.appendChild(css);
+    loadScript('https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.js', function() {
+      var moduleScript = $doc.createElement('script');
+      moduleScript.type = 'module';
+      moduleScript.text = "import { installGwtMapsCompat } from './js/maps/gwt-maps-maplibre-compat.js'; installGwtMapsCompat(); window.__mapsProvider = { provider: 'maplibre', loaded: true }; window.__sailingMapsLoaded();";
+      $wnd.__sailingMapsLoaded = run;
+      $doc.head.appendChild(moduleScript);
+    });
+  }-*/;
 
   /**
    * get the url libraries parameter
