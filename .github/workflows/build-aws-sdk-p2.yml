@@ -1,0 +1,95 @@
+name: release
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'java/com.amazon.aws.aws-java-api/**'
+      - 'java/com.amazon.aws.aws-java-api.updatesite/**'
+  workflow_dispatch: {}
+
+jobs:
+  build-aws-sdk-p2:
+    permissions:
+      contents: write
+      checks: write
+      actions: read
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: false
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: false
+          swap-storage: true
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@94c3c3d9567a0205de6da68a76c428ce4e769af1 # v2.0.0
+        with:
+          comment_on_pr: false
+      - name: Check out the repository to the runner
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '500'
+      - name: Install JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '8'
+          mvn-toolchain-id: 'JavaSE-1.8'
+      - name: Install JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '17'
+          mvn-toolchain-id: 'JavaSE-17'
+      - shell: bash
+        env: # Or as an environment variable
+          TMP: /mnt/tmp
+          GOOGLE_MAPS_AUTHENTICATION_PARAMS: ${{ secrets.GOOGLE_MAPS_AUTHENTICATION_PARAMS }}
+          POLAR_DATA_BASE_URL: ${{ vars.POLAR_DATA_BASE_URL }}
+          JAVA8_HOME: ${{env.JAVA_HOME_8_X64}}
+          JAVA17_HOME: ${{env.JAVA_HOME_17_X64}}
+        run: |
+            ./java/com.amazon.aws.aws-java-api/createLocalAwsApiP2Repository.sh 2>&1 >build.log
+      - name: Upload build log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+            name: build.log
+            path: build.log
+            retention-days: 90
+      - name: Upload p2 site as artifact
+        uses: actions/upload-artifact@v4
+        with:
+            TODO: grab p2 repo output and zip it up...
+            name: awk-sdk-p2
+            path: java/com.amazon.aws.aws-java-api/target/repository/**/*
+            retention-days: 90
+      - name: Upload p2 site to target share
+        env:
+          CI_JOB_USERNAME: ${{ vars.CI_JOB_USERNAME }}
+          CI_JOB_PASSWORD: ${{ secrets.CI_JOB_PASSWORD }}
+          CI_JOB_TOKEN: ${{ secrets.CI_JOB_TOKEN }}
+        if: ${{ always() && env.CI_JOB_USERNAME != '' && env.CI_JOB_PASSWORD != '' && env.CI_JOB_TOKEN != '' }}
+        shell: bash
+        run: |
+            eval "$(ssh-agent -s)"
+            cat > askpass.sh <<'EOF'
+            #!/bin/sh
+            echo "$SCP_PASSPHRASE"
+            EOF
+            chmod 700 askpass.sh
+            export SCP_PASSPHRASE="${{ secrets.SCP_PASSPHRASE }}"
+            export SSH_ASKPASS="$PWD/askpass.sh"
+            export DISPLAY=:0
+            printf '%s\n' "${{ secrets.SCP_KEY }}" > id_ed25519
+            chmod 600 id_ed25519
+            setsid ssh-add id_ed25519 </dev/null
+            scp -rp TODO continue here...
