@@ -52,12 +52,10 @@ jobs:
       - shell: bash
         env: # Or as an environment variable
           TMP: /mnt/tmp
-          GOOGLE_MAPS_AUTHENTICATION_PARAMS: ${{ secrets.GOOGLE_MAPS_AUTHENTICATION_PARAMS }}
-          POLAR_DATA_BASE_URL: ${{ vars.POLAR_DATA_BASE_URL }}
           JAVA8_HOME: ${{env.JAVA_HOME_8_X64}}
           JAVA17_HOME: ${{env.JAVA_HOME_17_X64}}
         run: |
-            ./java/com.amazon.aws.aws-java-api/createLocalAwsApiP2Repository.sh 2>&1 >build.log
+            ./java/com.amazon.aws.aws-java-api/createLocalAwsApiP2Repository.sh 2>&1 | tee build.log
       - name: Upload build log
         uses: actions/upload-artifact@v4
         if: always()
@@ -69,7 +67,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
             name: awk-sdk-p2
-            path: java/com.amazon.aws.aws-java-api/target/repository/**/*
+            path: java/com.amazon.aws.aws-java-api.updatesite/target/repository/**/*
             retention-days: 90
       - name: SCP artifacts to download.eclipse.org
         uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345 # v1
@@ -78,5 +76,5 @@ jobs:
           username: ${{ secrets.SCP_USERNAME }}
           key: ${{ secrets.SCP_KEY }}
           passphrase: ${{ secrets.SCP_PASSPHRASE }}
-          source: "java/com.amazon.aws.aws-java-api/target/repository"
+          source: "java/com.amazon.aws.aws-java-api.updatesite/target/repository"
           target: "/home/data/httpd/sailing-analytics/p2/aws-sdk"
