@@ -66,7 +66,7 @@ jobs:
       - name: Upload p2 site as artifact
         uses: actions/upload-artifact@v4
         with:
-            name: awk-sdk-p2
+            name: aws-sdk-p2
             path: java/com.amazon.aws.aws-java-api.updatesite/target/repository/**/*
             retention-days: 90
       - name: SCP artifacts to download.eclipse.org
@@ -78,4 +78,5 @@ jobs:
           passphrase: ${{ secrets.SCP_PASSPHRASE }}
           source: "java/com.amazon.aws.aws-java-api.updatesite/target/repository"
           target: "/home/data/httpd/download.eclipse.org/sailing-analytics/p2/aws-sdk"
+          strip_components: 4
           rm: true
