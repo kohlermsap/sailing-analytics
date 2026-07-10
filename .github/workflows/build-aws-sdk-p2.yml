@@ -56,6 +56,7 @@ jobs:
           JAVA17_HOME: ${{env.JAVA_HOME_17_X64}}
         run: |
             ./java/com.amazon.aws.aws-java-api/createLocalAwsApiP2Repository.sh 2>&1 | tee build.log
+            echo "VERSION=$( cat build.gradle | grep "implementation platform('software.amazon.awssdk:bom:[0-9.]*')" | sed -e 's/^\s*implementation platform('\''software\.amazon\.awssdk:bom:\([0-9.]*\)'\'')/\1/' )" >>${GITHUB_ENV}
       - name: Upload build log
         uses: actions/upload-artifact@v4
         if: always()
@@ -69,7 +70,18 @@ jobs:
             name: aws-sdk-p2
             path: java/com.amazon.aws.aws-java-api.updatesite/target/repository/**/*
             retention-days: 90
-      - name: SCP artifacts to download.eclipse.org
+      - name: SCP artifacts to download.eclipse.org to version-specific folder
+        uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345 # v1
+        with:
+          host: projects-storage.eclipse.org
+          username: ${{ secrets.SCP_USERNAME }}
+          key: ${{ secrets.SCP_KEY }}
+          passphrase: ${{ secrets.SCP_PASSPHRASE }}
+          source: "java/com.amazon.aws.aws-java-api.updatesite/target/repository"
+          target: "/home/data/httpd/download.eclipse.org/sailing-analytics/p2/aws-sdk-${{env.VERSION}}"
+          strip_components: 4
+          rm: true
+      - name: SCP artifacts to download.eclipse.org to default folder
         uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345 # v1
         with:
           host: projects-storage.eclipse.org
