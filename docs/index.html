@@ -312,7 +312,7 @@
       transition: background var(--transition);
     }
     .modal__store-btn:hover { background: #444; text-decoration: none; color: var(--white); }
-    .modal__store-btn img[src*="flaticon"], .sol-card__store img[src*="flaticon"] { filter: invert(1); }
+    .modal__store-btn img[src*="logo-app-store"], .sol-card__store img[src*="logo-app-store"] { filter: invert(1); }
     /* Split store button */
     .store-split {
       display: inline-flex; border-radius: var(--radius); overflow: hidden;
@@ -327,7 +327,7 @@
     }
     .store-split__half:hover { background: #444; color: var(--white); text-decoration: none; }
     .store-split__half + .store-split__half { border-left: 1px solid #555; }
-    .store-split__half img[src*="flaticon"] { filter: invert(1); }
+    .store-split__half img[src*="logo-app-store"] { filter: invert(1); }
     /* Same split style for sol-cards (dark background) */
     .sol-card__store-split {
       display: inline-flex; border-radius: 100px; overflow: hidden;
@@ -342,7 +342,7 @@
     }
     .sol-card__store-split__half:hover { background: rgba(255,255,255,.08); color: #fff; text-decoration: none; }
     .sol-card__store-split__half + .sol-card__store-split__half { border-left: 1px solid rgba(255,255,255,.22); }
-    .sol-card__store-split__half img[src*="flaticon"] { filter: invert(1); opacity: .8; }
+    .sol-card__store-split__half img[src*="logo-app-store"] { filter: invert(1); opacity: .8; }
 
     /* ── Modal image slider ── */
     .modal__img-slider { position: relative; background: #111; overflow: hidden; height: 280px; }
@@ -623,7 +623,7 @@
 <!-- ═══════════════════════════════════ NAV ═══════════════════════════════════ -->
 <nav class="nav">
   <div class="container nav__inner">
-    <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+    <a href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
       <img src="../java/com.sap.sailing.www/images/logo-small@2x.png"
            alt="SAP Sailing Analytics" style="height:40px;width:auto;">
       <span style="font-size:.9rem;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:.01em;white-space:nowrap;line-height:1;">Sailing Analytics</span>
@@ -722,7 +722,7 @@
               <p>Android app for race committees. Manage start sequences, record finishes, handle flags, and sync results directly to the Sailing Analytics cloud from a tablet on the committee boat.</p>
               <div class="sol-card__links">
                 <button class="btn btn-primary" onclick="openModal('modal-rm')">Learn More</button>
-                <a class="sol-card__store" href="https://play.google.com/store/apps/details?id=com.sap.sailing.racecommittee.app" target="_blank" rel="noopener"><img src="https://img.icons8.com/color/48/google-play.png" width="13" height="13" alt="" style="display:inline-block;vertical-align:middle;">Google Play</a>
+                <a class="sol-card__store" href="https://play.google.com/store/apps/details?id=com.sap.sailing.racecommittee.app" target="_blank" rel="noopener"><img src="source/logo-google-play.png" width="13" height="13" alt="" style="display:inline-block;vertical-align:middle;">Google Play</a>
               </div>
             </div>
           </div>
@@ -739,8 +739,8 @@
               <div class="sol-card__links">
                 <button class="btn btn-primary" onclick="openModal('modal-si')">Learn More</button>
                 <div class="sol-card__store-split">
-                  <a class="sol-card__store-split__half" href="https://apps.apple.com/us/app/sail-insight-powered-by-sap/id1495355086" target="_blank" rel="noopener"><img src="https://cdn-icons-png.flaticon.com/512/0/747.png" width="12" height="12" alt="">App Store</a>
-                  <a class="sol-card__store-split__half" href="https://play.google.com/store/apps/details?id=org.sailyachtresearch.sailinsight" target="_blank" rel="noopener"><img src="https://img.icons8.com/color/48/google-play.png" width="12" height="12" alt="">Google Play</a>
+                  <a class="sol-card__store-split__half" href="https://apps.apple.com/us/app/sail-insight-powered-by-sap/id1495355086" target="_blank" rel="noopener"><img src="source/logo-app-store.png" width="12" height="12" alt="">App Store</a>
+                  <a class="sol-card__store-split__half" href="https://play.google.com/store/apps/details?id=org.sailyachtresearch.sailinsight" target="_blank" rel="noopener"><img src="source/logo-google-play.png" width="12" height="12" alt="">Google Play</a>
                 </div>
               </div>
             </div>
@@ -757,7 +757,7 @@
               <p>Simplify race mark positioning and communication with mark layers. Connects to SAP Sailing Analytics so regatta managers can track mark positions and enable Sail Insight GPS tracking.</p>
               <div class="sol-card__links">
                 <button class="btn btn-primary" onclick="openModal('modal-bp')">Learn More</button>
-                <a class="sol-card__store" href="https://play.google.com/store/apps/details?id=com.sap.sailing.android.buoy.positioning.app" target="_blank" rel="noopener"><img src="https://img.icons8.com/color/48/google-play.png" width="13" height="13" alt="" style="display:inline-block;vertical-align:middle;">Google Play</a>
+                <a class="sol-card__store" href="https://play.google.com/store/apps/details?id=com.sap.sailing.android.buoy.positioning.app" target="_blank" rel="noopener"><img src="source/logo-google-play.png" width="13" height="13" alt="" style="display:inline-block;vertical-align:middle;">Google Play</a>
               </div>
             </div>
           </div>
@@ -875,7 +875,7 @@
         <small>Modular plugin architecture — 225+ bundles</small>
       </div>
       <div class="tech-item">
-        <img src="https://cdn.simpleicons.org/google/4285F4" alt="GWT">
+        <img src="source/logo-gwt.svg" alt="GWT">
         <span>GWT</span>
         <small>Java-to-JavaScript web frontend compiler</small>
       </div>
@@ -887,7 +887,7 @@
       <div class="tech-item">
         <img src="https://cdn.simpleicons.org/rabbitmq/FF6600" alt="RabbitMQ">
         <span>RabbitMQ</span>
-        <small>Live GPS event bus between services</small>
+        <small>Message broker used for service replication</small>
       </div>
       <div class="tech-item">
         <img src="https://cdn.simpleicons.org/docker/2496ED" alt="Docker">
@@ -895,14 +895,12 @@
         <small>Containerized deployment &amp; local dev</small>
       </div>
       <div class="tech-item">
-        <img src="https://cdn.simpleicons.org/kubernetes/326CE5" alt="Kubernetes">
-        <span>Kubernetes</span>
-        <small>Production orchestration &amp; scaling</small>
+        <img src="source/logo-gradle.svg" alt="Gradle">
+        <span>Gradle</span>
+        <small>Build system for Android apps</small>
       </div>
       <div class="tech-item">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 48" width="40" height="24" style="margin:8px 0">
-          <text x="0" y="36" font-family="Arial,sans-serif" font-weight="900" font-size="36" fill="#FF9900">aws</text>
-        </svg>
+        <img src="source/logo-aws.svg" alt="AWS">
         <span>AWS</span>
         <small>Cloud hosting — EC2, S3, CloudFront</small>
       </div>
@@ -938,7 +936,7 @@
         <p class="eyebrow eyebrow--yellow">What's New</p>
         <h2>Latest updates across the platform</h2>
         <p class="lead" style="max-width:560px;margin-top:10px;">
-          All products are actively maintained. Expand a product below to see its changelog.
+          Expand a product below to see its changelog.
         </p>
       </div>
     </div>
@@ -1196,7 +1194,7 @@
       <div class="modal__section-label">Download</div>
       <div class="modal__store-row">
         <a class="modal__store-btn" href="https://play.google.com/store/apps/details?id=com.sap.sailing.racecommittee.app" target="_blank" rel="noopener">
-          <img src="https://img.icons8.com/color/48/google-play.png" width="16" height="16" alt="" style="display:inline-block;vertical-align:middle;">
+          <img src="source/logo-google-play.png" width="16" height="16" alt="" style="display:inline-block;vertical-align:middle;">
           Google Play
         </a>
       </div>
@@ -1266,10 +1264,10 @@
       <div class="modal__store-row">
         <div class="store-split">
           <a class="store-split__half" href="https://apps.apple.com/us/app/sail-insight-powered-by-sap/id1495355086" target="_blank" rel="noopener">
-            <img src="https://cdn-icons-png.flaticon.com/512/0/747.png" width="15" height="15" alt="">App Store
+            <img src="source/logo-app-store.png" width="15" height="15" alt="">App Store
           </a>
           <a class="store-split__half" href="https://play.google.com/store/apps/details?id=org.sailyachtresearch.sailinsight" target="_blank" rel="noopener">
-            <img src="https://img.icons8.com/color/48/google-play.png" width="15" height="15" alt="">Google Play
+            <img src="source/logo-google-play.png" width="15" height="15" alt="">Google Play
           </a>
         </div>
       </div>
@@ -1322,7 +1320,7 @@
       <div class="modal__section-label">Download</div>
       <div class="modal__store-row">
         <a class="modal__store-btn" href="https://play.google.com/store/apps/details?id=com.sap.sailing.android.buoy.positioning.app" target="_blank" rel="noopener">
-          <img src="https://img.icons8.com/color/48/google-play.png" width="16" height="16" alt="" style="display:inline-block;vertical-align:middle;">
+          <img src="source/logo-google-play.png" width="16" height="16" alt="" style="display:inline-block;vertical-align:middle;">
           Google Play
         </a>
       </div>
