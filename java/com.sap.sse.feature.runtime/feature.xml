@@ -789,14 +789,14 @@
          id="com.amazon.aws.aws-java-api"
          download-size="0"
          install-size="0"
-         version="2.32.25"
+         version="2.47.5"
          unpack="false"/>
 
    <plugin
          id="com.amazon.aws.aws-java-api.source"
          download-size="0"
          install-size="0"
-         version="2.32.25"
+         version="2.47.5"
          unpack="false"/>
 
    <plugin

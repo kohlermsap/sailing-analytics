@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/aws-sdk/com.amazon.aws.aws-java-api_2.32.25.jar" id="com.amazon.aws.aws-java-api" version="2.32.25">
+   <feature url="features/aws-sdk/com.amazon.aws.aws-java-api_2.47.5.jar" id="com.amazon.aws.aws-java-api" version="2.47.5">
       <category name="aws-java-api"/>
    </feature>
    <category-def name="com.amazon.aws.aws-java-api" label="aws-java-api"/>
