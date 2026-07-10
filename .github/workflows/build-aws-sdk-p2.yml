@@ -1,4 +1,4 @@
-name: release
+name: build-aws-sdk-p2
 on:
   push:
     branches: [main]
