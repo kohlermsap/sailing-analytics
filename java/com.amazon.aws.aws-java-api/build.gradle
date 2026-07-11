@@ -5,7 +5,7 @@ repositories {
 }
 
 dependencies {
-    implementation platform('software.amazon.awssdk:bom:2.47.5')
+    implementation platform('software.amazon.awssdk:bom:2.32.25')
     implementation 'software.amazon.awssdk:s3'
     implementation 'software.amazon.awssdk:lambda'
     implementation 'software.amazon.awssdk:ec2'
