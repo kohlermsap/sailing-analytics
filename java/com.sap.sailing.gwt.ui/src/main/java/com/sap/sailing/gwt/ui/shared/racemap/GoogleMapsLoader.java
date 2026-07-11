@@ -47,14 +47,54 @@ public class GoogleMapsLoader {
             callbacks.add(callback);
             if (!loading) {
                 loading = true;
-                installCallback();
-                final ScriptElement scriptElement = Document.get().createScriptElement();
-                scriptElement.setSrc("https://maps.googleapis.com/maps/api/js?v="+API_VERSION+"&" + authenticationParams
-                        + "&libraries="+LIBRARIES+"&callback=googleMapsLoadedCallback");
-                Document.get().getHead().appendChild(scriptElement);
+                if (isMapLibreRequested()) {
+                    loadMapLibre();
+                } else {
+                    installCallback();
+                    final ScriptElement scriptElement = Document.get().createScriptElement();
+                    scriptElement.setSrc("https://maps.googleapis.com/maps/api/js?v="+API_VERSION+"&" + authenticationParams
+                            + "&libraries="+LIBRARIES+"&callback=googleMapsLoadedCallback");
+                    Document.get().getHead().appendChild(scriptElement);
+                }
             }
         }
     }
+
+    private static native boolean isMapLibreRequested() /*-{
+        return new $wnd.URLSearchParams($wnd.location.search).get('maps') === 'maplibre';
+    }-*/;
+
+    /**
+     * Loads MapLibre GL JS plus the Google-Maps-compatible facade from {@code js/maps/}, then fires
+     * the queued callbacks via {@link #callback()}. Triggered by {@code ?maps=maplibre} in the page URL.
+     */
+    private static native void loadMapLibre() /*-{
+        var runCallback = $entry(function() {
+            @com.sap.sailing.gwt.ui.shared.racemap.GoogleMapsLoader::callback()();
+        });
+        if ($wnd.maplibregl && $wnd.maplibregl.Map) {
+            runCallback();
+            return;
+        }
+        var loadScript = function(src, onload) {
+            var s = $doc.createElement('script');
+            s.src = src;
+            s.onload = onload;
+            s.onerror = function() { throw new Error('Failed to load ' + src); };
+            $doc.head.appendChild(s);
+        };
+        var css = $doc.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = 'https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.css';
+        $doc.head.appendChild(css);
+        loadScript('https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.js', function() {
+            var m = $doc.createElement('script');
+            m.type = 'module';
+            m.text = "import { installGwtMapsCompat } from './js/maps/gwt-maps-maplibre-compat.js'; installGwtMapsCompat(); window.__mapsProvider = { provider: 'maplibre', loaded: true }; window.__sailingMapsLoaded();";
+            $wnd.__sailingMapsLoaded = runCallback;
+            $doc.head.appendChild(m);
+        });
+    }-*/;
     
     private static void callback() {
         loaded = true;

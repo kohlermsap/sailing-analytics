@@ -100,6 +100,7 @@ class CompatMap {
         this.element = element;
         this.options = options;
         this.listeners = new Map();
+        this.mapTypes = new Map();
         this.loaded = false;
         this.deferred = [];
         element.style.position = element.style.position || 'relative';
@@ -116,15 +117,52 @@ class CompatMap {
             bearing: options.heading || 0,
             pitch: 0
         });
+        this.resizeObserver = new ResizeObserver(() => this.map.resize());
+        this.resizeObserver.observe(element);
+        const controlPositions = {
+            1: ['10px', '', '', '10px'], 2: ['10px', '', '', '50%'], 3: ['10px', '10px', '', ''],
+            4: ['50%', '', '', '10px'], 5: ['60px', '', '', '10px'], 6: ['', '', '60px', '10px'],
+            7: ['60px', '10px', '', ''], 8: ['50%', '10px', '', ''], 9: ['', '10px', '60px', ''],
+            10: ['', '', '10px', '10px'], 11: ['', '', '10px', '50%'], 12: ['', '10px', '10px', '']
+        };
+        this.controls = Array.from({ length: 13 }, (_, position) => {
+            const container = document.createElement('div');
+            const [top, right, bottom, left] = controlPositions[position] || ['', '', '', ''];
+            Object.assign(container.style, { position: 'absolute', top, right, bottom, left, zIndex: 20, pointerEvents: 'auto' });
+            if (position === 2 || position === 11) container.style.transform = 'translateX(-50%)';
+            if (position === 4 || position === 8) container.style.transform = 'translateY(-50%)';
+            element.appendChild(container);
+            const items = [];
+            return {
+                push: child => { items.push(child); container.appendChild(child); return items.length; },
+                pop: () => { const child = items.pop(); child?.remove(); return child; },
+                getAt: index => items[index],
+                getLength: () => items.length,
+                insertAt: (index, child) => { items.splice(index, 0, child); container.insertBefore(child, container.children[index] || null); },
+                removeAt: index => { const [child] = items.splice(index, 1); child?.remove(); return child; },
+                setAt: (index, child) => { const old = items[index]; items[index] = child; old?.replaceWith(child); }
+            };
+        });
         if (typeof this.map._getUIString !== 'function') this.map._getUIString = key => key;
         if (options.zoomControl !== false) {
             this.map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right');
         }
         applyRaceStyle(this.map);
         this.map.on('move', () => { this.emit('bounds_changed'); this.emit('center_changed'); });
-        this.map.on('zoomend', () => this.emit('zoom_changed'));
+        this.map.on('zoomstart', event => {
+            this.userZoomInProgress = !!event.originalEvent;
+            this.emit('zoom_changed');
+            if (this.userZoomInProgress) this.emit('dragend');
+        });
         this.map.on('rotate', () => this.emit('heading_changed'));
-        this.map.on('idle', () => this.emit('idle'));
+        this.map.on('idle', () => {
+            const emitIdle = () => { this.userZoomInProgress = false; this.emit('bounds_changed'); this.emit('idle'); };
+            if (this.userZoomInProgress) {
+                clearTimeout(this.userZoomIdleTimer);
+                this.userZoomIdleTimer = setTimeout(emitIdle, 550);
+            }
+            else emitIdle();
+        });
         this.map.on('dragend', () => this.emit('dragend'));
         for (const name of ['click', 'mousedown', 'mousemove', 'mouseout', 'mouseup', 'dblclick', 'dragstart']) {
             this.map.on(name, event => this.emit(name, { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) }));
@@ -140,8 +178,8 @@ class CompatMap {
         this.listeners.get(name).add(handler);
         return { remove: () => this.listeners.get(name)?.delete(handler) };
     }
-    emit(name) {
-        for (const handler of this.listeners.get(name) || []) handler();
+    emit(name, event = {}) {
+        for (const handler of this.listeners.get(name) || []) handler(event);
     }
     ready(action) {
         if (this.loaded) action();
@@ -150,7 +188,10 @@ class CompatMap {
     getDiv() { return this.element; }
     getBounds() {
         const bounds = this.map.getBounds();
-        return { toJSON: () => ({ north: bounds.getNorth(), south: bounds.getSouth(), east: bounds.getEast(), west: bounds.getWest() }) };
+        return new CompatLatLngBounds(
+            { lat: bounds.getSouth(), lng: bounds.getWest() },
+            { lat: bounds.getNorth(), lng: bounds.getEast() }
+        );
     }
     getZoom() { return toGoogleZoom(this.map.getZoom()); }
     setZoom(zoom) { this.map.setZoom(toMapLibreZoom(zoom)); }
@@ -163,6 +204,8 @@ class CompatMap {
     panTo(position) { this.map.panTo(lngLat(asLngLatLiteral(position))); }
     setHeading(degrees) { this.map.rotateTo(degrees, { duration: 500, easing: t => t * (2 - t) }); }
     getHeading() { return (this.map.getBearing() + 360) % 360; }
+    setMapTypeId(mapTypeId) { this.options.mapTypeId = mapTypeId; }
+    getMapTypeId() { return this.options.mapTypeId || 'roadmap'; }
     setOptions(options = {}) { Object.assign(this.options, options); }
     resize() { this.map.resize(); this.emit('resize'); }
 }
@@ -263,21 +306,33 @@ class CompatPolyline {
 class CompatOverlayView {
     setMap(map) {
         if (this.map && map === null) {
+            if (this._redraw) this.map.map.off('move', this._redraw);
             this.onRemove?.();
             this.map = null;
             return;
         }
         this.map = map;
-        map.ready(() => {
+        map.ready(() => queueMicrotask(() => {
+            if (this.map !== map) return;
             this.onAdd?.();
             this.draw?.();
-            this._redraw = () => this.draw?.();
+            this._redraw = () => { if (this.map === map) this.draw?.(); };
             map.map.on('move', this._redraw);
-        });
+        }));
     }
-    getPanes() { return { overlayLayer: this.map.overlayLayer, overlayMouseTarget: this.map.overlayMouseTarget }; }
+    getPanes() {
+        return {
+            mapPane: this.map.overlayLayer,
+            overlayLayer: this.map.overlayLayer,
+            overlayShadow: this.map.overlayLayer,
+            overlayImage: this.map.overlayLayer,
+            floatPane: this.map.overlayMouseTarget,
+            overlayMouseTarget: this.map.overlayMouseTarget
+        };
+    }
     getProjection() {
         return {
+            getWorldWidth: () => 512 * Math.pow(2, this.map.map.getZoom()),
             fromLatLngToDivPixel: latLng => {
                 const point = this.map.map.project(lngLat(asLngLatLiteral(latLng)));
                 return { x: point.x, y: point.y };
@@ -619,9 +674,15 @@ export function installGoogleMapsCompat() {
         InfoWindow: CompatInfoWindow,
         SymbolPath: { CIRCLE: 'circle', FORWARD_CLOSED_ARROW: 'forward-closed-arrow' },
         Animation: { BOUNCE: 'bounce' },
+        RenderingType: { RASTER: 'raster', VECTOR: 'vector', UNINITIALIZED: 'uninitialized' },
         MapTypeId: { ROADMAP: 'roadmap', SATELLITE: 'satellite', HYBRID: 'hybrid' },
         ControlPosition: { RIGHT_BOTTOM: 'RIGHT_BOTTOM', TOP_LEFT: 'TOP_LEFT', TOP_RIGHT: 'TOP_RIGHT', BOTTOM_LEFT: 'BOTTOM_LEFT' },
-        event: { addListener: (target, name, handler) => target.addListener(name, handler) }
+        event: {
+            addListener: (target, name, handler) => target.addListener(name, handler),
+            removeListener: (listener) => { if (listener && listener.remove) listener.remove(); },
+            clearInstanceListeners: (target) => { if (target && target.listeners instanceof Map) target.listeners.clear(); },
+            trigger: (target, name, ...args) => { if (target && typeof target.emit === 'function') target.emit(name, ...args); }
+        }
     } };
     return globalThis.google.maps;
 }

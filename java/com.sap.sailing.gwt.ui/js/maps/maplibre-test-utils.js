@@ -6,7 +6,9 @@ export const RACE_VECTOR_STYLE_URL = 'https://tiles.openfreemap.org/styles/liber
 export const RACE_WATER_COLOR = '#00437d';
 
 export function lngLat(point) {
-    return [point.lng, point.lat];
+    const lng = typeof point.lng === 'function' ? point.lng() : point.lng;
+    const lat = typeof point.lat === 'function' ? point.lat() : point.lat;
+    return [lng, lat];
 }
 
 function toMapLibreZoom(googleZoom) {

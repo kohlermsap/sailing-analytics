@@ -37,6 +37,16 @@
          videojs.options.techOrder = [ 'vimeo', 'html5' ];
     </script>
     <script>${clientConfigurationContext['scriptForClientConfigurationContextToDocument']}</script>
+    <script>
+      // ponytail: tolerate appending ?maps=maplibre (etc.) to a URL that already has a query
+      // string; a second '?' glues onto the last param value (e.g. mode=PLAYER?maps=maplibre)
+      // and breaks GWT enum tokenizers. Normalize stray '?' into '&' before the GWT boot reads params.
+      (function () {
+        var s = location.search;
+        if (s.indexOf('?', 1) === -1) return;
+        history.replaceState(null, '', location.pathname + '?' + s.slice(1).replace(/\?/g, '&') + location.hash);
+      })();
+    </script>
     <script type="text/javascript" language="javascript" src="com.sap.sailing.gwt.ui.RaceBoard/com.sap.sailing.gwt.ui.RaceBoard.nocache.js"></script>
 
   </head>

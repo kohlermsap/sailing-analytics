@@ -64,7 +64,12 @@ function installGwtWrapperGlobals() {
     }
 
     class Size {
-        static newInstance(width, height) { return { width, height, getWidth() { return this.width; }, getHeight() { return this.height; }, setWidth(value) { this.width = value; }, setHeight(value) { this.height = value; } }; }
+        constructor(width, height) { this.width = width; this.height = height; }
+        getWidth() { return this.width; }
+        getHeight() { return this.height; }
+        setWidth(value) { this.width = value; }
+        setHeight(value) { this.height = value; }
+        static newInstance(width, height) { return new Size(width, height); }
     }
 
     class SphericalUtils {
@@ -81,22 +86,21 @@ function installGwtWrapperGlobals() {
     }
 
     class MVCArray {
-        static newInstance(values = []) {
-            const items = Array.isArray(values) ? [...values] : [...arguments];
-            return {
-                items,
-                getLength: () => items.length,
-                get: index => items[index],
-                push: value => items.push(value),
-                insertAt: (index, value) => items.splice(index, 0, value),
-                removeAt: index => items.splice(index, 1)[0],
-                setAt: (index, value) => { items[index] = value; },
-                add: value => items.push(value),
-                clear: () => items.splice(0),
-                forEach: callback => items.forEach((value, index) => callback(value, index)),
-                toArray: () => [...items]
-            };
-        }
+        constructor(values = []) { this.items = Array.isArray(values) ? [...values] : [...values]; }
+        getAt(index) { return this.items[index]; }
+        get(index) { return this.getAt(index); }
+        getLength() { return this.items.length; }
+        push(value) { return this.items.push(value); }
+        pop() { return this.items.pop(); }
+        insertAt(index, value) { this.items.splice(index, 0, value); }
+        removeAt(index) { return this.items.splice(index, 1)[0]; }
+        setAt(index, value) { this.items[index] = value; }
+        add(value) { this.items.push(value); }
+        clear() { this.items.splice(0); }
+        forEach(callback) { this.items.forEach((value, index) => callback(value, index)); }
+        getArray() { return this.items; }
+        toArray() { return [...this.items]; }
+        static newInstance(values = []) { return new MVCArray(values); }
     }
 
     class ControlOptions { static newInstance() { return { setPosition(position) { this.position = position; } }; } }
@@ -121,7 +125,10 @@ function installGwtWrapperGlobals() {
         }
     }
     class StyledMapTypeOptions { static newInstance() { return { setName(name) { this.name = name; } }; } }
-    class StyledMapType { static newInstance(styles = [], options = {}) { return { styles, options }; } }
+    class StyledMapType {
+        constructor(styles = [], options = {}) { this.styles = styles; this.options = options; }
+        static newInstance(styles = [], options = {}) { return new StyledMapType(styles, options); }
+    }
     const MapTypeStyleFeatureType = { TRANSIT: 'transit', POI: 'poi', ROAD: 'road', WATER: 'water', LANDSCAPE: 'landscape', ADMINISTRATIVE: 'administrative' };
     const MapTypeStyleElementType = { ALL: 'all', LABELS__TEXT__FILL: 'labels.text.fill', LABELS__TEXT__STROKE: 'labels.text.stroke', GEOMETRY__FILL: 'geometry.fill', GEOMETRY__STROKE: 'geometry.stroke' };
 
@@ -239,7 +246,12 @@ function installGwtWrapperGlobals() {
 
     class PolylineOptions { static newInstance(initial = {}) { return wrapOptions(initial); } }
     class MarkerOptions { static newInstance(initial = {}) { return wrapOptions(initial); } }
-    class MarkerImage { static newInstance(url, size, origin, anchor, scaledSize) { return { url, size, origin, anchor, scaledSize, setAnchor(value) { this.anchor = value; }, setScaledSize(value) { this.scaledSize = value; } }; } }
+    class MarkerImage {
+        constructor(url, size, origin, anchor, scaledSize) { Object.assign(this, { url, size, origin, anchor, scaledSize }); }
+        setAnchor(value) { this.anchor = value; }
+        setScaledSize(value) { this.scaledSize = value; }
+        static newInstance(...args) { return new MarkerImage(...args); }
+    }
     class PolygonOptions { static newInstance(initial = {}) { return wrapOptions(initial); } }
     class CircleOptions { static newInstance(initial = {}) { return wrapOptions(initial); } }
     class InfoWindowOptions { static newInstance(initial = {}) { return wrapOptions(initial); } }
@@ -296,6 +308,8 @@ function installGwtWrapperGlobals() {
         MapTypeStyleElementType,
         ControlPosition: google.maps.ControlPosition
     });
+    // GWT's JSNI constructors look these up under $wnd.google.maps.
+    Object.assign(google.maps, { MVCArray, MarkerImage, Size, StyledMapType });
 }
 
 export function installGwtMapsCompat() {
