@@ -43,6 +43,7 @@ class CompatLatLng {
     getLngDeg() { return this._lng; }
     getX() { return this._lng; }
     getY() { return this._lat; }
+    equals(other) { const point = asLngLatLiteral(other); return this._lat === point.lat && this._lng === point.lng; }
     add(other) { const point = asLngLatLiteral(other); return new CompatLatLng(this._lat + point.lat, this._lng + point.lng); }
     dotProduct(other) { const point = asLngLatLiteral(other); return this._lng * point.lng + this._lat * point.lat; }
     getNorm() { return Math.hypot(this._lng, this._lat); }
@@ -67,6 +68,7 @@ class CompatPoint {
     getY() { return this.y; }
     getLatDeg() { return this.y; }
     getLngDeg() { return this.x; }
+    equals(other) { return this.x === other.x && this.y === other.y; }
 }
 
 class CompatLatLngBounds {
@@ -89,6 +91,10 @@ class CompatLatLngBounds {
     }
     getNorthEast() { return new CompatLatLng(this.ne.lat, this.ne.lng); }
     getSouthWest() { return new CompatLatLng(this.sw.lat, this.sw.lng); }
+    equals(other) {
+        const bounds = other instanceof CompatLatLngBounds ? other : new CompatLatLngBounds(other.getSouthWest(), other.getNorthEast());
+        return this.sw.lat === bounds.sw.lat && this.sw.lng === bounds.sw.lng && this.ne.lat === bounds.ne.lat && this.ne.lng === bounds.ne.lng;
+    }
     intersects(other) {
         const bounds = other instanceof CompatLatLngBounds ? other : new CompatLatLngBounds(other.getSouthWest(), other.getNorthEast());
         return !(bounds.sw.lng > this.ne.lng || bounds.ne.lng < this.sw.lng || bounds.sw.lat > this.ne.lat || bounds.ne.lat < this.sw.lat);
@@ -272,6 +278,7 @@ class CompatPolyline {
         const polyline = this;
         return {
             getLength: () => polyline.path.length,
+            getAt: index => polyline.path[index],
             get: index => polyline.path[index],
             push: value => { polyline.path.push(value); polyline.setPath(polyline.path); },
             insertAt: (index, value) => { polyline.path.splice(index, 0, value); polyline.setPath(polyline.path); },
@@ -414,7 +421,7 @@ class CompatPolygon {
             this.setVisible(this.visible);
         });
     }
-    getPath() { return { getLength: () => this.paths.length, toArray: () => [...this.paths] }; }
+    getPath() { return { getAt: index => this.paths[index], getLength: () => this.paths.length, toArray: () => [...this.paths] }; }
     setPath(path) { this.paths = path?.toArray ? path.toArray() : path; this.map?.map.getSource(this.id)?.setData(this.feature()); }
     addMouseOutMoveHandler(handler) { return this.addListener('mouseout', handler); }
     setOptions(options = {}) {

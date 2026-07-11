@@ -69,6 +69,7 @@ function installGwtWrapperGlobals() {
         getHeight() { return this.height; }
         setWidth(value) { this.width = value; }
         setHeight(value) { this.height = value; }
+        equals(other) { return this.width === other.width && this.height === other.height; }
         static newInstance(width, height) { return new Size(width, height); }
     }
 
