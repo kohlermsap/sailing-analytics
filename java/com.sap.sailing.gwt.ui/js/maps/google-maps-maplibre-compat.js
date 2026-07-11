@@ -103,6 +103,7 @@ class CompatMap {
         this.mapTypes = new Map();
         this.loaded = false;
         this.deferred = [];
+        this.cameraChangedSinceIdle = true;
         element.style.position = element.style.position || 'relative';
         this.overlayLayer = document.createElement('div');
         this.overlayMouseTarget = document.createElement('div');
@@ -148,15 +149,26 @@ class CompatMap {
             this.map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right');
         }
         applyRaceStyle(this.map);
-        this.map.on('move', () => { this.emit('bounds_changed'); this.emit('center_changed'); });
+        this.map.on('move', () => {
+            this.cameraChangedSinceIdle = true;
+            this.emit('bounds_changed');
+            this.emit('center_changed');
+        });
         this.map.on('zoomstart', event => {
+            this.cameraChangedSinceIdle = true;
             this.userZoomInProgress = !!event.originalEvent;
             this.emit('zoom_changed');
             if (this.userZoomInProgress) this.emit('dragend');
         });
         this.map.on('rotate', () => this.emit('heading_changed'));
         this.map.on('idle', () => {
-            const emitIdle = () => { this.userZoomInProgress = false; this.emit('bounds_changed'); this.emit('idle'); };
+            if (!this.cameraChangedSinceIdle) return;
+            this.cameraChangedSinceIdle = false;
+            const emitIdle = () => {
+                this.userZoomInProgress = false;
+                this.emit('bounds_changed');
+                this.emit('idle');
+            };
             if (this.userZoomInProgress) {
                 clearTimeout(this.userZoomIdleTimer);
                 this.userZoomIdleTimer = setTimeout(emitIdle, 550);
