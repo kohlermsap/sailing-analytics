@@ -182,7 +182,7 @@
 <repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20210223232630/repository"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<unit id="com.amazon.aws.aws-java-api.feature.group" version="2.47.5"/>
+<unit id="com.amazon.aws.aws-java-api.feature.group" version="2.32.25"/>
 <repository location="https://download.eclipse.org/sailing-analytics/p2/aws-sdk/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
