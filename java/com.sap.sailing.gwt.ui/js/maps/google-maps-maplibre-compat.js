@@ -116,10 +116,12 @@ class CompatMap {
         Object.assign(this.overlayLayer.style, { position: 'absolute', inset: '0', zIndex: 5, pointerEvents: 'none' });
         Object.assign(this.overlayMouseTarget.style, { position: 'absolute', inset: '0', zIndex: 10, pointerEvents: 'none' });
         element.append(this.overlayLayer, this.overlayMouseTarget);
+        const center = asLngLatLiteral(options.center || { lat: 0, lng: 0 });
+        const initialCenter = Number.isFinite(center.lat) && Number.isFinite(center.lng) ? center : { lat: 0, lng: 0 };
         this.map = new maplibregl.Map({
             container: element,
             style: createRaceStyle(),
-            center: lngLat(options.center || { lat: 0, lng: 0 }),
+            center: lngLat(initialCenter),
             zoom: toMapLibreZoom(options.zoom ?? 0),
             bearing: options.heading || 0,
             pitch: 0
@@ -182,9 +184,10 @@ class CompatMap {
             else emitIdle();
         });
         this.map.on('dragend', () => this.emit('dragend'));
-        for (const name of ['click', 'mousedown', 'mousemove', 'mouseout', 'mouseup', 'dblclick', 'dragstart']) {
+        for (const name of ['click', 'mousedown', 'mousemove', 'mouseout', 'mouseup', 'dblclick']) {
             this.map.on(name, event => this.emit(name, { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) }));
         }
+        this.map.on('dragstart', event => queueMicrotask(() => this.emit('dragstart', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) })));
         this.map.on('contextmenu', event => this.emit('rightclick', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) }));
         this.map.on('load', () => {
             this.loaded = true;
