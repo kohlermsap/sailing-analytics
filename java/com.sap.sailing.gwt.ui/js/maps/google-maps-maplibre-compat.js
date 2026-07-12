@@ -117,6 +117,17 @@ class CompatMap {
         Object.assign(this.overlayLayer.style, { position: 'absolute', inset: '0', zIndex: 5, pointerEvents: 'none' });
         Object.assign(this.overlayMouseTarget.style, { position: 'absolute', inset: '0', zIndex: 10, pointerEvents: 'none' });
         element.append(this.overlayLayer, this.overlayMouseTarget);
+        this.updateOverlayPointerEvents = () => {
+            const width = element.clientWidth;
+            const height = element.clientHeight;
+            for (const canvas of this.overlayMouseTarget.querySelectorAll('canvas')) {
+                const fullMapCanvas = width > 0 && height > 0 && canvas.width >= width && canvas.height >= height;
+                const pointerEvents = canvas.style.cursor === 'pointer' && !fullMapCanvas ? 'auto' : 'none';
+                if (canvas.style.pointerEvents !== pointerEvents) canvas.style.pointerEvents = pointerEvents;
+            }
+        };
+        this.overlayPointerObserver = new MutationObserver(this.updateOverlayPointerEvents);
+        this.overlayPointerObserver.observe(this.overlayMouseTarget, { childList: true, subtree: true, attributes: true, attributeFilter: ['width', 'height'] });
         const center = asLngLatLiteral(options.center || { lat: 0, lng: 0 });
         const initialCenter = Number.isFinite(center.lat) && Number.isFinite(center.lng) ? center : { lat: 0, lng: 0 };
         this.map = new maplibregl.Map({
@@ -127,7 +138,7 @@ class CompatMap {
             bearing: options.heading || 0,
             pitch: 0
         });
-        this.resizeObserver = new ResizeObserver(() => this.map.resize());
+        this.resizeObserver = new ResizeObserver(() => { this.map.resize(); this.updateOverlayPointerEvents(); });
         this.resizeObserver.observe(element);
         const controlPositions = {
             1: ['10px', '', '', '10px'], 2: ['10px', '', '', '50%'], 3: ['10px', '10px', '', ''],
