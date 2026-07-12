@@ -220,14 +220,30 @@ class CompatMap {
         );
     }
     getZoom() { return toGoogleZoom(this.map.getZoom()); }
-    setZoom(zoom) { this.map.setZoom(toMapLibreZoom(zoom)); }
+    setZoom(zoom) {
+        const options = { zoom: toMapLibreZoom(zoom) };
+        if (this.pendingPanCenter) {
+            options.center = this.pendingPanCenter;
+            this.pendingPanCenter = null;
+        }
+        this.map.jumpTo(options);
+    }
     getCenter() {
         const center = this.map.getCenter();
         return new CompatLatLng(center.lat, center.lng);
     }
     setCenter(center) { this.map.setCenter(lngLat(asLngLatLiteral(center))); }
     fitBounds(bounds) { this.map.fitBounds(bounds.toMapLibreBounds()); }
-    panTo(position) { this.map.panTo(lngLat(asLngLatLiteral(position))); }
+    panTo(position) {
+        const center = lngLat(asLngLatLiteral(position));
+        this.pendingPanCenter = center;
+        this.map.once('moveend', () => {
+            if (this.pendingPanCenter !== center) return;
+            const current = this.map.getCenter();
+            if (Math.abs(current.lng - center[0]) < 1e-9 && Math.abs(current.lat - center[1]) < 1e-9) this.pendingPanCenter = null;
+        });
+        this.map.panTo(center);
+    }
     setHeading(degrees) { this.map.rotateTo(degrees, { duration: 500, easing: t => t * (2 - t) }); }
     getHeading() { return (this.map.getBearing() + 360) % 360; }
     setMapTypeId(mapTypeId) { this.options.mapTypeId = mapTypeId; }
