@@ -186,9 +186,13 @@ class CompatMap {
         });
         this.map.on('dragend', () => this.emit('dragend'));
         for (const name of ['click', 'mousedown', 'mousemove', 'mouseout', 'mouseup', 'dblclick']) {
-            this.map.on(name, event => this.emit(name, { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) }));
+            this.map.on(name, event => {
+                const mapEvent = { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) };
+                this.emit(name, mapEvent);
+                // ponytail: mousedown avoids MapLibre dragstart re-entry; upgrade if non-drag clicks matter.
+                if (name === 'mousedown') queueMicrotask(() => this.emit('dragstart', mapEvent));
+            });
         }
-        this.map.on('dragstart', event => queueMicrotask(() => this.emit('dragstart', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) })));
         this.map.on('contextmenu', event => this.emit('rightclick', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) }));
         this.map.on('load', () => {
             this.loaded = true;
