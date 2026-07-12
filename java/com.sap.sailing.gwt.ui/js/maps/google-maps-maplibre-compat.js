@@ -234,7 +234,7 @@ class CompatPolyline {
     constructor(options = {}) {
         this.options = options;
         this.path = options.path?.toArray ? options.path.toArray() : (options.path || []);
-        this.visible = true;
+        this.visible = options.visible !== false;
         this.listeners = new Map();
         this.id = `compat-polyline-${nextOverlayId++}`;
         if (options.map) this.setMap(options.map);
@@ -307,6 +307,7 @@ class CompatPolyline {
     addMouseOutMoveHandler(handler) { return this.addListener('mouseout', handler); }
     setOptions(options = {}) {
         Object.assign(this.options, options);
+        if ('visible' in options) this.setVisible(options.visible);
         const source = this.map?.map.getSource(this.id);
         if (source) source.setData(this.feature());
         if (this.map?.map.getLayer(this.id)) {
