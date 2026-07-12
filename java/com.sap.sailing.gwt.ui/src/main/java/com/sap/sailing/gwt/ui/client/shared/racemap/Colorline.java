@@ -165,10 +165,6 @@ public class Colorline {
         for (Colorline line : pathChangeListeners) {
             line.setPath(path);
         }
-        if (options.getColorMode() == ColorlineMode.MONOCHROMATIC && polylines.size() == 1) {
-            polylines.get(0).setPath(path);
-            return;
-        }
         clearPolylines();
         switch (options.getColorMode()) {
         case MONOCHROMATIC:

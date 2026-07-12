@@ -1996,14 +1996,16 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
                 competitorIdsAsStringOfUnusedTails.addAll(fixesAndTails.getCompetitorIdsAsStringWithTails());
                 competitorIdsAsStringOfUnusedBoatCanvases.addAll(boatOverlaysByCompetitorIdsAsStrings.keySet());
             }
-            final boolean hasTimeJumped = timeForPositionTransitionMillis > 3 * timer.getRefreshInterval();
+            if (timeForPositionTransitionMillis > 3 * timer.getRefreshInterval()) {
+                fixesAndTails.clearTails();
+            }
             for (CompetitorDTO competitorDTO : competitorsToShow) {
                 if (fixesAndTails.hasFixesFor(competitorDTO)) {
                     if (!fixesAndTails.hasTail(competitorDTO)) {
                         fixesAndTails.createTailAndUpdateIndices(competitorDTO, tailsFromTime, tailsToTime, this, detailTypeToShow);
                     } else {
                         fixesAndTails.updateTail(competitorDTO, tailsFromTime, tailsToTime,
-                                (int) (timeForPositionTransitionMillis == -1 || hasTimeJumped ? -1
+                                (int) (timeForPositionTransitionMillis == -1 ? -1
                                         : timeForPositionTransitionMillis / 2), detailTypeToShow);
                         if (!updateTailsOnly) {
                             competitorIdsAsStringOfUnusedTails.remove(competitorDTO.getIdAsString());

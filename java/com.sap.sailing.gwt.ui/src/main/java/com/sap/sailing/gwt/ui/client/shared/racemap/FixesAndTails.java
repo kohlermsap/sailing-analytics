@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.maps.client.base.LatLng;
 import com.google.gwt.maps.client.mvc.MVCArray;
 import com.google.gwt.maps.client.overlays.Polyline;
 import com.google.gwt.user.client.Timer;
@@ -837,7 +836,9 @@ public class FixesAndTails {
                             GWT.log("Inconsistent lastShownFix for competitor "+competitorDTO+"; should have been null but was "+lastShownFixForCompetitor);
                         }
                         if (vertexCount != 0) {
-                            tail.setPath(MVCArray.newInstance(new LatLng[0]));
+                            throw new IllegalStateException("Inconsistent fistShownFix/lastShownFix for competitor "+competitorDTO+
+                                    "; tail is empty, both should have been null but were "+firstShownFixForCompetitor+
+                                    " and "+lastShownFixForCompetitor);
                         }
                         fillEmptyTail(competitorDTO, from, to, selectedDetailType != null);
                     } else {
@@ -851,7 +852,6 @@ public class FixesAndTails {
                                              TimePoint.of(fixesForCompetitor.get(lastShownFixForCompetitor).timepoint)).
                                 touches(TimeRange.create(TimePoint.of(from), TimePoint.of(to)))) {
                             clearTail(competitorDTO);
-                            tail.setPath(MVCArray.newInstance(new LatLng[0]));
                             fillEmptyTail(competitorDTO, from, to, selectedDetailType != null);
                         } else {
                             // the time ranges of the non-empty tail and the desired time range from..to touch; adjust incrementally
@@ -922,7 +922,6 @@ public class FixesAndTails {
             throw new IllegalStateException("Can call fillEmptyTail only for empty tails; the tail of competitor "+
                     competitorDTO+" contains "+vertexCount+" vertices");
         }
-        final MVCArray<LatLng> path = MVCArray.newInstance(new LatLng[0]);
         final List<GPSFixDTOWithSpeedWindTackAndLegType> competitorFixes = getFixes(competitorDTO);
         if (competitorFixes != null) {
             GPSFixDTOWithSpeedWindTackAndLegType fix;
@@ -943,13 +942,11 @@ public class FixesAndTails {
                             max = fix.detailValue;
                         }
                     }
-                    path.push(coordinateSystem.toLatLng(fix.position));
-                    vertexCount++;
+                    tail.insertAt(vertexCount++, coordinateSystem.toLatLng(fix.position));
                     last = i;
                 }
             }
         }
-        tail.setPath(path);
         if (last < 0 && first >= 0) {
             GWT.log("Inconsistency: last < 0 but first=="+first+" for competitor "+competitorDTO);
         }
@@ -1011,6 +1008,7 @@ public class FixesAndTails {
     private void clearTail(CompetitorDTO competitor) {
         final Colorline tail = tailsByCompetitorIdsAsStrings.get(competitor.getIdAsString());
         if (tail != null) {
+            tail.clear();
             tailRemoved(competitor.getIdAsString());
         }
     }
