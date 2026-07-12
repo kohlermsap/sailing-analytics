@@ -520,8 +520,17 @@ class CompatInfoWindow {
         element.className = 'maplibregl-popup maplibregl-popup-anchor-bottom';
         element.style.position = 'absolute';
         element.style.zIndex = 20;
-        element.innerHTML = `<div class="maplibregl-popup-content">${this.content}<button class="maplibregl-popup-close-button" type="button">×</button></div>`;
-        element.querySelector('button').addEventListener('click', () => this.close());
+        const content = document.createElement('div');
+        content.className = 'maplibregl-popup-content';
+        if (this.content instanceof Node) content.appendChild(this.content);
+        else content.innerHTML = this.content;
+        const closeButton = document.createElement('button');
+        closeButton.className = 'maplibregl-popup-close-button';
+        closeButton.type = 'button';
+        closeButton.textContent = '×';
+        closeButton.addEventListener('click', () => this.close());
+        content.appendChild(closeButton);
+        element.appendChild(content);
         const draw = () => {
             const point = map.map.project(lngLat(asLngLatLiteral(position)));
             element.style.left = `${point.x}px`;
