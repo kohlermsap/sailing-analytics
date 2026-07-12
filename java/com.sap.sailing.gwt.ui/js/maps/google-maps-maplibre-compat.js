@@ -109,6 +109,7 @@ class CompatMap {
         this.mapTypes = new Map();
         this.loaded = false;
         this.deferred = [];
+        this.detachedPolylineBackings = [];
         this.cameraChangedSinceIdle = true;
         element.style.position = element.style.position || 'relative';
         this.overlayLayer = document.createElement('div');
@@ -232,6 +233,12 @@ class CompatMap {
 }
 
 let nextOverlayId = 1;
+const POLYLINE_PATH_DEBOUNCE_MS = globalThis.__maplibreCompatPathDebounceMs ?? 25;
+const POLYLINE_BACKING_TTL_MS = globalThis.__maplibreCompatBackingTtlMs ?? 10000;
+const POLYLINE_EVENTS = [
+    ['mouseenter', 'mouseover'], ['mousemove', 'mousemove'], ['mouseleave', 'mouseout'],
+    ['mousedown', 'mousedown'], ['mouseup', 'mouseup'], ['click', 'click']
+];
 
 class CompatPolyline {
     constructor(options = {}) {
@@ -257,24 +264,64 @@ class CompatPolyline {
             geometry: { type: 'LineString', coordinates: this.path.map(point => lngLat(asLngLatLiteral(point))) }
         };
     }
+    createBacking(map) {
+        const backing = { id: this.id, map, owner: this, formerOwner: null, cleanupTimer: null, handlers: [] };
+        map.map.addSource(backing.id, { type: 'geojson', data: this.feature() });
+        map.map.addLayer({ id: backing.id, type: 'line', source: backing.id, layout: { visibility: 'none' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': ['get', 'opacity'], 'line-width': ['get', 'width'] } });
+        for (const [mapLibreEvent, compatEvent] of POLYLINE_EVENTS) {
+            const handler = event => backing.owner?.emit(compatEvent, { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) });
+            backing.handlers.push([mapLibreEvent, handler]);
+            map.map.on(mapLibreEvent, backing.id, handler);
+        }
+        return backing;
+    }
+    claimBacking(map) {
+        const pool = map.detachedPolylineBackings;
+        let backing = this.backing && this.backing.map === map && pool.includes(this.backing) ? this.backing : pool[0];
+        if (backing) {
+            pool.splice(pool.indexOf(backing), 1);
+            clearTimeout(backing.cleanupTimer);
+            if (backing.formerOwner && backing.formerOwner !== this) backing.formerOwner.backing = null;
+            backing.formerOwner = null;
+            backing.owner = this;
+            this.id = backing.id;
+        } else backing = this.createBacking(map);
+        this.backing = backing;
+        this.awaitingFirstPublish = true;
+        map.map.setLayoutProperty(backing.id, 'visibility', 'none');
+    }
+    removeBacking(backing) {
+        if (backing.owner) return;
+        const pool = backing.map.detachedPolylineBackings;
+        const index = pool.indexOf(backing);
+        if (index >= 0) pool.splice(index, 1);
+        for (const [event, handler] of backing.handlers) backing.map.map.off(event, backing.id, handler);
+        if (backing.map.map.getLayer(backing.id)) backing.map.map.removeLayer(backing.id);
+        if (backing.map.map.getSource(backing.id)) backing.map.map.removeSource(backing.id);
+        if (backing.formerOwner?.backing === backing) backing.formerOwner.backing = null;
+    }
+    detachBacking() {
+        clearTimeout(this.publishTimer);
+        const backing = this.backing;
+        if (!backing) return;
+        backing.map.map.setLayoutProperty(backing.id, 'visibility', 'none');
+        backing.owner = null;
+        backing.formerOwner = this;
+        if (!backing.map.detachedPolylineBackings.includes(backing)) backing.map.detachedPolylineBackings.push(backing);
+        clearTimeout(backing.cleanupTimer);
+        backing.cleanupTimer = setTimeout(() => this.removeBacking(backing), POLYLINE_BACKING_TTL_MS);
+    }
     setMap(map) {
         if (map === null) {
-            if (this.map?.map.getLayer(this.id)) this.map.map.removeLayer(this.id);
-            if (this.map?.map.getSource(this.id)) this.map.map.removeSource(this.id);
+            this.detachBacking();
             this.map = null;
             return;
         }
         this.map = map;
         map.ready(() => {
-            map.map.addSource(this.id, { type: 'geojson', data: this.feature() });
-            map.map.addLayer({ id: this.id, type: 'line', source: this.id, paint: { 'line-color': ['get', 'color'], 'line-opacity': ['get', 'opacity'], 'line-width': ['get', 'width'] } });
-            map.map.on('mouseenter', this.id, event => this.emit('mouseover', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) }));
-            map.map.on('mousemove', this.id, event => this.emit('mousemove', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) }));
-            map.map.on('mouseleave', this.id, event => this.emit('mouseout', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) }));
-            map.map.on('mousedown', this.id, event => this.emit('mousedown', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) }));
-            map.map.on('mouseup', this.id, event => this.emit('mouseup', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) }));
-            map.map.on('click', this.id, event => this.emit('click', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) }));
-            this.setVisible(this.visible);
+            if (this.map !== map) return;
+            if (!this.backing?.owner) this.claimBacking(map);
+            this.schedulePublish();
         });
     }
     pathArray() {
@@ -283,22 +330,40 @@ class CompatPolyline {
             getLength: () => polyline.path.length,
             getAt: index => polyline.path[index],
             get: index => polyline.path[index],
-            push: value => { polyline.path.push(value); polyline.setPath(polyline.path); },
-            insertAt: (index, value) => { polyline.path.splice(index, 0, value); polyline.setPath(polyline.path); },
-            removeAt: index => { const removed = polyline.path.splice(index, 1)[0]; polyline.setPath(polyline.path); return removed; },
-            setAt: (index, value) => { polyline.path[index] = value; polyline.setPath(polyline.path); },
-            clear: () => { polyline.setPath([]); },
+            push: value => { polyline.path.push(value); polyline.schedulePublish(); return polyline.path.length; },
+            insertAt: (index, value) => { polyline.path.splice(index, 0, value); polyline.schedulePublish(); },
+            removeAt: index => { const removed = polyline.path.splice(index, 1)[0]; polyline.schedulePublish(); return removed; },
+            setAt: (index, value) => { polyline.path[index] = value; polyline.schedulePublish(); },
+            clear: () => { polyline.path.splice(0); polyline.schedulePublish(); },
             forEach: callback => polyline.path.forEach((value, index) => callback(value, index)),
             toArray: () => [...polyline.path]
         };
     }
     getPath() { return this.pathArray(); }
     setPath(path) {
-        this.path = path?.toArray ? path.toArray() : path;
-        const source = this.map?.map.getSource(this.id);
-        if (source) source.setData(this.feature());
+        this.path = path?.toArray ? path.toArray() : [...path];
+        this.schedulePublish();
     }
-    clear() { this.setPath([]); }
+    schedulePublish() {
+        clearTimeout(this.publishTimer);
+        if (!this.backing?.owner) return;
+        this.publishTimer = setTimeout(() => this.publish(), POLYLINE_PATH_DEBOUNCE_MS);
+    }
+    publish() {
+        const backing = this.backing;
+        if (!backing || backing.owner !== this) return;
+        const source = backing.map.map.getSource(backing.id);
+        if (!source) return;
+        source.setData(this.feature());
+        if (backing.map.map.getLayer(backing.id)) {
+            backing.map.map.setPaintProperty(backing.id, 'line-color', this.options.strokeColor || '#000000');
+            backing.map.map.setPaintProperty(backing.id, 'line-opacity', this.options.strokeOpacity ?? 1);
+            backing.map.map.setPaintProperty(backing.id, 'line-width', this.options.strokeWeight || 1);
+            this.awaitingFirstPublish = false;
+            backing.map.map.setLayoutProperty(backing.id, 'visibility', this.visible ? 'visible' : 'none');
+        }
+    }
+    clear() { this.getPath().clear(); }
     insertAt(index, value) { this.getPath().insertAt(index, value); }
     removeAt(index) { return this.getPath().removeAt(index); }
     setAt(index, value) { this.getPath().setAt(index, value); }
@@ -311,17 +376,12 @@ class CompatPolyline {
     setOptions(options = {}) {
         Object.assign(this.options, options);
         if ('visible' in options) this.setVisible(options.visible);
-        const source = this.map?.map.getSource(this.id);
-        if (source) source.setData(this.feature());
-        if (this.map?.map.getLayer(this.id)) {
-            if ('strokeColor' in options) this.map.map.setPaintProperty(this.id, 'line-color', this.options.strokeColor);
-            if ('strokeOpacity' in options) this.map.map.setPaintProperty(this.id, 'line-opacity', this.options.strokeOpacity);
-            if ('strokeWeight' in options) this.map.map.setPaintProperty(this.id, 'line-width', this.options.strokeWeight);
-        }
+        this.schedulePublish();
     }
     setVisible(visible) {
         this.visible = visible;
-        if (this.map?.map.getLayer(this.id)) this.map.map.setLayoutProperty(this.id, 'visibility', visible ? 'visible' : 'none');
+        const backing = this.backing;
+        if (backing?.map.map.getLayer(backing.id)) backing.map.map.setLayoutProperty(backing.id, 'visibility', visible && !this.awaitingFirstPublish ? 'visible' : 'none');
     }
     getVisible() { return this.visible; }
 }
