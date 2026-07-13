@@ -1,4 +1,4 @@
-import { installGoogleMapsCompat } from './google-maps-maplibre-compat.js?v=race-map-feedback-2';
+import { installGoogleMapsCompat } from './google-maps-maplibre-compat.js?v=race-map-feedback-4';
 
 function call(handler, event = {}) {
     if (typeof handler === 'function') handler(event);

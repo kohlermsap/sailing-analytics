@@ -3890,7 +3890,8 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
 
     /**
      * Based on the map's {@link MapWidget#getBounds()} which may be more than what's actually visible because it's the smallest
-     * NW/SE lat/lng "rectangle" that contains the possibly rotated visible area.
+     * NW/SE lat/lng "rectangle" that contains the possibly rotated visible area. The advantage line is centered on the leading
+     * boat, not the viewport, so each half needs a full viewport diagonal to span the map even when the boat is near an edge.
      */
     private Distance getMapDiagonalVisibleDistance() {
         return currentMapBounds.getLowerLeft().getDistance(currentMapBounds.getUpperRight()).scale(2);

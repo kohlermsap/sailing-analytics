@@ -1,4 +1,4 @@
-import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat } from './maplibre-test-utils.js?v=race-map-feedback-2';
+import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat } from './maplibre-test-utils.js?v=race-map-feedback-4';
 
 function asLngLatLiteral(value) {
     if (Array.isArray(value)) return { lat: value[1], lng: value[0] };
@@ -110,6 +110,7 @@ class CompatMap {
         this.loaded = false;
         this.deferred = [];
         this.detachedPolylineBackings = [];
+        this.polylineBackings = new Map();
         this.cameraChangedSinceIdle = true;
         element.style.position = element.style.position || 'relative';
         this.overlayLayer = document.createElement('div');
@@ -286,7 +287,9 @@ const POLYLINE_EVENTS = [
 class CompatPolyline {
     constructor(options = {}) {
         this.options = options;
-        this.path = options.path?.toArray ? options.path.toArray() : (options.path || []);
+        this.path = options.path?.__compatPath || (options.path?.toArray ? options.path.toArray() : (options.path || []));
+        this.pathOwners = options.path?.__compatPathOwners || new Set();
+        this.pathOwners.add(this);
         this.visible = options.visible !== false;
         this.listeners = new Map();
         this.id = `compat-polyline-${nextOverlayId++}`;
@@ -309,11 +312,20 @@ class CompatPolyline {
     }
     createBacking(map) {
         const backing = { id: this.id, hitId: `${this.id}-hit`, map, owner: this, formerOwner: null, cleanupTimer: null, handlers: [] };
+        map.polylineBackings.set(backing.id, backing);
         map.map.addSource(backing.id, { type: 'geojson', data: this.feature() });
         map.map.addLayer({ id: backing.id, type: 'line', source: backing.id, layout: { visibility: 'none' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': ['get', 'opacity'], 'line-width': ['get', 'width'] } });
         map.map.addLayer({ id: backing.hitId, type: 'line', source: backing.id, layout: { visibility: 'none' }, paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': 8 } });
         for (const [mapLibreEvent, compatEvent] of POLYLINE_EVENTS) {
             const handler = event => {
+                if (mapLibreEvent !== 'mouseleave' && event.point) {
+                    const topmost = map.map.queryRenderedFeatures(event.point)
+                        .map(feature => feature.layer?.id)
+                        .filter(id => id?.endsWith('-hit'))
+                        .map(id => map.polylineBackings.get(id.slice(0, -4)))
+                        .find(candidate => candidate?.owner?.listeners.get(compatEvent)?.size);
+                    if (topmost && topmost !== backing) return;
+                }
                 if (mapLibreEvent === 'mousemove') event.__compatOverlayHandled = true;
                 backing.owner?.emit(compatEvent, { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) });
             };
@@ -347,6 +359,7 @@ class CompatPolyline {
         if (backing.map.map.getLayer(backing.hitId)) backing.map.map.removeLayer(backing.hitId);
         if (backing.map.map.getLayer(backing.id)) backing.map.map.removeLayer(backing.id);
         if (backing.map.map.getSource(backing.id)) backing.map.map.removeSource(backing.id);
+        backing.map.polylineBackings.delete(backing.id);
         if (backing.formerOwner?.backing === backing) backing.formerOwner.backing = null;
     }
     detachBacking() {
@@ -375,24 +388,31 @@ class CompatPolyline {
         });
     }
     pathArray() {
-        const polyline = this;
+        const path = this.path;
+        const owners = this.pathOwners;
+        const notify = () => owners.forEach(owner => owner.schedulePublish());
         return {
-            getLength: () => polyline.path.length,
-            getAt: index => polyline.path[index],
-            get: index => polyline.path[index],
-            push: value => { polyline.path.push(value); polyline.schedulePublish(); return polyline.path.length; },
-            insertAt: (index, value) => { polyline.path.splice(index, 0, value); polyline.schedulePublish(); },
-            removeAt: index => { const removed = polyline.path.splice(index, 1)[0]; polyline.schedulePublish(); return removed; },
-            setAt: (index, value) => { polyline.path[index] = value; polyline.schedulePublish(); },
-            clear: () => { polyline.path.splice(0); polyline.schedulePublish(); },
-            forEach: callback => polyline.path.forEach((value, index) => callback(value, index)),
-            toArray: () => [...polyline.path]
+            __compatPath: path,
+            __compatPathOwners: owners,
+            getLength: () => path.length,
+            getAt: index => path[index],
+            get: index => path[index],
+            push: value => { path.push(value); notify(); return path.length; },
+            insertAt: (index, value) => { path.splice(index, 0, value); notify(); },
+            removeAt: index => { const removed = path.splice(index, 1)[0]; notify(); return removed; },
+            setAt: (index, value) => { path[index] = value; notify(); },
+            clear: () => { path.splice(0); notify(); },
+            forEach: callback => path.forEach((value, index) => callback(value, index)),
+            toArray: () => [...path]
         };
     }
     getPath() { return this.pathArray(); }
     setPath(path) {
-        this.path = path?.toArray ? path.toArray() : [...path];
-        this.schedulePublish();
+        this.pathOwners.delete(this);
+        this.path = path?.__compatPath || (path?.toArray ? path.toArray() : [...path]);
+        this.pathOwners = path?.__compatPathOwners || new Set();
+        this.pathOwners.add(this);
+        this.pathOwners.forEach(owner => owner.schedulePublish());
     }
     schedulePublish() {
         clearTimeout(this.publishTimer);
