@@ -523,10 +523,17 @@ class CompatOverlayView {
 class CompatPolygon {
     constructor(options = {}) {
         this.options = options;
-        this.paths = options.paths || [];
-        this.visible = true;
+        this.visible = options.visible !== false;
         this.listeners = new Map();
         this.id = `compat-polygon-${nextOverlayId++}`;
+        this.outerPathsChanged = () => {
+            this.subscribeToRings();
+            this.publish();
+        };
+        this.ringChanged = () => this.publish();
+        this.ringSubscriptions = new Set();
+        this.paths = createCompatArray([]);
+        this.setPaths(options.paths ?? (options.path ? [options.path] : []));
         if (options.map) this.setMap(options.map);
     }
     addListener(name, handler) {
@@ -537,9 +544,35 @@ class CompatPolygon {
     emit(name, event) {
         for (const handler of this.listeners.get(name) || []) handler(event);
     }
+    isLatLng(value) {
+        return value && ((typeof value.lat === 'function' && typeof value.lng === 'function') ||
+            (typeof value.lat === 'number' && typeof value.lng === 'number'));
+    }
+    normalizePaths(paths) {
+        const candidate = createCompatArray(paths || []);
+        if (!candidate.getLength()) return createCompatArray([]);
+        const outer = this.isLatLng(candidate.getAt(0)) ? createCompatArray([candidate]) : candidate;
+        const values = outer.__compatArrayValues;
+        for (let index = 0; index < values.length; index++) values[index] = createCompatArray(values[index]);
+        return outer;
+    }
+    subscribeToRings() {
+        for (const ring of this.ringSubscriptions) ring.__compatArraySubscribers.delete(this.ringChanged);
+        this.ringSubscriptions.clear();
+        const values = this.paths.__compatArrayValues;
+        for (let index = 0; index < values.length; index++) {
+            const ring = values[index] = createCompatArray(values[index]);
+            ring.__compatArraySubscribers.add(this.ringChanged);
+            this.ringSubscriptions.add(ring);
+        }
+    }
     feature() {
-        const ring = this.paths.map(point => lngLat(asLngLatLiteral(point)));
-        if (ring.length && (ring[0][0] !== ring.at(-1)[0] || ring[0][1] !== ring.at(-1)[1])) ring.push(ring[0]);
+        const rings = this.paths.__compatArrayValues.map(path => {
+            const ring = createCompatArray(path).__compatArrayValues
+                .map(point => lngLat(asLngLatLiteral(point)));
+            if (ring.length && (ring[0][0] !== ring.at(-1)[0] || ring[0][1] !== ring.at(-1)[1])) ring.push([...ring[0]]);
+            return ring;
+        });
         return {
             type: 'Feature',
             properties: {
@@ -549,8 +582,11 @@ class CompatPolygon {
                 fillColor: this.options.fillColor || this.options.strokeColor || '#000000',
                 fillOpacity: this.options.fillOpacity ?? 0
             },
-            geometry: { type: 'Polygon', coordinates: [ring] }
+            geometry: { type: 'Polygon', coordinates: rings }
         };
+    }
+    publish() {
+        this.map?.map.getSource(this.id)?.setData(this.feature());
     }
     setMap(map) {
         if (map === null) {
@@ -561,6 +597,7 @@ class CompatPolygon {
         }
         this.map = map;
         map.ready(() => {
+            if (this.map !== map) return;
             map.map.addSource(this.id, { type: 'geojson', data: this.feature() });
             map.map.addLayer({ id: `${this.id}-fill`, type: 'fill', source: this.id, paint: { 'fill-color': ['get', 'fillColor'], 'fill-opacity': ['get', 'fillOpacity'] } });
             map.map.addLayer({ id: `${this.id}-line`, type: 'line', source: this.id, paint: { 'line-color': ['get', 'strokeColor'], 'line-opacity': ['get', 'strokeOpacity'], 'line-width': ['get', 'strokeWeight'] } });
@@ -569,12 +606,28 @@ class CompatPolygon {
             this.setVisible(this.visible);
         });
     }
-    getPath() { return { getAt: index => this.paths[index], getLength: () => this.paths.length, toArray: () => [...this.paths] }; }
-    setPath(path) { this.paths = path?.toArray ? path.toArray() : path; this.map?.map.getSource(this.id)?.setData(this.feature()); }
+    getPath() {
+        if (!this.paths.getLength()) this.paths.push(createCompatArray([]));
+        return this.paths.getAt(0);
+    }
+    setPath(path) { this.setPaths([path]); }
+    getPaths() { return this.paths; }
+    setPaths(paths) {
+        this.paths.__compatArraySubscribers.delete(this.outerPathsChanged);
+        for (const ring of this.ringSubscriptions) ring.__compatArraySubscribers.delete(this.ringChanged);
+        this.ringSubscriptions.clear();
+        this.paths = this.normalizePaths(paths);
+        this.paths.__compatArraySubscribers.add(this.outerPathsChanged);
+        this.subscribeToRings();
+        this.publish();
+    }
     addMouseOutMoveHandler(handler) { return this.addListener('mouseout', handler); }
     setOptions(options = {}) {
         Object.assign(this.options, options);
-        this.map?.map.getSource(this.id)?.setData(this.feature());
+        if ('visible' in options) this.setVisible(options.visible);
+        if ('paths' in options) this.setPaths(options.paths);
+        else if ('path' in options) this.setPath(options.path);
+        else this.publish();
     }
     setVisible(visible) {
         this.visible = visible;
