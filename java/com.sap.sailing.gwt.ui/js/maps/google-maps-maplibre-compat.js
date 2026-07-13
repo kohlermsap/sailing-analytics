@@ -284,12 +284,38 @@ const POLYLINE_EVENTS = [
     ['mousedown', 'mousedown'], ['mouseup', 'mouseup'], ['click', 'click']
 ];
 
+function createCompatArray(values = []) {
+    if (values?.__compatArrayValues && values?.__compatArraySubscribers) return values;
+    const items = values?.toArray ? values.toArray() : [...values];
+    const subscribers = new Set();
+    const notify = () => {
+        for (const subscriber of [...subscribers]) subscriber();
+    };
+    return {
+        __compatArrayValues: items,
+        __compatArraySubscribers: subscribers,
+        getAt: index => items[index],
+        get: index => items[index],
+        getLength: () => items.length,
+        push: value => { const length = items.push(value); notify(); return length; },
+        pop: () => { const value = items.pop(); notify(); return value; },
+        insertAt: (index, value) => { items.splice(index, 0, value); notify(); },
+        removeAt: index => { const value = items.splice(index, 1)[0]; notify(); return value; },
+        setAt: (index, value) => { items[index] = value; notify(); },
+        add: value => { const length = items.push(value); notify(); return length; },
+        clear: () => { items.splice(0); notify(); },
+        forEach: callback => items.forEach((value, index) => callback(value, index)),
+        getArray: () => items,
+        toArray: () => [...items]
+    };
+}
+
 class CompatPolyline {
     constructor(options = {}) {
         this.options = options;
-        this.path = options.path?.__compatPath || (options.path?.toArray ? options.path.toArray() : (options.path || []));
-        this.pathOwners = options.path?.__compatPathOwners || new Set();
-        this.pathOwners.add(this);
+        this.path = createCompatArray(options.path || []);
+        this.pathChanged = () => this.schedulePublish();
+        this.path.__compatArraySubscribers.add(this.pathChanged);
         this.visible = options.visible !== false;
         this.listeners = new Map();
         this.id = `compat-polyline-${nextOverlayId++}`;
@@ -307,7 +333,7 @@ class CompatPolyline {
         return {
             type: 'Feature',
             properties: { color: this.options.strokeColor || '#000000', opacity: this.options.strokeOpacity ?? 1, width: this.options.strokeWeight || 1 },
-            geometry: { type: 'LineString', coordinates: this.path.map(point => lngLat(asLngLatLiteral(point))) }
+            geometry: { type: 'LineString', coordinates: this.path.__compatArrayValues.map(point => lngLat(asLngLatLiteral(point))) }
         };
     }
     createBacking(map) {
@@ -387,32 +413,12 @@ class CompatPolyline {
             this.schedulePublish();
         });
     }
-    pathArray() {
-        const path = this.path;
-        const owners = this.pathOwners;
-        const notify = () => owners.forEach(owner => owner.schedulePublish());
-        return {
-            __compatPath: path,
-            __compatPathOwners: owners,
-            getLength: () => path.length,
-            getAt: index => path[index],
-            get: index => path[index],
-            push: value => { path.push(value); notify(); return path.length; },
-            insertAt: (index, value) => { path.splice(index, 0, value); notify(); },
-            removeAt: index => { const removed = path.splice(index, 1)[0]; notify(); return removed; },
-            setAt: (index, value) => { path[index] = value; notify(); },
-            clear: () => { path.splice(0); notify(); },
-            forEach: callback => path.forEach((value, index) => callback(value, index)),
-            toArray: () => [...path]
-        };
-    }
-    getPath() { return this.pathArray(); }
+    getPath() { return this.path; }
     setPath(path) {
-        this.pathOwners.delete(this);
-        this.path = path?.__compatPath || (path?.toArray ? path.toArray() : [...path]);
-        this.pathOwners = path?.__compatPathOwners || new Set();
-        this.pathOwners.add(this);
-        this.pathOwners.forEach(owner => owner.schedulePublish());
+        this.path.__compatArraySubscribers.delete(this.pathChanged);
+        this.path = createCompatArray(path);
+        this.path.__compatArraySubscribers.add(this.pathChanged);
+        this.schedulePublish();
     }
     schedulePublish() {
         clearTimeout(this.publishTimer);
@@ -449,7 +455,8 @@ class CompatPolyline {
     setOptions(options = {}) {
         Object.assign(this.options, options);
         if ('visible' in options) this.setVisible(options.visible);
-        this.schedulePublish();
+        if ('path' in options) this.setPath(options.path);
+        else this.schedulePublish();
     }
     setVisible(visible) {
         this.visible = visible;
