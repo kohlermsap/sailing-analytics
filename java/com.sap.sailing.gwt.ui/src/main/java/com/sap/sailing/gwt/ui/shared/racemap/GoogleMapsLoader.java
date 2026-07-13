@@ -97,7 +97,7 @@ public class GoogleMapsLoader {
         loadScript('./js/maps/vendor/maplibre-gl/5.9.0/maplibre-gl.js', function() {
             var m = $doc.createElement('script');
             m.type = 'module';
-            m.text = "import { installGwtMapsCompat } from './js/maps/gwt-maps-maplibre-compat.js?v=race-map-feedback-6'; installGwtMapsCompat(); window.__sailingMapsLoaded();";
+            m.text = "import { installGwtMapsCompat } from './js/maps/gwt-maps-maplibre-compat.js?v=race-map-feedback-7'; installGwtMapsCompat(); window.__sailingMapsLoaded();";
             $wnd.__sailingMapsLoaded = runCallback;
             $doc.head.appendChild(m);
         });
