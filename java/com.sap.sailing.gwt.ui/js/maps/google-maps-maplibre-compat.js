@@ -1,4 +1,4 @@
-import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat } from './maplibre-test-utils.js?v=race-map-feedback-4';
+import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat } from './maplibre-test-utils.js?v=race-map-feedback-5';
 
 function asLngLatLiteral(value) {
     if (Array.isArray(value)) return { lat: value[1], lng: value[0] };
