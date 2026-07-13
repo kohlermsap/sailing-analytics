@@ -1,4 +1,6 @@
-import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat } from './maplibre-test-utils.js?v=race-map-feedback-5';
+// Core facade: implements the Google Maps JavaScript API surface on MapLibre GL JS.
+// Keep GWT wrapper conventions in gwt-maps-maplibre-compat.js.
+import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat } from './maplibre-test-utils.js?v=race-map-feedback-6';
 
 function asLngLatLiteral(value) {
     if (Array.isArray(value)) return { lat: value[1], lng: value[0] };
@@ -203,8 +205,11 @@ class CompatMap {
                 if (name === 'mousemove') {
                     clearTimeout(this.mouseMoveTimer);
                     this.mouseMoveTimer = setTimeout(() => {
-                        const overPolyline = event.point && this.map.queryRenderedFeatures?.(event.point)
-                            .some(feature => feature.layer?.id.startsWith('compat-polyline-'));
+                        // ponytail: layer-filtered queryRenderedFeatures avoids scanning the full style (100+ base-tile layers).
+                        // Upgrade path if still hot: rAF-coalesce, or merge all compat polylines into one shared source.
+                        const hitLayers = this.getCompatHitLayerIds();
+                        const overPolyline = event.point && hitLayers.length > 0 &&
+                            this.map.queryRenderedFeatures?.(event.point, { layers: hitLayers }).length > 0;
                         if (!event.__compatOverlayHandled && !overPolyline) this.emit(name, mapEvent);
                     });
                 }
@@ -226,6 +231,13 @@ class CompatMap {
     }
     emit(name, event = {}) {
         for (const handler of this.listeners.get(name) || []) handler(event);
+    }
+    getCompatHitLayerIds() {
+        const ids = [];
+        for (const backing of this.polylineBackings.values()) {
+            if (this.map.getLayer(backing.hitId)) ids.push(backing.hitId);
+        }
+        return ids;
     }
     ready(action) {
         if (this.loaded) action();
@@ -345,10 +357,10 @@ class CompatPolyline {
         for (const [mapLibreEvent, compatEvent] of POLYLINE_EVENTS) {
             const handler = event => {
                 if (mapLibreEvent !== 'mouseleave' && event.point) {
-                    const topmost = map.map.queryRenderedFeatures(event.point)
-                        .map(feature => feature.layer?.id)
-                        .filter(id => id?.endsWith('-hit'))
-                        .map(id => map.polylineBackings.get(id.slice(0, -4)))
+                    // ponytail: only ask MapLibre about the compat hit layers, not the whole style.
+                    const hitLayers = map.getCompatHitLayerIds();
+                    const topmost = hitLayers.length > 0 && map.map.queryRenderedFeatures(event.point, { layers: hitLayers })
+                        .map(feature => map.polylineBackings.get(feature.layer.id.slice(0, -4)))
                         .find(candidate => candidate?.owner?.listeners.get(compatEvent)?.size);
                     if (topmost && topmost !== backing) return;
                 }
