@@ -1,4 +1,4 @@
-import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat } from './maplibre-test-utils.js';
+import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat } from './maplibre-test-utils.js?v=race-map-feedback-2';
 
 function asLngLatLiteral(value) {
     if (Array.isArray(value)) return { lat: value[1], lng: value[0] };
@@ -168,7 +168,7 @@ class CompatMap {
         if (options.zoomControl !== false) {
             this.map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right');
         }
-        applyRaceStyle(this.map);
+        applyRaceStyle(this.map, options.seaMarksVisible);
         this.map.on('move', () => {
             this.cameraChangedSinceIdle = true;
             this.emit('bounds_changed');
@@ -199,7 +199,15 @@ class CompatMap {
         for (const name of ['click', 'mousedown', 'mousemove', 'mouseout', 'mouseup', 'dblclick']) {
             this.map.on(name, event => {
                 const mapEvent = { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) };
-                this.emit(name, mapEvent);
+                if (name === 'mousemove') {
+                    clearTimeout(this.mouseMoveTimer);
+                    this.mouseMoveTimer = setTimeout(() => {
+                        const overPolyline = event.point && this.map.queryRenderedFeatures?.(event.point)
+                            .some(feature => feature.layer?.id.startsWith('compat-polyline-'));
+                        if (!event.__compatOverlayHandled && !overPolyline) this.emit(name, mapEvent);
+                    });
+                }
+                else this.emit(name, mapEvent);
                 // ponytail: mousedown avoids MapLibre dragstart re-entry; upgrade if non-drag clicks matter.
                 if (name === 'mousedown') queueMicrotask(() => this.emit('dragstart', mapEvent));
             });
@@ -259,7 +267,11 @@ class CompatMap {
     getHeading() { return (this.map.getBearing() + 360) % 360; }
     setMapTypeId(mapTypeId) { this.options.mapTypeId = mapTypeId; }
     getMapTypeId() { return this.options.mapTypeId || 'roadmap'; }
-    setOptions(options = {}) { Object.assign(this.options, options); }
+    setOptions(options = {}) {
+        Object.assign(this.options, options);
+        if ('heading' in options) this.setHeading(options.heading);
+        if ('seaMarksVisible' in options) applyRaceStyle(this.map, options.seaMarksVisible);
+    }
     resize() { this.map.resize(); this.emit('resize'); }
 }
 
@@ -296,13 +308,17 @@ class CompatPolyline {
         };
     }
     createBacking(map) {
-        const backing = { id: this.id, map, owner: this, formerOwner: null, cleanupTimer: null, handlers: [] };
+        const backing = { id: this.id, hitId: `${this.id}-hit`, map, owner: this, formerOwner: null, cleanupTimer: null, handlers: [] };
         map.map.addSource(backing.id, { type: 'geojson', data: this.feature() });
         map.map.addLayer({ id: backing.id, type: 'line', source: backing.id, layout: { visibility: 'none' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': ['get', 'opacity'], 'line-width': ['get', 'width'] } });
+        map.map.addLayer({ id: backing.hitId, type: 'line', source: backing.id, layout: { visibility: 'none' }, paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': 8 } });
         for (const [mapLibreEvent, compatEvent] of POLYLINE_EVENTS) {
-            const handler = event => backing.owner?.emit(compatEvent, { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) });
+            const handler = event => {
+                if (mapLibreEvent === 'mousemove') event.__compatOverlayHandled = true;
+                backing.owner?.emit(compatEvent, { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) });
+            };
             backing.handlers.push([mapLibreEvent, handler]);
-            map.map.on(mapLibreEvent, backing.id, handler);
+            map.map.on(mapLibreEvent, backing.hitId, handler);
         }
         return backing;
     }
@@ -320,13 +336,15 @@ class CompatPolyline {
         this.backing = backing;
         this.awaitingFirstPublish = true;
         map.map.setLayoutProperty(backing.id, 'visibility', 'none');
+        map.map.setLayoutProperty(backing.hitId, 'visibility', 'none');
     }
     removeBacking(backing) {
         if (backing.owner) return;
         const pool = backing.map.detachedPolylineBackings;
         const index = pool.indexOf(backing);
         if (index >= 0) pool.splice(index, 1);
-        for (const [event, handler] of backing.handlers) backing.map.map.off(event, backing.id, handler);
+        for (const [event, handler] of backing.handlers) backing.map.map.off(event, backing.hitId, handler);
+        if (backing.map.map.getLayer(backing.hitId)) backing.map.map.removeLayer(backing.hitId);
         if (backing.map.map.getLayer(backing.id)) backing.map.map.removeLayer(backing.id);
         if (backing.map.map.getSource(backing.id)) backing.map.map.removeSource(backing.id);
         if (backing.formerOwner?.backing === backing) backing.formerOwner.backing = null;
@@ -336,6 +354,7 @@ class CompatPolyline {
         const backing = this.backing;
         if (!backing) return;
         backing.map.map.setLayoutProperty(backing.id, 'visibility', 'none');
+        backing.map.map.setLayoutProperty(backing.hitId, 'visibility', 'none');
         backing.owner = null;
         backing.formerOwner = this;
         if (!backing.map.detachedPolylineBackings.includes(backing)) backing.map.detachedPolylineBackings.push(backing);
@@ -390,8 +409,11 @@ class CompatPolyline {
             backing.map.map.setPaintProperty(backing.id, 'line-color', this.options.strokeColor || '#000000');
             backing.map.map.setPaintProperty(backing.id, 'line-opacity', this.options.strokeOpacity ?? 1);
             backing.map.map.setPaintProperty(backing.id, 'line-width', this.options.strokeWeight || 1);
+            backing.map.map.setPaintProperty(backing.hitId, 'line-width', Math.max(this.options.strokeWeight || 1, 8));
             this.awaitingFirstPublish = false;
-            backing.map.map.setLayoutProperty(backing.id, 'visibility', this.visible ? 'visible' : 'none');
+            const visibility = this.visible ? 'visible' : 'none';
+            backing.map.map.setLayoutProperty(backing.id, 'visibility', visibility);
+            backing.map.map.setLayoutProperty(backing.hitId, 'visibility', visibility);
         }
     }
     clear() { this.getPath().clear(); }
@@ -412,7 +434,11 @@ class CompatPolyline {
     setVisible(visible) {
         this.visible = visible;
         const backing = this.backing;
-        if (backing?.map.map.getLayer(backing.id)) backing.map.map.setLayoutProperty(backing.id, 'visibility', visible && !this.awaitingFirstPublish ? 'visible' : 'none');
+        if (backing?.map.map.getLayer(backing.id)) {
+            const visibility = visible && !this.awaitingFirstPublish ? 'visible' : 'none';
+            backing.map.map.setLayoutProperty(backing.id, 'visibility', visibility);
+            backing.map.map.setLayoutProperty(backing.hitId, 'visibility', visibility);
+        }
     }
     getVisible() { return this.visible; }
 }
@@ -784,7 +810,8 @@ function ensureCompatStyles() {
 
 export function installGoogleMapsCompat() {
     ensureCompatStyles();
-    globalThis.google = { maps: {
+    const google = globalThis.google || (globalThis.google = {});
+    google.maps = {
         Map: CompatMap,
         LatLng: CompatLatLng,
         LatLngBounds: CompatLatLngBounds,
@@ -806,6 +833,6 @@ export function installGoogleMapsCompat() {
             clearInstanceListeners: (target) => { if (target && target.listeners instanceof Map) target.listeners.clear(); },
             trigger: (target, name, ...args) => { if (target && typeof target.emit === 'function') target.emit(name, ...args); }
         }
-    } };
-    return globalThis.google.maps;
+    };
+    return google.maps;
 }

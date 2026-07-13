@@ -19,7 +19,7 @@ export function createRaceStyle() {
     return RACE_VECTOR_STYLE_URL;
 }
 
-export function applyRaceStyle(map) {
+export function applyRaceStyle(map, seaMarksVisible = false) {
     const apply = () => {
         for (const layer of map.getStyle().layers || []) {
             if (layer.type === 'fill' && /water/i.test(`${layer.id} ${layer['source-layer'] || ''}`)) {
@@ -29,7 +29,7 @@ export function applyRaceStyle(map) {
                 map.setPaintProperty(layer.id, 'line-color', '#2b7eb3');
             }
         }
-        if (!map.getSource('openseamap')) {
+        if (seaMarksVisible && !map.getSource('openseamap')) {
             map.addSource('openseamap', {
                 type: 'raster',
                 tiles: ['https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png'],
@@ -38,11 +38,13 @@ export function applyRaceStyle(map) {
                 maxzoom: 18
             });
         }
-        if (!map.getLayer('openseamap')) {
+        if (seaMarksVisible && !map.getLayer('openseamap')) {
             map.addLayer({ id: 'openseamap', type: 'raster', source: 'openseamap', paint: { 'raster-opacity': 0.75 } });
+        } else if (map.getLayer('openseamap')) {
+            map.setLayoutProperty('openseamap', 'visibility', seaMarksVisible ? 'visible' : 'none');
         }
     };
-    if (map.loaded()) apply();
+    if (map.getLayer('openseamap') || map.isStyleLoaded?.() || map.loaded()) apply();
     else map.once('load', apply);
 }
 
@@ -57,7 +59,7 @@ export function createRaceMap(containerId, options = {}) {
         pitch: 0
     });
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right');
-    applyRaceStyle(map);
+    applyRaceStyle(map, options.seaMarksVisible);
     return map;
 }
 

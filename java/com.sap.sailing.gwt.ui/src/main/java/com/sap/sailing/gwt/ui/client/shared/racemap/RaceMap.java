@@ -3300,6 +3300,11 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
         if (newSettings.isShowSatelliteLayer() != settings.isShowSatelliteLayer()) {
             requiresUpdateCoordinateSystem = true;
         }
+        if (GoogleMapsLoader.isMapLibreRequested() && newSettings.isShowSeaMarks() != settings.isShowSeaMarks()) {
+            MapOptions mapOptions = MapOptions.newInstance();
+            setSeaMarksVisible(mapOptions, newSettings.isShowSeaMarks());
+            map.setOptions(mapOptions);
+        }
         if (newSettings.isShowManeuverLossVisualization() != settings.isShowManeuverLossVisualization()) {
             showManeuverLossChanged = true;
         }
@@ -3763,8 +3768,15 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
         // no need to try to position the scale control; it always ends up at the right bottom corner
         mapOptions.setStreetViewControl(false);
         mapOptions.setIsFractionalZoomEnabled(true);
+        if (GoogleMapsLoader.isMapLibreRequested()) {
+            setSeaMarksVisible(mapOptions, settings.isShowSeaMarks());
+        }
         return mapOptions;
     }
+
+    private static native void setSeaMarksVisible(MapOptions mapOptions, boolean visible) /*-{
+        mapOptions.seaMarksVisible = visible;
+    }-*/;
 
     private String getMapTypeId(boolean windUp, boolean showSatelliteLayer) {
         return showSatelliteLayer && !windUp ? MapTypeId.SATELLITE.toString() : SAILING_ANALYTICS_MAP_TYPE_ID;
@@ -3881,7 +3893,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
      * NW/SE lat/lng "rectangle" that contains the possibly rotated visible area.
      */
     private Distance getMapDiagonalVisibleDistance() {
-        return currentMapBounds.getLowerLeft().getDistance(currentMapBounds.getUpperRight());
+        return currentMapBounds.getLowerLeft().getDistance(currentMapBounds.getUpperRight()).scale(2);
     }
 
     private void afterZoomOrHeadingChanged() {

@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.LocalizableResource.DefaultLocale;
+import com.google.gwt.i18n.client.Messages.DefaultMessage;
 import com.google.gwt.json.client.JSONValue;
 import com.sap.sailing.domain.common.i18n.CommonStringMessages;
 import com.sap.sse.gwt.client.DefaultRule_0_1_n;
@@ -1158,6 +1159,8 @@ public interface StringMessages extends com.sap.sse.gwt.client.StringMessages,
     String eventLogoImageURL();
     String showPingMarkMappings();
     String showSatelliteLayer();
+    @DefaultMessage("Show nautical chart overlay")
+    String showSeaMarks();
     String errorFetchingWindStreamletData(String message);
     String showWindStreamletOverlay();
     String showWindStreamletColors();

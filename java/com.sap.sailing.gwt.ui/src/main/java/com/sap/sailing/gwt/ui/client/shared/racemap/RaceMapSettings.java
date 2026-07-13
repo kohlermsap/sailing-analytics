@@ -42,6 +42,7 @@ public class RaceMapSettings extends AbstractGenericSerializableSettingsWithCont
     private static final String HELP_LINES_SETTINGS = "helpLinesSettings";
     private static final String ZOOM_SETTINGS = "zoomSettings";
     private static final String PARAM_SHOW_SATELLITE_LAYER = "showSatelliteLayer";
+    private static final String PARAM_SHOW_SEA_MARKS = "showSeaMarks";
     public static final String PARAM_SHOW_MAPCONTROLS = "showMapControls";
     public static final String PARAM_SHOW_COURSE_GEOMETRY = "showCourseGeometry";
     public static final String PARAM_MAP_ORIENTATION_WIND_UP = "windUp";
@@ -57,6 +58,7 @@ public class RaceMapSettings extends AbstractGenericSerializableSettingsWithCont
     private static final long DEFAULT_TAIL_LENGTH_IN_MILLISECONDS = Duration.ONE_SECOND.times(100l).asMillis();
 
     private BooleanSetting showSatelliteLayerSetting;
+    private BooleanSetting showSeaMarksSetting;
 
     private BooleanSetting showDouglasPeuckerPointsSetting;
 
@@ -114,6 +116,7 @@ public class RaceMapSettings extends AbstractGenericSerializableSettingsWithCont
     @Override
     protected void addChildSettings(SecurityChildSettingsContext context) {
         showSatelliteLayerSetting = new BooleanSetting(PARAM_SHOW_SATELLITE_LAYER, this, false);
+        showSeaMarksSetting = new BooleanSetting(PARAM_SHOW_SEA_MARKS, this, false);
         showMapControlsSetting = new BooleanSetting(PARAM_SHOW_MAPCONTROLS, this, true);
         helpLinesSettings = new RaceMapHelpLinesSettings(HELP_LINES_SETTINGS, this);
         windUpSetting = new BooleanSetting(PARAM_MAP_ORIENTATION_WIND_UP, this, false);
@@ -147,7 +150,7 @@ public class RaceMapSettings extends AbstractGenericSerializableSettingsWithCont
             Boolean showWindStreamletColors, Boolean showWindStreamletOverlay, Boolean showSimulationOverlay,
             Boolean showMapControls, Collection<ManeuverType> maneuverTypesToShow, Boolean showDouglasPeuckerPoints,
             Boolean showEstimatedDuration, Double startCountDownFontSizeScaling, Boolean showManeuverLossVisualization,
-            Boolean showSatelliteLayer, Boolean showWindLadder, PaywallResolver paywallResolver, SecuredDTO securedDTO) {
+            Boolean showSatelliteLayer, Boolean showSeaMarks, Boolean showWindLadder, PaywallResolver paywallResolver, SecuredDTO securedDTO) {
         this(paywallResolver, securedDTO);
         this.zoomSettings.init(zoomSettings);
         this.helpLinesSettings.init(helpLinesSettings);
@@ -168,6 +171,7 @@ public class RaceMapSettings extends AbstractGenericSerializableSettingsWithCont
         this.startCountDownFontSizeScalingSetting.setValue(startCountDownFontSizeScaling);
         this.showManeuverLossVisualizationSetting.setValue(showManeuverLossVisualization);
         this.showSatelliteLayerSetting.setValue(showSatelliteLayer);
+        this.showSeaMarksSetting.setValue(showSeaMarks);
         this.showWindLadderSetting.setValue(showWindLadder);
     }
 
@@ -297,6 +301,10 @@ public class RaceMapSettings extends AbstractGenericSerializableSettingsWithCont
         return showSatelliteLayerSetting.getValue();
     }
 
+    public boolean isShowSeaMarks() {
+        return showSeaMarksSetting.getValue();
+    }
+
     public boolean isShowWindLadder() {
         return showWindLadderSetting.getValue();
     }
@@ -322,6 +330,7 @@ public class RaceMapSettings extends AbstractGenericSerializableSettingsWithCont
             boolean defaultForViewShowStreamlets, boolean defaultForViewShowStreamletColors,
             boolean defaultForViewShowSimulation, Long defaultForTailLengthInMilliseconds, PaywallResolver paywallResolver, SecuredDTO securedDTO) {
         final boolean showSatelliteLayer = GwtHttpRequestUtils.getBooleanParameter(PARAM_SHOW_SATELLITE_LAYER, false /* default */);
+        final boolean showSeaMarks = GwtHttpRequestUtils.getBooleanParameter(PARAM_SHOW_SEA_MARKS, false /* default */);
         final boolean showMapControls = GwtHttpRequestUtils.getBooleanParameter(PARAM_SHOW_MAPCONTROLS, defaultForShowMapControls /* default */);
         final boolean showCourseGeometry = GwtHttpRequestUtils.getBooleanParameter(PARAM_SHOW_COURSE_GEOMETRY, defaultForShowCourseGeometry /* default */);
         final RaceMapHelpLinesSettings raceMapHelpLinesSettings = new RaceMapHelpLinesSettings(createHelpLineSettings(showCourseGeometry));
@@ -335,6 +344,7 @@ public class RaceMapSettings extends AbstractGenericSerializableSettingsWithCont
         final MeterDistance meterDistance = new MeterDistance(buoyZoneRadiusInMeters);
         return new RaceMapSettingsBuilder(securedDTO, paywallResolver)
                 .withShowSatelliteLayer(showSatelliteLayer)
+                .withShowSeaMarks(showSeaMarks)
                 .withShowMapControls(showMapControls)
                 .withHelpLinesSettings(raceMapHelpLinesSettings)
                 .withWindUp(windUp)
@@ -356,6 +366,7 @@ public class RaceMapSettings extends AbstractGenericSerializableSettingsWithCont
 
     public static class RaceMapSettingsBuilder {
         private Boolean showSatelliteLayer;
+        private Boolean showSeaMarks;
         private Boolean showDouglasPeuckerPoints;
         private Set<ManeuverType> maneuverTypesToShow;
         private Boolean showOnlySelectedCompetitors;
@@ -398,6 +409,7 @@ public class RaceMapSettings extends AbstractGenericSerializableSettingsWithCont
 //                settings.setSecuredDTO(securedDTO);
 //            }
             this.showSatelliteLayer = settings.isShowSatelliteLayer();
+            this.showSeaMarks = settings.isShowSeaMarks();
             this.showDouglasPeuckerPoints = settings.isShowDouglasPeuckerPoints();
             this.maneuverTypesToShow = settings.getManeuverTypesToShow();
             this.showOnlySelectedCompetitors = settings.isShowOnlySelectedCompetitors();
@@ -425,7 +437,7 @@ public class RaceMapSettings extends AbstractGenericSerializableSettingsWithCont
                     showSelectedCompetitorsInfo, showWindStreamletColors, showWindStreamletOverlay,
                     showSimulationOverlay, showMapControls, maneuverTypesToShow, showDouglasPeuckerPoints,
                     showEstimatedDuration, startCountDownFontSizeScaling, showManeuverLossVisualization,
-                    showSatelliteLayer, showWindLadder, paywallResolver, securedDTO);
+                    showSatelliteLayer, showSeaMarks, showWindLadder, paywallResolver, securedDTO);
         }
 
         public RaceMapSettingsBuilder witholdSettings(RaceMapSettings settings) {
@@ -525,6 +537,11 @@ public class RaceMapSettings extends AbstractGenericSerializableSettingsWithCont
 
         public RaceMapSettingsBuilder withShowSatelliteLayer(Boolean showSatelliteLayer) {
             this.showSatelliteLayer = showSatelliteLayer;
+            return this;
+        }
+
+        public RaceMapSettingsBuilder withShowSeaMarks(Boolean showSeaMarks) {
+            this.showSeaMarks = showSeaMarks;
             return this;
         }
 
