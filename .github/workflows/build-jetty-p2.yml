@@ -16,7 +16,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: maven
       - name: Mirror Jetty p2 repository
         shell: bash
         run: |
