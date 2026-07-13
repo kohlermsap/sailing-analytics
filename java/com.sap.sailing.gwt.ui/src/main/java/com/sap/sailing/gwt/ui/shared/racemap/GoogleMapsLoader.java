@@ -47,7 +47,9 @@ public class GoogleMapsLoader {
             callbacks.add(callback);
             if (!loading) {
                 loading = true;
-                if (isMapLibreRequested()) {
+                final boolean mapLibreRequested = isMapLibreRequested();
+                setProvider(mapLibreRequested);
+                if (mapLibreRequested) {
                     loadMapLibre();
                 } else {
                     installCallback();
@@ -64,6 +66,10 @@ public class GoogleMapsLoader {
         return new $wnd.URLSearchParams($wnd.location.search).get('maps') === 'maplibre';
     }-*/;
 
+    private static native void setProvider(boolean mapLibreRequested) /*-{
+        $wnd.__mapsProvider = { provider: mapLibreRequested ? 'maplibre' : 'google', loaded: false };
+    }-*/;
+
     /**
      * Loads MapLibre GL JS plus the Google-Maps-compatible facade from {@code js/maps/}, then fires
      * the queued callbacks via {@link #callback()}. Triggered by {@code ?maps=maplibre} in the page URL.
@@ -72,7 +78,8 @@ public class GoogleMapsLoader {
         var runCallback = $entry(function() {
             @com.sap.sailing.gwt.ui.shared.racemap.GoogleMapsLoader::callback()();
         });
-        if ($wnd.maplibregl && $wnd.maplibregl.Map) {
+        if ($wnd.maplibregl && $wnd.maplibregl.Map &&
+                $wnd.google && $wnd.google.maps && $wnd.google.maps.Map) {
             runCallback();
             return;
         }
@@ -90,7 +97,7 @@ public class GoogleMapsLoader {
         loadScript('https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.js', function() {
             var m = $doc.createElement('script');
             m.type = 'module';
-            m.text = "import { installGwtMapsCompat } from './js/maps/gwt-maps-maplibre-compat.js'; installGwtMapsCompat(); window.__mapsProvider = { provider: 'maplibre', loaded: true }; window.__sailingMapsLoaded();";
+            m.text = "import { installGwtMapsCompat } from './js/maps/gwt-maps-maplibre-compat.js'; installGwtMapsCompat(); window.__sailingMapsLoaded();";
             $wnd.__sailingMapsLoaded = runCallback;
             $doc.head.appendChild(m);
         });
@@ -98,11 +105,16 @@ public class GoogleMapsLoader {
     
     private static void callback() {
         loaded = true;
+        markProviderLoaded();
         loading = false;
         callbacks.forEach(Runnable::run);
         callbacks.clear();
         clearCallback();
     }
+
+    private static native void markProviderLoaded() /*-{
+        $wnd.__mapsProvider.loaded = true;
+    }-*/;
     
     private static native void installCallback() /*-{
         $wnd.googleMapsLoadedCallback = $entry(function() {
