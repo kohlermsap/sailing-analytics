@@ -62,7 +62,7 @@ public class GoogleMapsLoader {
         }
     }
 
-    private static native boolean isMapLibreRequested() /*-{
+    public static native boolean isMapLibreRequested() /*-{
         return new $wnd.URLSearchParams($wnd.location.search).get('maps') === 'maplibre';
     }-*/;
 
@@ -92,12 +92,12 @@ public class GoogleMapsLoader {
         };
         var css = $doc.createElement('link');
         css.rel = 'stylesheet';
-        css.href = 'https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.css';
+        css.href = './js/maps/vendor/maplibre-gl/5.9.0/maplibre-gl.css';
         $doc.head.appendChild(css);
-        loadScript('https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.js', function() {
+        loadScript('./js/maps/vendor/maplibre-gl/5.9.0/maplibre-gl.js', function() {
             var m = $doc.createElement('script');
             m.type = 'module';
-            m.text = "import { installGwtMapsCompat } from './js/maps/gwt-maps-maplibre-compat.js'; installGwtMapsCompat(); window.__sailingMapsLoaded();";
+            m.text = "import { installGwtMapsCompat } from './js/maps/gwt-maps-maplibre-compat.js?v=race-map-feedback-4'; installGwtMapsCompat(); window.__sailingMapsLoaded();";
             $wnd.__sailingMapsLoaded = runCallback;
             $doc.head.appendChild(m);
         });

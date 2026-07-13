@@ -22,8 +22,9 @@ body {
 }
 
 .raceMapIndicatorPanelTextLabel {
-	height: 12px;
+	height: 14px;
 	width: 55px;
+	line-height: 14px;
 	vertical-align: middle;
 	font-size: 12px;
 	text-align: center;

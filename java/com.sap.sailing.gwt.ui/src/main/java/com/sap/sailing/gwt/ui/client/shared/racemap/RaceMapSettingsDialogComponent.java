@@ -23,6 +23,7 @@ import com.sap.sailing.gwt.ui.client.ManeuverTypeFormatter;
 import com.sap.sailing.gwt.ui.client.StringMessages;
 import com.sap.sailing.gwt.ui.client.shared.racemap.RaceMapHelpLinesSettings.HelpLineTypes;
 import com.sap.sailing.gwt.ui.client.shared.racemap.RaceMapZoomSettings.ZoomTypes;
+import com.sap.sailing.gwt.ui.shared.racemap.GoogleMapsLoader;
 import com.sap.sse.common.Distance;
 import com.sap.sse.common.Util;
 import com.sap.sse.common.impl.MeterDistance;
@@ -49,6 +50,7 @@ public class RaceMapSettingsDialogComponent implements SettingsDialogComponent<R
     private PremiumCheckBox showWindStreamletOverlayCheckbox;
     private PremiumCheckBox showWindStreamletColorsCheckbox;
     private CheckBox showSatelliteLayerCheckbox;
+    private CheckBox showSeaMarksCheckbox;
     private CheckBox windUpCheckbox;
     private PremiumCheckBox showSimulationOverlayCheckbox;
     private CheckBox showSelectedCompetitorsInfoCheckBox;
@@ -84,6 +86,12 @@ public class RaceMapSettingsDialogComponent implements SettingsDialogComponent<R
         showSatelliteLayerCheckbox.ensureDebugId("showSatelliteLayerCheckBox");
         showSatelliteLayerCheckbox.setEnabled(!initialSettings.isWindUp());
         vp.add(showSatelliteLayerCheckbox);
+        if (GoogleMapsLoader.isMapLibreRequested()) {
+            showSeaMarksCheckbox = dialog.createCheckbox(stringMessages.showSeaMarks());
+            showSeaMarksCheckbox.setValue(initialSettings.isShowSeaMarks());
+            showSeaMarksCheckbox.ensureDebugId("showSeaMarksCheckBox");
+            vp.add(showSeaMarksCheckbox);
+        }
         windUpCheckbox = dialog.createCheckbox(stringMessages.windUp());
         windUpCheckbox.setValue(initialSettings.isWindUp());
         windUpCheckbox.getElement().setAttribute("selenium_checkbox", String.valueOf(initialSettings.isWindUp()));
@@ -292,13 +300,14 @@ public class RaceMapSettingsDialogComponent implements SettingsDialogComponent<R
         if (helpLinesSettings.isVisible(HelpLineTypes.BUOYZONE) && buoyZoneRadiusInMetersBox.getValue() != null) {
             buoyZoneRadius = new MeterDistance(buoyZoneRadiusInMetersBox.getValue());
         }
+        boolean showSeaMarks = showSeaMarksCheckbox == null ? initialSettings.isShowSeaMarks() : showSeaMarksCheckbox.getValue();
         return new RaceMapSettings(zoomSettings, helpLinesSettings,
                 transparentHoverlines.getValue(), hoverlineStrokeWeight.getValue(), tailLengthInMilliseconds, windUpCheckbox.getValue(),
                 buoyZoneRadius, showOnlySelectedCompetitorsCheckBox.getValue(), showSelectedCompetitorsInfoCheckBox.getValue(),
                 showWindStreamletColorsCheckbox.getValue(), showWindStreamletOverlayCheckbox.getValue(), showSimulationOverlay,
                 initialSettings.isShowMapControls(), maneuverTypesToShow, showDouglasPeuckerPointsCheckBox.getValue(),estimatedDuration,
                 startCountDownFontSizeScalingBox.getValue(), maneuverLossVisualizationCheckBox.getValue(),
-                showSatelliteLayerCheckbox.getValue(), windLadderCheckBox.getValue(), initialSettings.getPaywallResolver(), initialSettings.getSecuredDTO());
+                showSatelliteLayerCheckbox.getValue(), showSeaMarks, windLadderCheckBox.getValue(), initialSettings.getPaywallResolver(), initialSettings.getSecuredDTO());
     }
     
     private RaceMapZoomSettings getZoomSettings() {

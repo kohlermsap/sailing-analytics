@@ -1,4 +1,4 @@
-import { installGoogleMapsCompat } from './google-maps-maplibre-compat.js';
+import { installGoogleMapsCompat } from './google-maps-maplibre-compat.js?v=race-map-feedback-4';
 
 function call(handler, event = {}) {
     if (typeof handler === 'function') handler(event);
@@ -154,6 +154,7 @@ function installGwtWrapperGlobals() {
         setFullscreenControl(value) { this.options.fullscreenControl = value; }
         setIsFractionalZoomEnabled(value) { this.options.isFractionalZoomEnabled = value; }
         setHeading(value) { this.options.heading = value; }
+        setSeaMarksVisible(value) { this.options.seaMarksVisible = value; }
         setRenderingType(value) { this.options.renderingType = value; }
         setDisableDoubleClickZoom(value) { this.options.disableDoubleClickZoom = value; }
         setDraggable(value) { this.options.draggable = value; }
@@ -193,7 +194,7 @@ function installGwtWrapperGlobals() {
         getBounds() { return this.map?.getBounds(); }
         triggerResize() { this.ready(() => this.map.resize()); }
         resize() { this.triggerResize(); }
-        setOptions(options = {}) { this.ready(() => this.map.setOptions?.(options)); }
+        setOptions(options = {}) { this.ready(() => this.map.setOptions?.(options?.toGoogleOptions ? options.toGoogleOptions() : options)); }
         setSize(width, height) { Object.assign(this.element.style, { width, height }); this.triggerResize(); }
         setTitle(title) { this.element.title = title; }
         getAbsoluteLeft() { return this.element.getBoundingClientRect().left; }
