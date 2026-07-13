@@ -183,15 +183,7 @@ class CompatMap {
             this.emit('zoom_changed');
             if (this.userZoomInProgress) this.emit('dragend');
         });
-        this.map.on('rotate', () => { this._updateOverlayRotation(); this.emit('heading_changed'); });
-        this.map.on('move', () => this._updateOverlayRotation());
-        this._updateOverlayRotation = () => {
-            const b = this.map.getBearing();
-            const t = b ? `rotate(${-b}deg)` : '';
-            if (this.overlayLayer.style.transform !== t) this.overlayLayer.style.transform = t;
-            if (this.overlayMouseTarget.style.transform !== t) this.overlayMouseTarget.style.transform = t;
-        };
-        this._updateOverlayRotation();
+        this.map.on('rotate', () => this.emit('heading_changed'));
         this.map.on('idle', () => {
             if (!this.cameraChangedSinceIdle) return;
             this.cameraChangedSinceIdle = false;
@@ -518,41 +510,20 @@ class CompatOverlayView {
         };
     }
     getProjection() {
-        const rotateAround = (pt, bearingDeg, cx, cy) => {
-            if (!bearingDeg) return { x: pt.x, y: pt.y };
-            const rad = bearingDeg * Math.PI / 180;
-            const cos = Math.cos(rad), sin = Math.sin(rad);
-            const dx = pt.x - cx, dy = pt.y - cy;
-            return { x: cx + dx * cos - dy * sin, y: cy + dx * sin + dy * cos };
+        const project = latLng => {
+            const point = this.map.map.project(lngLat(asLngLatLiteral(latLng)));
+            return { x: point.x, y: point.y };
         };
-        const container = () => {
-            const el = this.map.map.getContainer();
-            return { cx: el.clientWidth / 2, cy: el.clientHeight / 2 };
+        const unproject = point => {
+            const lngLatPoint = this.map.map.unproject([point.x, point.y]);
+            return new CompatLatLng(lngLatPoint.lat, lngLatPoint.lng);
         };
         return {
             getWorldWidth: () => 512 * Math.pow(2, this.map.map.getZoom()),
-            fromLatLngToDivPixel: latLng => {
-                // Match Google Maps semantics: return coords in the unrotated overlay-pane frame.
-                // The overlay pane is rotated by -bearing to visually align with the map, so div-local
-                // coords must be pre-rotated by +bearing around the container center.
-                const point = this.map.map.project(lngLat(asLngLatLiteral(latLng)));
-                const c = container();
-                return rotateAround(point, this.map.map.getBearing(), c.cx, c.cy);
-            },
-            fromDivPixelToLatLng: point => {
-                const c = container();
-                const bearingAware = rotateAround(point, -this.map.map.getBearing(), c.cx, c.cy);
-                const lngLatPoint = this.map.map.unproject([bearingAware.x, bearingAware.y]);
-                return new CompatLatLng(lngLatPoint.lat, lngLatPoint.lng);
-            },
-            fromContainerPixelToLatLng: point => {
-                const lngLatPoint = this.map.map.unproject([point.x, point.y]);
-                return new CompatLatLng(lngLatPoint.lat, lngLatPoint.lng);
-            },
-            fromLatLngToContainerPixel: latLng => {
-                const point = this.map.map.project(lngLat(asLngLatLiteral(latLng)));
-                return { x: point.x, y: point.y };
-            }
+            fromLatLngToDivPixel: project,
+            fromDivPixelToLatLng: unproject,
+            fromContainerPixelToLatLng: unproject,
+            fromLatLngToContainerPixel: project
         };
     }
 }
