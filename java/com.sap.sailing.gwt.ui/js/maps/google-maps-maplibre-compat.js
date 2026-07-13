@@ -550,7 +550,7 @@ class CompatPolygon {
     }
     normalizePaths(paths) {
         const candidate = createCompatArray(paths || []);
-        if (!candidate.getLength()) return createCompatArray([]);
+        if (!candidate.getLength()) return candidate;
         const outer = this.isLatLng(candidate.getAt(0)) ? createCompatArray([candidate]) : candidate;
         const values = outer.__compatArrayValues;
         for (let index = 0; index < values.length; index++) values[index] = createCompatArray(values[index]);
