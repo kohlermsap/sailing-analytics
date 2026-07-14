@@ -12,13 +12,6 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 VERSION="${1:-9.4.58.v20250814}"
-REPO_DIR="/tmp/jetty-p2-repo-${VERSION}/repository"
-
-if [ ! -d "${REPO_DIR}" ]; then
-  echo "ERROR: p2 repository not found at ${REPO_DIR}"
-  echo "Run ./createJettyP2RepoFromMavenCentral.sh ${VERSION} first."
-  exit 1
-fi
 
 # ---------------------------------------------------------------------------
 # Determine the old version from the target definition
@@ -30,15 +23,7 @@ OLD_VERSION=$(grep '<unit id="org\.eclipse\.jetty\.bundles\.f\.feature\.group" v
 echo "=== Upgrading Jetty from ${OLD_VERSION} to ${VERSION} ==="
 
 # ---------------------------------------------------------------------------
-# 1. Upload p2 repo to sapsailing.com
-# ---------------------------------------------------------------------------
-echo ""
-echo "--- Uploading p2 repository to sapsailing.com ---"
-ssh trac@sapsailing.com "rm -rf p2-repositories/jetty-${VERSION}"
-scp -rp "${REPO_DIR}" "trac@sapsailing.com:p2-repositories/jetty-${VERSION}"
-
-# ---------------------------------------------------------------------------
-# 2. Update target platform definitions
+# 1. Update target platform definitions
 # ---------------------------------------------------------------------------
 echo ""
 echo "--- Updating target platform definitions ---"
@@ -56,7 +41,7 @@ do
 done
 
 # ---------------------------------------------------------------------------
-# 3. Update feature.xml files with new Jetty version
+# 2. Update feature.xml files with new Jetty version
 # ---------------------------------------------------------------------------
 echo ""
 echo "--- Updating feature.xml files ---"
@@ -74,7 +59,7 @@ if [ -f "${TARGET_BASE_FEATURE}" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 4. Update apache-jsp and jetty-osgi-boot-jsp jars in target-base
+# 3. Update apache-jsp and jetty-osgi-boot-jsp jars in target-base
 # ---------------------------------------------------------------------------
 echo ""
 echo "--- Updating JSP bundles in target-base plugins ---"
