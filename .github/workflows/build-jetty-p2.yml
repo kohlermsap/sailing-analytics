@@ -11,11 +11,11 @@ jobs:
       actions: read
     runs-on: ubuntu-latest
     steps:
-      - name: Install JDK 17
+      - name: Install JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
       - name: Download Eclipse Platform Runtime
         run: |
           curl -fsSL \
