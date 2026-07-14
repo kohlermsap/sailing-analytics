@@ -1,4 +1,6 @@
-import { installGoogleMapsCompat } from './google-maps-maplibre-compat.js?v=race-map-feedback-4';
+// GWT adapter: exposes branflake GWT Maps wrapper conventions over the Google-style MapLibre facade.
+// Keep MapLibre provider behavior in google-maps-maplibre-compat.js.
+import { installGoogleMapsCompat } from './google-maps-maplibre-compat.js?v=race-map-feedback-8';
 
 function call(handler, event = {}) {
     if (typeof handler === 'function') handler(event);
@@ -87,17 +89,36 @@ function installGwtWrapperGlobals() {
     }
 
     class MVCArray {
-        constructor(values = []) { this.items = Array.isArray(values) ? [...values] : [...values]; }
+        constructor(values = []) {
+            this.items = [...values];
+            this.__compatArrayValues = this.items;
+            this.__compatArraySubscribers = new Set();
+        }
+        __compatNotify() {
+            for (const subscriber of [...this.__compatArraySubscribers]) subscriber();
+        }
         getAt(index) { return this.items[index]; }
         get(index) { return this.getAt(index); }
         getLength() { return this.items.length; }
-        push(value) { return this.items.push(value); }
-        pop() { return this.items.pop(); }
-        insertAt(index, value) { this.items.splice(index, 0, value); }
-        removeAt(index) { return this.items.splice(index, 1)[0]; }
-        setAt(index, value) { this.items[index] = value; }
-        add(value) { this.items.push(value); }
-        clear() { this.items.splice(0); }
+        push(value) {
+            const length = this.items.push(value);
+            this.__compatNotify();
+            return length;
+        }
+        pop() {
+            const value = this.items.pop();
+            this.__compatNotify();
+            return value;
+        }
+        insertAt(index, value) { this.items.splice(index, 0, value); this.__compatNotify(); }
+        removeAt(index) {
+            const value = this.items.splice(index, 1)[0];
+            this.__compatNotify();
+            return value;
+        }
+        setAt(index, value) { this.items[index] = value; this.__compatNotify(); }
+        add(value) { return this.push(value); }
+        clear() { this.items.splice(0); this.__compatNotify(); }
         forEach(callback) { this.items.forEach((value, index) => callback(value, index)); }
         getArray() { return this.items; }
         toArray() { return [...this.items]; }

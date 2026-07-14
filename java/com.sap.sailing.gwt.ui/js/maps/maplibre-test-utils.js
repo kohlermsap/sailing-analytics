@@ -48,6 +48,35 @@ export function applyRaceStyle(map, seaMarksVisible = false) {
     else map.once('load', apply);
 }
 
+const SATELLITE_TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+const SATELLITE_ATTRIBUTION = 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community';
+
+export function setSatelliteVisible(map, visible) {
+    const apply = () => {
+        if (visible && !map.getSource('satellite')) {
+            map.addSource('satellite', {
+                type: 'raster',
+                tiles: [SATELLITE_TILES],
+                tileSize: 256,
+                attribution: SATELLITE_ATTRIBUTION,
+                maxzoom: 19
+            });
+        }
+        if (visible && !map.getLayer('satellite')) {
+            // Insert below the first symbol layer so vector labels stay on top (Google HYBRID-ish);
+            // fall back to below the seamark overlay so seamarks always remain visible.
+            const layers = map.getStyle().layers || [];
+            const firstSymbol = layers.find(layer => layer.type === 'symbol');
+            const before = firstSymbol?.id || (map.getLayer('openseamap') ? 'openseamap' : undefined);
+            map.addLayer({ id: 'satellite', type: 'raster', source: 'satellite' }, before);
+        } else if (map.getLayer('satellite')) {
+            map.setLayoutProperty('satellite', 'visibility', visible ? 'visible' : 'none');
+        }
+    };
+    if (map.isStyleLoaded?.() || map.loaded()) apply();
+    else map.once('load', apply);
+}
+
 export function createRaceMap(containerId, options = {}) {
     const center = options.center || MARSEILLE_CENTER;
     const map = new maplibregl.Map({
@@ -72,7 +101,7 @@ export function createArrowSvg(color = '#ff0000', scale = 6, strokeColor = '#fff
     svg.style.display = 'block';
     svg.style.filter = 'drop-shadow(0 0 1px #111)';
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', 'M 0 -16 L 11 12 L 0 6 L -11 12 Z');
+    path.setAttribute('d', 'M 0 -16 L 13 12 L 0 6 L -13 12 Z');
     path.setAttribute('fill', color);
     path.setAttribute('stroke', strokeColor);
     path.setAttribute('stroke-width', '2');

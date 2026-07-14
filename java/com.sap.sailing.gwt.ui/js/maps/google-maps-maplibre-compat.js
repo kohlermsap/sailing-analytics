@@ -1,4 +1,6 @@
-import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat } from './maplibre-test-utils.js?v=race-map-feedback-4';
+// Core facade: implements the Google Maps JavaScript API surface on MapLibre GL JS.
+// Keep GWT wrapper conventions in gwt-maps-maplibre-compat.js.
+import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat, setSatelliteVisible } from './maplibre-test-utils.js?v=race-map-feedback-8';
 
 function asLngLatLiteral(value) {
     if (Array.isArray(value)) return { lat: value[1], lng: value[0] };
@@ -12,6 +14,11 @@ function toMapLibreZoom(googleZoom) {
 
 function toGoogleZoom(mapLibreZoom) {
     return mapLibreZoom + 1;
+}
+
+function isSatelliteMapType(mapTypeId) {
+    const id = typeof mapTypeId === 'string' ? mapTypeId.toLowerCase() : mapTypeId;
+    return id === 'satellite' || id === 'hybrid';
 }
 
 function circleCoordinates(center, radiusMeters, steps = 64) {
@@ -113,10 +120,11 @@ class CompatMap {
         this.polylineBackings = new Map();
         this.cameraChangedSinceIdle = true;
         element.style.position = element.style.position || 'relative';
+        element.style.isolation = 'isolate';
         this.overlayLayer = document.createElement('div');
         this.overlayMouseTarget = document.createElement('div');
-        Object.assign(this.overlayLayer.style, { position: 'absolute', inset: '0', zIndex: 5, pointerEvents: 'none' });
-        Object.assign(this.overlayMouseTarget.style, { position: 'absolute', inset: '0', zIndex: 10, pointerEvents: 'none' });
+        Object.assign(this.overlayLayer.style, { position: 'absolute', inset: '0', zIndex: 5, pointerEvents: 'none', transformOrigin: '50% 50%' });
+        Object.assign(this.overlayMouseTarget.style, { position: 'absolute', inset: '0', zIndex: 10, pointerEvents: 'none', transformOrigin: '50% 50%' });
         element.append(this.overlayLayer, this.overlayMouseTarget);
         this.updateOverlayPointerEvents = () => {
             const width = element.clientWidth;
@@ -170,6 +178,7 @@ class CompatMap {
             this.map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right');
         }
         applyRaceStyle(this.map, options.seaMarksVisible);
+        setSatelliteVisible(this.map, isSatelliteMapType(options.mapTypeId));
         this.map.on('move', () => {
             this.cameraChangedSinceIdle = true;
             this.emit('bounds_changed');
@@ -203,8 +212,11 @@ class CompatMap {
                 if (name === 'mousemove') {
                     clearTimeout(this.mouseMoveTimer);
                     this.mouseMoveTimer = setTimeout(() => {
-                        const overPolyline = event.point && this.map.queryRenderedFeatures?.(event.point)
-                            .some(feature => feature.layer?.id.startsWith('compat-polyline-'));
+                        // ponytail: layer-filtered queryRenderedFeatures avoids scanning the full style (100+ base-tile layers).
+                        // Upgrade path if still hot: rAF-coalesce, or merge all compat polylines into one shared source.
+                        const hitLayers = this.getCompatHitLayerIds();
+                        const overPolyline = event.point && hitLayers.length > 0 &&
+                            this.map.queryRenderedFeatures?.(event.point, { layers: hitLayers }).length > 0;
                         if (!event.__compatOverlayHandled && !overPolyline) this.emit(name, mapEvent);
                     });
                 }
@@ -226,6 +238,13 @@ class CompatMap {
     }
     emit(name, event = {}) {
         for (const handler of this.listeners.get(name) || []) handler(event);
+    }
+    getCompatHitLayerIds() {
+        const ids = [];
+        for (const backing of this.polylineBackings.values()) {
+            if (this.map.getLayer(backing.hitId)) ids.push(backing.hitId);
+        }
+        return ids;
     }
     ready(action) {
         if (this.loaded) action();
@@ -266,12 +285,13 @@ class CompatMap {
     }
     setHeading(degrees) { this.map.rotateTo(degrees, { duration: 500, easing: t => t * (2 - t) }); }
     getHeading() { return (this.map.getBearing() + 360) % 360; }
-    setMapTypeId(mapTypeId) { this.options.mapTypeId = mapTypeId; }
+    setMapTypeId(mapTypeId) { this.options.mapTypeId = mapTypeId; setSatelliteVisible(this.map, isSatelliteMapType(mapTypeId)); }
     getMapTypeId() { return this.options.mapTypeId || 'roadmap'; }
     setOptions(options = {}) {
         Object.assign(this.options, options);
         if ('heading' in options) this.setHeading(options.heading);
         if ('seaMarksVisible' in options) applyRaceStyle(this.map, options.seaMarksVisible);
+        if ('mapTypeId' in options) setSatelliteVisible(this.map, isSatelliteMapType(options.mapTypeId));
     }
     resize() { this.map.resize(); this.emit('resize'); }
 }
@@ -284,12 +304,38 @@ const POLYLINE_EVENTS = [
     ['mousedown', 'mousedown'], ['mouseup', 'mouseup'], ['click', 'click']
 ];
 
+function createCompatArray(values = []) {
+    if (values?.__compatArrayValues && values?.__compatArraySubscribers) return values;
+    const items = values?.toArray ? values.toArray() : [...values];
+    const subscribers = new Set();
+    const notify = () => {
+        for (const subscriber of [...subscribers]) subscriber();
+    };
+    return {
+        __compatArrayValues: items,
+        __compatArraySubscribers: subscribers,
+        getAt: index => items[index],
+        get: index => items[index],
+        getLength: () => items.length,
+        push: value => { const length = items.push(value); notify(); return length; },
+        pop: () => { const value = items.pop(); notify(); return value; },
+        insertAt: (index, value) => { items.splice(index, 0, value); notify(); },
+        removeAt: index => { const value = items.splice(index, 1)[0]; notify(); return value; },
+        setAt: (index, value) => { items[index] = value; notify(); },
+        add: value => { const length = items.push(value); notify(); return length; },
+        clear: () => { items.splice(0); notify(); },
+        forEach: callback => items.forEach((value, index) => callback(value, index)),
+        getArray: () => items,
+        toArray: () => [...items]
+    };
+}
+
 class CompatPolyline {
     constructor(options = {}) {
         this.options = options;
-        this.path = options.path?.__compatPath || (options.path?.toArray ? options.path.toArray() : (options.path || []));
-        this.pathOwners = options.path?.__compatPathOwners || new Set();
-        this.pathOwners.add(this);
+        this.path = createCompatArray(options.path || []);
+        this.pathChanged = () => this.schedulePublish();
+        this.path.__compatArraySubscribers.add(this.pathChanged);
         this.visible = options.visible !== false;
         this.listeners = new Map();
         this.id = `compat-polyline-${nextOverlayId++}`;
@@ -307,7 +353,7 @@ class CompatPolyline {
         return {
             type: 'Feature',
             properties: { color: this.options.strokeColor || '#000000', opacity: this.options.strokeOpacity ?? 1, width: this.options.strokeWeight || 1 },
-            geometry: { type: 'LineString', coordinates: this.path.map(point => lngLat(asLngLatLiteral(point))) }
+            geometry: { type: 'LineString', coordinates: this.path.__compatArrayValues.map(point => lngLat(asLngLatLiteral(point))) }
         };
     }
     createBacking(map) {
@@ -319,10 +365,10 @@ class CompatPolyline {
         for (const [mapLibreEvent, compatEvent] of POLYLINE_EVENTS) {
             const handler = event => {
                 if (mapLibreEvent !== 'mouseleave' && event.point) {
-                    const topmost = map.map.queryRenderedFeatures(event.point)
-                        .map(feature => feature.layer?.id)
-                        .filter(id => id?.endsWith('-hit'))
-                        .map(id => map.polylineBackings.get(id.slice(0, -4)))
+                    // ponytail: only ask MapLibre about the compat hit layers, not the whole style.
+                    const hitLayers = map.getCompatHitLayerIds();
+                    const topmost = hitLayers.length > 0 && map.map.queryRenderedFeatures(event.point, { layers: hitLayers })
+                        .map(feature => map.polylineBackings.get(feature.layer.id.slice(0, -4)))
                         .find(candidate => candidate?.owner?.listeners.get(compatEvent)?.size);
                     if (topmost && topmost !== backing) return;
                 }
@@ -387,32 +433,12 @@ class CompatPolyline {
             this.schedulePublish();
         });
     }
-    pathArray() {
-        const path = this.path;
-        const owners = this.pathOwners;
-        const notify = () => owners.forEach(owner => owner.schedulePublish());
-        return {
-            __compatPath: path,
-            __compatPathOwners: owners,
-            getLength: () => path.length,
-            getAt: index => path[index],
-            get: index => path[index],
-            push: value => { path.push(value); notify(); return path.length; },
-            insertAt: (index, value) => { path.splice(index, 0, value); notify(); },
-            removeAt: index => { const removed = path.splice(index, 1)[0]; notify(); return removed; },
-            setAt: (index, value) => { path[index] = value; notify(); },
-            clear: () => { path.splice(0); notify(); },
-            forEach: callback => path.forEach((value, index) => callback(value, index)),
-            toArray: () => [...path]
-        };
-    }
-    getPath() { return this.pathArray(); }
+    getPath() { return this.path; }
     setPath(path) {
-        this.pathOwners.delete(this);
-        this.path = path?.__compatPath || (path?.toArray ? path.toArray() : [...path]);
-        this.pathOwners = path?.__compatPathOwners || new Set();
-        this.pathOwners.add(this);
-        this.pathOwners.forEach(owner => owner.schedulePublish());
+        this.path.__compatArraySubscribers.delete(this.pathChanged);
+        this.path = createCompatArray(path);
+        this.path.__compatArraySubscribers.add(this.pathChanged);
+        this.schedulePublish();
     }
     schedulePublish() {
         clearTimeout(this.publishTimer);
@@ -449,7 +475,8 @@ class CompatPolyline {
     setOptions(options = {}) {
         Object.assign(this.options, options);
         if ('visible' in options) this.setVisible(options.visible);
-        this.schedulePublish();
+        if ('path' in options) this.setPath(options.path);
+        else this.schedulePublish();
     }
     setVisible(visible) {
         this.visible = visible;
@@ -491,24 +518,20 @@ class CompatOverlayView {
         };
     }
     getProjection() {
+        const project = latLng => {
+            const point = this.map.map.project(lngLat(asLngLatLiteral(latLng)));
+            return { x: point.x, y: point.y };
+        };
+        const unproject = point => {
+            const lngLatPoint = this.map.map.unproject([point.x, point.y]);
+            return new CompatLatLng(lngLatPoint.lat, lngLatPoint.lng);
+        };
         return {
             getWorldWidth: () => 512 * Math.pow(2, this.map.map.getZoom()),
-            fromLatLngToDivPixel: latLng => {
-                const point = this.map.map.project(lngLat(asLngLatLiteral(latLng)));
-                return { x: point.x, y: point.y };
-            },
-            fromDivPixelToLatLng: point => {
-                const lngLatPoint = this.map.map.unproject([point.x, point.y]);
-                return new CompatLatLng(lngLatPoint.lat, lngLatPoint.lng);
-            },
-            fromContainerPixelToLatLng: point => {
-                const lngLatPoint = this.map.map.unproject([point.x, point.y]);
-                return new CompatLatLng(lngLatPoint.lat, lngLatPoint.lng);
-            },
-            fromLatLngToContainerPixel: latLng => {
-                const point = this.map.map.project(lngLat(asLngLatLiteral(latLng)));
-                return { x: point.x, y: point.y };
-            }
+            fromLatLngToDivPixel: project,
+            fromDivPixelToLatLng: unproject,
+            fromContainerPixelToLatLng: unproject,
+            fromLatLngToContainerPixel: project
         };
     }
 }
@@ -516,10 +539,17 @@ class CompatOverlayView {
 class CompatPolygon {
     constructor(options = {}) {
         this.options = options;
-        this.paths = options.paths || [];
-        this.visible = true;
+        this.visible = options.visible !== false;
         this.listeners = new Map();
         this.id = `compat-polygon-${nextOverlayId++}`;
+        this.outerPathsChanged = () => {
+            this.subscribeToRings();
+            this.publish();
+        };
+        this.ringChanged = () => this.publish();
+        this.ringSubscriptions = new Set();
+        this.paths = createCompatArray([]);
+        this.setPaths(options.paths ?? (options.path ? [options.path] : []));
         if (options.map) this.setMap(options.map);
     }
     addListener(name, handler) {
@@ -530,9 +560,35 @@ class CompatPolygon {
     emit(name, event) {
         for (const handler of this.listeners.get(name) || []) handler(event);
     }
+    isLatLng(value) {
+        return value && ((typeof value.lat === 'function' && typeof value.lng === 'function') ||
+            (typeof value.lat === 'number' && typeof value.lng === 'number'));
+    }
+    normalizePaths(paths) {
+        const candidate = createCompatArray(paths || []);
+        if (!candidate.getLength()) return candidate;
+        const outer = this.isLatLng(candidate.getAt(0)) ? createCompatArray([candidate]) : candidate;
+        const values = outer.__compatArrayValues;
+        for (let index = 0; index < values.length; index++) values[index] = createCompatArray(values[index]);
+        return outer;
+    }
+    subscribeToRings() {
+        for (const ring of this.ringSubscriptions) ring.__compatArraySubscribers.delete(this.ringChanged);
+        this.ringSubscriptions.clear();
+        const values = this.paths.__compatArrayValues;
+        for (let index = 0; index < values.length; index++) {
+            const ring = values[index] = createCompatArray(values[index]);
+            ring.__compatArraySubscribers.add(this.ringChanged);
+            this.ringSubscriptions.add(ring);
+        }
+    }
     feature() {
-        const ring = this.paths.map(point => lngLat(asLngLatLiteral(point)));
-        if (ring.length && (ring[0][0] !== ring.at(-1)[0] || ring[0][1] !== ring.at(-1)[1])) ring.push(ring[0]);
+        const rings = this.paths.__compatArrayValues.map(path => {
+            const ring = createCompatArray(path).__compatArrayValues
+                .map(point => lngLat(asLngLatLiteral(point)));
+            if (ring.length && (ring[0][0] !== ring.at(-1)[0] || ring[0][1] !== ring.at(-1)[1])) ring.push([...ring[0]]);
+            return ring;
+        });
         return {
             type: 'Feature',
             properties: {
@@ -542,8 +598,11 @@ class CompatPolygon {
                 fillColor: this.options.fillColor || this.options.strokeColor || '#000000',
                 fillOpacity: this.options.fillOpacity ?? 0
             },
-            geometry: { type: 'Polygon', coordinates: [ring] }
+            geometry: { type: 'Polygon', coordinates: rings }
         };
+    }
+    publish() {
+        this.map?.map.getSource(this.id)?.setData(this.feature());
     }
     setMap(map) {
         if (map === null) {
@@ -554,6 +613,7 @@ class CompatPolygon {
         }
         this.map = map;
         map.ready(() => {
+            if (this.map !== map) return;
             map.map.addSource(this.id, { type: 'geojson', data: this.feature() });
             map.map.addLayer({ id: `${this.id}-fill`, type: 'fill', source: this.id, paint: { 'fill-color': ['get', 'fillColor'], 'fill-opacity': ['get', 'fillOpacity'] } });
             map.map.addLayer({ id: `${this.id}-line`, type: 'line', source: this.id, paint: { 'line-color': ['get', 'strokeColor'], 'line-opacity': ['get', 'strokeOpacity'], 'line-width': ['get', 'strokeWeight'] } });
@@ -562,12 +622,28 @@ class CompatPolygon {
             this.setVisible(this.visible);
         });
     }
-    getPath() { return { getAt: index => this.paths[index], getLength: () => this.paths.length, toArray: () => [...this.paths] }; }
-    setPath(path) { this.paths = path?.toArray ? path.toArray() : path; this.map?.map.getSource(this.id)?.setData(this.feature()); }
+    getPath() {
+        if (!this.paths.getLength()) this.paths.push(createCompatArray([]));
+        return this.paths.getAt(0);
+    }
+    setPath(path) { this.setPaths([path]); }
+    getPaths() { return this.paths; }
+    setPaths(paths) {
+        this.paths.__compatArraySubscribers.delete(this.outerPathsChanged);
+        for (const ring of this.ringSubscriptions) ring.__compatArraySubscribers.delete(this.ringChanged);
+        this.ringSubscriptions.clear();
+        this.paths = this.normalizePaths(paths);
+        this.paths.__compatArraySubscribers.add(this.outerPathsChanged);
+        this.subscribeToRings();
+        this.publish();
+    }
     addMouseOutMoveHandler(handler) { return this.addListener('mouseout', handler); }
     setOptions(options = {}) {
         Object.assign(this.options, options);
-        this.map?.map.getSource(this.id)?.setData(this.feature());
+        if ('visible' in options) this.setVisible(options.visible);
+        if ('paths' in options) this.setPaths(options.paths);
+        else if ('path' in options) this.setPath(options.path);
+        else this.publish();
     }
     setVisible(visible) {
         this.visible = visible;
@@ -760,7 +836,7 @@ class CompatMarker {
         if (options.map) this.setMap(options.map);
     }
     setMap(map) {
-        if (map === null) {
+        if (map == null) {
             this.marker?.off?.();
             this.marker?.remove();
             this.marker = null;
@@ -799,6 +875,7 @@ class CompatMarker {
         this.visual = visual;
     }
     getPosition() { return new CompatLatLng(asLngLatLiteral(this.position).lat, asLngLatLiteral(this.position).lng); }
+    getIcon() { return this.options.icon; }
     getIcon_MarkerImage() { return this.options.icon; }
     setTitle(title) { this.title = title || ''; this.element.title = this.title; }
     setZindex(zIndex) { this.options.zIndex = zIndex; this.element.style.zIndex = zIndex; }
