@@ -38,7 +38,7 @@ jobs:
           JAVA17_HOME: ${{env.JAVA_HOME_17_X64}}
         run: |
             configuration/install-gwt-from-fork-releases https://github.com/eclipse-sailing-analytics/gwt-forward-serialization-rpc https://github.com/eclipse-sailing-analytics/gwt-maven-plugin-forward-serialization-rpc 2.12.4 .
-            cd com.sap.sailing.targetplatform.base
+            cd java/com.sap.sailing.targetplatform.base
             mvn clean compile 2>&1 | tee build.log
             echo "BUILD_TIME=$(date -u +"%Y%m%dT%H%M%SZ")" >> "$GITHUB_ENV"
       - name: Upload build log
