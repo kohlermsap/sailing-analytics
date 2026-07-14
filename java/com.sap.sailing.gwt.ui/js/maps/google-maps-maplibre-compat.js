@@ -1,6 +1,6 @@
 // Core facade: implements the Google Maps JavaScript API surface on MapLibre GL JS.
 // Keep GWT wrapper conventions in gwt-maps-maplibre-compat.js.
-import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat } from './maplibre-test-utils.js?v=race-map-feedback-7';
+import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat, setSatelliteVisible } from './maplibre-test-utils.js?v=race-map-feedback-8';
 
 function asLngLatLiteral(value) {
     if (Array.isArray(value)) return { lat: value[1], lng: value[0] };
@@ -14,6 +14,11 @@ function toMapLibreZoom(googleZoom) {
 
 function toGoogleZoom(mapLibreZoom) {
     return mapLibreZoom + 1;
+}
+
+function isSatelliteMapType(mapTypeId) {
+    const id = typeof mapTypeId === 'string' ? mapTypeId.toLowerCase() : mapTypeId;
+    return id === 'satellite' || id === 'hybrid';
 }
 
 function circleCoordinates(center, radiusMeters, steps = 64) {
@@ -172,6 +177,7 @@ class CompatMap {
             this.map.addControl(new maplibregl.NavigationControl({ visualizePitch: false }), 'top-right');
         }
         applyRaceStyle(this.map, options.seaMarksVisible);
+        setSatelliteVisible(this.map, isSatelliteMapType(options.mapTypeId));
         this.map.on('move', () => {
             this.cameraChangedSinceIdle = true;
             this.emit('bounds_changed');
@@ -278,12 +284,13 @@ class CompatMap {
     }
     setHeading(degrees) { this.map.rotateTo(degrees, { duration: 500, easing: t => t * (2 - t) }); }
     getHeading() { return (this.map.getBearing() + 360) % 360; }
-    setMapTypeId(mapTypeId) { this.options.mapTypeId = mapTypeId; }
+    setMapTypeId(mapTypeId) { this.options.mapTypeId = mapTypeId; setSatelliteVisible(this.map, isSatelliteMapType(mapTypeId)); }
     getMapTypeId() { return this.options.mapTypeId || 'roadmap'; }
     setOptions(options = {}) {
         Object.assign(this.options, options);
         if ('heading' in options) this.setHeading(options.heading);
         if ('seaMarksVisible' in options) applyRaceStyle(this.map, options.seaMarksVisible);
+        if ('mapTypeId' in options) setSatelliteVisible(this.map, isSatelliteMapType(options.mapTypeId));
     }
     resize() { this.map.resize(); this.emit('resize'); }
 }
