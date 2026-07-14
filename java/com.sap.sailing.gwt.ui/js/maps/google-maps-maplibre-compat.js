@@ -828,7 +828,7 @@ class CompatMarker {
         if (options.map) this.setMap(options.map);
     }
     setMap(map) {
-        if (map === null) {
+        if (map == null) {
             this.marker?.off?.();
             this.marker?.remove();
             this.marker = null;
@@ -867,6 +867,7 @@ class CompatMarker {
         this.visual = visual;
     }
     getPosition() { return new CompatLatLng(asLngLatLiteral(this.position).lat, asLngLatLiteral(this.position).lng); }
+    getIcon() { return this.options.icon; }
     getIcon_MarkerImage() { return this.options.icon; }
     setTitle(title) { this.title = title || ''; this.element.title = this.title; }
     setZindex(zIndex) { this.options.zIndex = zIndex; this.element.style.zIndex = zIndex; }
