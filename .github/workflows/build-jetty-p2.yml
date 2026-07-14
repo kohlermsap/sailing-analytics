@@ -11,47 +11,42 @@ jobs:
       actions: read
     runs-on: ubuntu-latest
     steps:
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@v1.3.1
-        with:
-          tool-cache: false
-          android: false
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: false
-          swap-storage: true
-      - name: Collect Workflow Telemetry
-        uses: catchpoint/workflow-telemetry-action@94c3c3d9567a0205de6da68a76c428ce4e769af1 # v2.0.0
-        with:
-          comment_on_pr: false
-      - name: Check out the repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 500
-      - name: Install JDK 17
+      - name: Install JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
-          cache: maven
+          java-version: 21
+      - name: Download Eclipse Platform Runtime
+        run: |
+          curl -fsSL \
+            'https://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops4/R-4.38-202512010920/eclipse-platform-4.38-linux-gtk-x86_64.tar.gz&r=1' \
+            -o eclipse.tar.gz
+          tar -xzf eclipse.tar.gz
       - name: Mirror Jetty p2 repository
         shell: bash
         run: |
           VERSION=$(
             curl -fsSL https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/ \
             | grep "/jetty/updates/jetty-bundles-9.x" \
-            | sed -n 's/^.*>\(9\.4\.[0-9]*\.v[0-9]*\)\/<.*$/\1/p' \
+            | sed -e 's/^.*> \?\(9\.4\.[0-9]*\.v[0-9]*\)<.*$/\1/' \
             | sort -V \
             | tail -1
           )
           echo "Found version ${VERSION}"
           echo "VERSION=${VERSION}" >> "${GITHUB_ENV}"
-          mvn \
-            org.eclipse.tycho:tycho-p2-repository-plugin:mirror \
-            -Dsource=https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/${VERSION}/ \
-            -Ddestination=${GITHUB_WORKSPACE}/repository \
-            2>&1 | tee build.log
+          mkdir repository
+          ./eclipse/eclipse \
+            -nosplash \
+            -verbose \
+            -application org.eclipse.equinox.p2.metadata.repository.mirrorApplication \
+            -source https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/${VERSION}/ \
+            -destination file:${PWD}/repository 2>&1 | tee build.log
+          ./eclipse/eclipse \
+            -nosplash \
+            -verbose \
+            -application org.eclipse.equinox.p2.artifact.repository.mirrorApplication \
+            -source https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/${VERSION}/ \
+            -destination file:${PWD}/repository 2>&1 | tee -a build.log
       - name: Upload build log
         uses: actions/upload-artifact@v4
         if: always()
