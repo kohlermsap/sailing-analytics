@@ -72,7 +72,7 @@ export function createArrowSvg(color = '#ff0000', scale = 6, strokeColor = '#fff
     svg.style.display = 'block';
     svg.style.filter = 'drop-shadow(0 0 1px #111)';
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', 'M 0 -16 L 11 12 L 0 6 L -11 12 Z');
+    path.setAttribute('d', 'M 0 -16 L 13 12 L 0 6 L -13 12 Z');
     path.setAttribute('fill', color);
     path.setAttribute('stroke', strokeColor);
     path.setAttribute('stroke-width', '2');

@@ -1,6 +1,6 @@
 // Core facade: implements the Google Maps JavaScript API surface on MapLibre GL JS.
 // Keep GWT wrapper conventions in gwt-maps-maplibre-compat.js.
-import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat } from './maplibre-test-utils.js?v=race-map-feedback-6';
+import { applyRaceStyle, createArrowSvg, createRaceStyle, lngLat } from './maplibre-test-utils.js?v=race-map-feedback-7';
 
 function asLngLatLiteral(value) {
     if (Array.isArray(value)) return { lat: value[1], lng: value[0] };
