@@ -192,7 +192,7 @@
 <unit id="com.sap.sailing.target.shiro.feature.group" version="1.0.0"/>
 <unit id="com.sap.sailing.target.smile.feature.group" version="1.0.0"/>
 <unit id="com.sap.sailing.target.test.feature.group" version="1.0.0"/>
-<repository location="https://p2.sapsailing.com/p2/sailing/"/>
+<repository location="https://download.eclipse.org/sailing-analytics/p2/sailing/"/>
 </location>
 <!-- local update site -->
 <!-- location path="C:\repository\java\com.sap.sailing.targetplatform.base\target\repository" type="Directory"/ -->
