@@ -33,7 +33,7 @@ jobs:
       - name: Mirror Jetty p2 repository
         shell: bash
         run: |
-          ./java/com.sap.sailing.targetplatform/scripts/createJettyP2RepoFromMavenCentrl.sh "${VERSION}"
+          ./java/com.sap.sailing.targetplatform/scripts/createJettyP2RepoFromMavenCentral.sh "${VERSION}"
       - name: Upload build log
         uses: actions/upload-artifact@v4
         if: always()
