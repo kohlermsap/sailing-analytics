@@ -28,7 +28,7 @@ jobs:
           VERSION=$(
             curl -fsSL https://download.eclipse.org/jetty/updates/jetty-bundles-9.x/ \
             | grep "/jetty/updates/jetty-bundles-9.x" \
-            | sed -n 's/^.*>\(9\.4\.[0-9]*\.v[0-9]*\)\/<.*$/\1/p' \
+            | sed -e 's/^.*> \?\(9\.4\.[0-9]*\.v[0-9]*\)<.*$/\1/' \
             | sort -V \
             | tail -1
           )
