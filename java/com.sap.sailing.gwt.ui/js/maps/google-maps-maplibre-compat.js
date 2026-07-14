@@ -120,6 +120,7 @@ class CompatMap {
         this.polylineBackings = new Map();
         this.cameraChangedSinceIdle = true;
         element.style.position = element.style.position || 'relative';
+        element.style.isolation = 'isolate';
         this.overlayLayer = document.createElement('div');
         this.overlayMouseTarget = document.createElement('div');
         Object.assign(this.overlayLayer.style, { position: 'absolute', inset: '0', zIndex: 5, pointerEvents: 'none', transformOrigin: '50% 50%' });
