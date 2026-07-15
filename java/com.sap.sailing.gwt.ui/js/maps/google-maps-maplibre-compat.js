@@ -122,10 +122,14 @@ class CompatMap {
         element.style.position = element.style.position || 'relative';
         element.style.isolation = 'isolate';
         this.overlayLayer = document.createElement('div');
+        this.markerLayer = document.createElement('div');
         this.overlayMouseTarget = document.createElement('div');
+        this.floatPane = document.createElement('div');
         Object.assign(this.overlayLayer.style, { position: 'absolute', inset: '0', zIndex: 5, pointerEvents: 'none', transformOrigin: '50% 50%' });
+        Object.assign(this.markerLayer.style, { position: 'absolute', inset: '0', zIndex: 7, pointerEvents: 'none' });
         Object.assign(this.overlayMouseTarget.style, { position: 'absolute', inset: '0', zIndex: 10, pointerEvents: 'none', transformOrigin: '50% 50%' });
-        element.append(this.overlayLayer, this.overlayMouseTarget);
+        Object.assign(this.floatPane.style, { position: 'absolute', inset: '0', zIndex: 15, pointerEvents: 'none' });
+        element.append(this.overlayLayer, this.markerLayer, this.overlayMouseTarget, this.floatPane);
         this.updateOverlayPointerEvents = () => {
             const width = element.clientWidth;
             const height = element.clientHeight;
@@ -513,7 +517,8 @@ class CompatOverlayView {
             overlayLayer: this.map.overlayLayer,
             overlayShadow: this.map.overlayLayer,
             overlayImage: this.map.overlayLayer,
-            floatPane: this.map.overlayMouseTarget,
+            markerLayer: this.map.markerLayer,
+            floatPane: this.map.floatPane,
             overlayMouseTarget: this.map.overlayMouseTarget
         };
     }
@@ -735,7 +740,6 @@ class CompatInfoWindow {
         const element = document.createElement('div');
         element.className = 'maplibregl-popup maplibregl-popup-anchor-bottom';
         element.style.position = 'absolute';
-        element.style.zIndex = 20;
         const content = document.createElement('div');
         content.className = 'maplibregl-popup-content';
         if (this.content instanceof Node) content.appendChild(this.content);
@@ -753,7 +757,7 @@ class CompatInfoWindow {
             element.style.top = `${point.y}px`;
         };
         this.popup = { element, draw, remove: () => element.remove() };
-        map.element.appendChild(element);
+        map.floatPane.appendChild(element);
         map.map.on('move', draw);
         this.popup.off = () => map.map.off('move', draw);
         draw();
@@ -848,14 +852,14 @@ class CompatMarker {
         map.ready(() => {
             let rawMap = map.map;
             while (rawMap?.map) rawMap = rawMap.map;
-            Object.assign(this.element.style, { position: 'absolute', zIndex: this.options.zIndex ?? '', transform: 'translate(-50%, -50%)' });
+            Object.assign(this.element.style, { position: 'absolute', zIndex: this.options.zIndex ?? '', pointerEvents: 'auto', transform: 'translate(-50%, -50%)' });
             const draw = () => {
                 const point = rawMap.project(lngLat(asLngLatLiteral(this.position)));
                 this.element.style.left = `${point.x}px`;
                 this.element.style.top = `${point.y}px`;
             };
             this.marker = { remove: () => this.element.remove(), draw };
-            map.element.appendChild(this.element);
+            map.markerLayer.appendChild(this.element);
             rawMap.on('move', draw);
             this.marker.off = () => rawMap.off('move', draw);
             draw();
