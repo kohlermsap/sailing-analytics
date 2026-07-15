@@ -361,11 +361,11 @@ class CompatPolyline {
         };
     }
     createBacking(map) {
-        const backing = { id: this.id, hitId: `${this.id}-hit`, map, owner: this, formerOwner: null, cleanupTimer: null, handlers: [] };
+        const backing = { id: this.id, hitId: `${this.id}-hit`, map, owner: this, formerOwner: null, cleanupTimer: null, handlers: [], visibility: 'none' };
         map.polylineBackings.set(backing.id, backing);
         map.map.addSource(backing.id, { type: 'geojson', data: this.feature() });
         map.map.addLayer({ id: backing.id, type: 'line', source: backing.id, layout: { visibility: 'none' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': ['get', 'opacity'], 'line-width': ['get', 'width'] } });
-        map.map.addLayer({ id: backing.hitId, type: 'line', source: backing.id, layout: { visibility: 'none' }, paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': 8 } });
+        map.map.addLayer({ id: backing.hitId, type: 'line', source: backing.id, layout: { visibility: 'none' }, paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': ['max', ['get', 'width'], 8] } });
         for (const [mapLibreEvent, compatEvent] of POLYLINE_EVENTS) {
             const handler = event => {
                 if (mapLibreEvent !== 'mouseleave' && event.point) {
@@ -384,6 +384,12 @@ class CompatPolyline {
         }
         return backing;
     }
+    setBackingVisibility(backing, visibility) {
+        if (backing.visibility === visibility || !backing.map.map.getLayer(backing.id)) return;
+        backing.map.map.setLayoutProperty(backing.id, 'visibility', visibility);
+        backing.map.map.setLayoutProperty(backing.hitId, 'visibility', visibility);
+        backing.visibility = visibility;
+    }
     claimBacking(map) {
         const pool = map.detachedPolylineBackings;
         let backing = this.backing && this.backing.map === map && pool.includes(this.backing) ? this.backing : pool[0];
@@ -397,8 +403,7 @@ class CompatPolyline {
         } else backing = this.createBacking(map);
         this.backing = backing;
         this.awaitingFirstPublish = true;
-        map.map.setLayoutProperty(backing.id, 'visibility', 'none');
-        map.map.setLayoutProperty(backing.hitId, 'visibility', 'none');
+        this.setBackingVisibility(backing, 'none');
     }
     removeBacking(backing) {
         if (backing.owner) return;
@@ -416,8 +421,7 @@ class CompatPolyline {
         clearTimeout(this.publishTimer);
         const backing = this.backing;
         if (!backing) return;
-        backing.map.map.setLayoutProperty(backing.id, 'visibility', 'none');
-        backing.map.map.setLayoutProperty(backing.hitId, 'visibility', 'none');
+        this.setBackingVisibility(backing, 'none');
         backing.owner = null;
         backing.formerOwner = this;
         if (!backing.map.detachedPolylineBackings.includes(backing)) backing.map.detachedPolylineBackings.push(backing);
@@ -456,14 +460,8 @@ class CompatPolyline {
         if (!source) return;
         source.setData(this.feature());
         if (backing.map.map.getLayer(backing.id)) {
-            backing.map.map.setPaintProperty(backing.id, 'line-color', this.options.strokeColor || '#000000');
-            backing.map.map.setPaintProperty(backing.id, 'line-opacity', this.options.strokeOpacity ?? 1);
-            backing.map.map.setPaintProperty(backing.id, 'line-width', this.options.strokeWeight || 1);
-            backing.map.map.setPaintProperty(backing.hitId, 'line-width', Math.max(this.options.strokeWeight || 1, 8));
             this.awaitingFirstPublish = false;
-            const visibility = this.visible ? 'visible' : 'none';
-            backing.map.map.setLayoutProperty(backing.id, 'visibility', visibility);
-            backing.map.map.setLayoutProperty(backing.hitId, 'visibility', visibility);
+            this.setBackingVisibility(backing, this.visible ? 'visible' : 'none');
         }
     }
     clear() { this.getPath().clear(); }
@@ -485,11 +483,7 @@ class CompatPolyline {
     setVisible(visible) {
         this.visible = visible;
         const backing = this.backing;
-        if (backing?.map.map.getLayer(backing.id)) {
-            const visibility = visible && !this.awaitingFirstPublish ? 'visible' : 'none';
-            backing.map.map.setLayoutProperty(backing.id, 'visibility', visibility);
-            backing.map.map.setLayoutProperty(backing.hitId, 'visibility', visibility);
-        }
+        if (backing) this.setBackingVisibility(backing, visible && !this.awaitingFirstPublish ? 'visible' : 'none');
     }
     getVisible() { return this.visible; }
 }
