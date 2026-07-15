@@ -341,9 +341,9 @@ public abstract class CanvasOverlayV3 {
     private String getBrowserSpecificPropertyName(String browserType, String basePropertyName) {
         final String result;
         if (browserType == null || browserType.isEmpty()) {
-                result = basePropertyName;
+            result = basePropertyName;
         } else {
-                result = browserType+basePropertyName.substring(0, 1).toUpperCase()+basePropertyName.substring(1);
+            result = browserType+basePropertyName.substring(0, 1).toUpperCase()+basePropertyName.substring(1);
         }
         return result;
     }
