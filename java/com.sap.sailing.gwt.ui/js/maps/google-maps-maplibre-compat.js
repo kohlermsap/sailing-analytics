@@ -155,7 +155,8 @@ class CompatMap {
         this.resizeObserver.observe(element);
         const controlPositions = {
             1: ['10px', '', '', '10px'], 2: ['10px', '', '', '50%'], 3: ['10px', '10px', '', ''],
-            4: ['50%', '', '', '10px'], 5: ['60px', '', '', '10px'], 6: ['', '', '60px', '10px'],
+            // RaceMap's LEFT_TOP control already supplies its own 10px margin; keep overlays and boats untouched.
+            4: ['50%', '', '', '10px'], 5: ['60px', '', '', '0px'], 6: ['', '', '60px', '10px'],
             7: ['60px', '10px', '', ''], 8: ['50%', '10px', '', ''], 9: ['', '10px', '60px', ''],
             10: ['', '', '10px', '10px'], 11: ['', '', '10px', '50%'], 12: ['', '10px', '10px', '']
         };
