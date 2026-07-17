@@ -8,12 +8,14 @@ function asLngLatLiteral(value) {
     return value;
 }
 
+const GOOGLE_ZOOM_SCALE_CORRECTION = Math.log2(1.00225);
+
 function toMapLibreZoom(googleZoom) {
-    return googleZoom - 1;
+    return googleZoom - 1 + GOOGLE_ZOOM_SCALE_CORRECTION;
 }
 
 function toGoogleZoom(mapLibreZoom) {
-    return mapLibreZoom + 1;
+    return mapLibreZoom + 1 - GOOGLE_ZOOM_SCALE_CORRECTION;
 }
 
 function isSatelliteMapType(mapTypeId) {
@@ -130,6 +132,9 @@ class CompatMap {
         Object.assign(this.overlayMouseTarget.style, { position: 'absolute', inset: '0', zIndex: 10, pointerEvents: 'none', transformOrigin: '50% 50%' });
         Object.assign(this.floatPane.style, { position: 'absolute', inset: '0', zIndex: 15, pointerEvents: 'none' });
         element.append(this.overlayLayer, this.markerLayer, this.overlayMouseTarget, this.floatPane);
+        for (const pane of [this.markerLayer, this.overlayMouseTarget, this.floatPane]) {
+            for (const name of ['click', 'dblclick', 'contextmenu']) pane.addEventListener(name, event => event.stopPropagation());
+        }
         this.updateOverlayPointerEvents = () => {
             const width = element.clientWidth;
             const height = element.clientHeight;
@@ -151,18 +156,23 @@ class CompatMap {
             bearing: options.heading || 0,
             pitch: 0
         });
+        // MapLibre listens for gestures on this container, so interactive panes must be descendants.
+        this.map.getCanvasContainer().append(this.overlayLayer, this.markerLayer, this.overlayMouseTarget, this.floatPane);
         this.resizeObserver = new ResizeObserver(() => { this.map.resize(); this.updateOverlayPointerEvents(); });
         this.resizeObserver.observe(element);
         const controlPositions = {
             1: ['10px', '', '', '10px'], 2: ['10px', '', '', '50%'], 3: ['10px', '10px', '', ''],
-            4: ['50%', '', '', '10px'], 5: ['60px', '', '', '10px'], 6: ['', '', '60px', '10px'],
-            7: ['60px', '10px', '', ''], 8: ['50%', '10px', '', ''], 9: ['', '10px', '60px', ''],
+            // RaceMap's LEFT_TOP control already supplies its own 10px margin; keep overlays and boats untouched.
+            4: ['50%', '', '', '10px'], 5: ['60px', '', '', '0px'], 6: ['', '', '23px', '0px'],
+            7: ['60px', '10px', '', ''], 8: ['50%', '10px', '', ''], 9: ['', '0px', '10px', ''],
             10: ['', '', '10px', '10px'], 11: ['', '', '10px', '50%'], 12: ['', '10px', '10px', '']
         };
         this.controls = Array.from({ length: 13 }, (_, position) => {
             const container = document.createElement('div');
             const [top, right, bottom, left] = controlPositions[position] || ['', '', '', ''];
             Object.assign(container.style, { position: 'absolute', top, right, bottom, left, zIndex: 20, pointerEvents: 'auto' });
+            // Match Google control metrics; MapLibre's 12px/20px font adds baseline space below inline canvases.
+            if (position === 5) container.style.font = '400 11px Roboto, Arial, sans-serif';
             if (position === 2 || position === 11) container.style.transform = 'translateX(-50%)';
             if (position === 4 || position === 8) container.style.transform = 'translateY(-50%)';
             element.appendChild(container);
@@ -293,7 +303,11 @@ class CompatMap {
     getMapTypeId() { return this.options.mapTypeId || 'roadmap'; }
     setOptions(options = {}) {
         Object.assign(this.options, options);
-        if ('heading' in options) this.setHeading(options.heading);
+        const camera = {};
+        if ('center' in options) camera.center = lngLat(asLngLatLiteral(options.center));
+        if ('zoom' in options) camera.zoom = toMapLibreZoom(options.zoom);
+        if ('heading' in options) camera.bearing = options.heading;
+        if (Object.keys(camera).length) this.map.jumpTo(camera);
         if ('seaMarksVisible' in options) applyRaceStyle(this.map, options.seaMarksVisible);
         if ('mapTypeId' in options) setSatelliteVisible(this.map, isSatelliteMapType(options.mapTypeId));
     }
@@ -361,11 +375,11 @@ class CompatPolyline {
         };
     }
     createBacking(map) {
-        const backing = { id: this.id, hitId: `${this.id}-hit`, map, owner: this, formerOwner: null, cleanupTimer: null, handlers: [] };
+        const backing = { id: this.id, hitId: `${this.id}-hit`, map, owner: this, formerOwner: null, cleanupTimer: null, handlers: [], visibility: 'none' };
         map.polylineBackings.set(backing.id, backing);
         map.map.addSource(backing.id, { type: 'geojson', data: this.feature() });
         map.map.addLayer({ id: backing.id, type: 'line', source: backing.id, layout: { visibility: 'none' }, paint: { 'line-color': ['get', 'color'], 'line-opacity': ['get', 'opacity'], 'line-width': ['get', 'width'] } });
-        map.map.addLayer({ id: backing.hitId, type: 'line', source: backing.id, layout: { visibility: 'none' }, paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': 8 } });
+        map.map.addLayer({ id: backing.hitId, type: 'line', source: backing.id, layout: { visibility: 'none' }, paint: { 'line-color': '#000000', 'line-opacity': 0, 'line-width': ['max', ['get', 'width'], 8] } });
         for (const [mapLibreEvent, compatEvent] of POLYLINE_EVENTS) {
             const handler = event => {
                 if (mapLibreEvent !== 'mouseleave' && event.point) {
@@ -384,6 +398,12 @@ class CompatPolyline {
         }
         return backing;
     }
+    setBackingVisibility(backing, visibility) {
+        if (backing.visibility === visibility || !backing.map.map.getLayer(backing.id)) return;
+        backing.map.map.setLayoutProperty(backing.id, 'visibility', visibility);
+        backing.map.map.setLayoutProperty(backing.hitId, 'visibility', visibility);
+        backing.visibility = visibility;
+    }
     claimBacking(map) {
         const pool = map.detachedPolylineBackings;
         let backing = this.backing && this.backing.map === map && pool.includes(this.backing) ? this.backing : pool[0];
@@ -397,8 +417,7 @@ class CompatPolyline {
         } else backing = this.createBacking(map);
         this.backing = backing;
         this.awaitingFirstPublish = true;
-        map.map.setLayoutProperty(backing.id, 'visibility', 'none');
-        map.map.setLayoutProperty(backing.hitId, 'visibility', 'none');
+        this.setBackingVisibility(backing, 'none');
     }
     removeBacking(backing) {
         if (backing.owner) return;
@@ -416,8 +435,7 @@ class CompatPolyline {
         clearTimeout(this.publishTimer);
         const backing = this.backing;
         if (!backing) return;
-        backing.map.map.setLayoutProperty(backing.id, 'visibility', 'none');
-        backing.map.map.setLayoutProperty(backing.hitId, 'visibility', 'none');
+        this.setBackingVisibility(backing, 'none');
         backing.owner = null;
         backing.formerOwner = this;
         if (!backing.map.detachedPolylineBackings.includes(backing)) backing.map.detachedPolylineBackings.push(backing);
@@ -456,14 +474,8 @@ class CompatPolyline {
         if (!source) return;
         source.setData(this.feature());
         if (backing.map.map.getLayer(backing.id)) {
-            backing.map.map.setPaintProperty(backing.id, 'line-color', this.options.strokeColor || '#000000');
-            backing.map.map.setPaintProperty(backing.id, 'line-opacity', this.options.strokeOpacity ?? 1);
-            backing.map.map.setPaintProperty(backing.id, 'line-width', this.options.strokeWeight || 1);
-            backing.map.map.setPaintProperty(backing.hitId, 'line-width', Math.max(this.options.strokeWeight || 1, 8));
             this.awaitingFirstPublish = false;
-            const visibility = this.visible ? 'visible' : 'none';
-            backing.map.map.setLayoutProperty(backing.id, 'visibility', visibility);
-            backing.map.map.setLayoutProperty(backing.hitId, 'visibility', visibility);
+            this.setBackingVisibility(backing, this.visible ? 'visible' : 'none');
         }
     }
     clear() { this.getPath().clear(); }
@@ -485,11 +497,7 @@ class CompatPolyline {
     setVisible(visible) {
         this.visible = visible;
         const backing = this.backing;
-        if (backing?.map.map.getLayer(backing.id)) {
-            const visibility = visible && !this.awaitingFirstPublish ? 'visible' : 'none';
-            backing.map.map.setLayoutProperty(backing.id, 'visibility', visibility);
-            backing.map.map.setLayoutProperty(backing.hitId, 'visibility', visibility);
-        }
+        if (backing) this.setBackingVisibility(backing, visible && !this.awaitingFirstPublish ? 'visible' : 'none');
     }
     getVisible() { return this.visible; }
 }
@@ -664,7 +672,7 @@ class CompatCircle {
         this.options = options;
         this.center = options.center;
         this.radius = options.radius || 0;
-        this.visible = true;
+        this.visible = options.visible !== false;
         this.id = `compat-circle-${nextOverlayId++}`;
         if (options.map) this.setMap(options.map);
     }
@@ -708,6 +716,7 @@ class CompatCircle {
         Object.assign(this.options, options);
         if ('center' in options) this.center = options.center;
         if ('radius' in options) this.radius = options.radius;
+        if ('visible' in options) this.setVisible(options.visible);
         this.map?.map.getSource(this.id)?.setData(this.feature());
     }
     setVisible(visible) {
@@ -827,7 +836,7 @@ class CompatMarker {
         this.options = options;
         this.position = options.position;
         this.title = options.title || '';
-        this.visible = true;
+        this.visible = options.visible !== false;
         this.element = document.createElement('div');
         this.element.title = this.title;
         this.element.style.lineHeight = '0';
@@ -889,6 +898,10 @@ class CompatMarker {
         this.element.style.display = visible ? '' : 'none';
     }
     getVisible() { return this.visible; }
+    setOptions(options = {}) {
+        Object.assign(this.options, options);
+        if ('visible' in options) this.setVisible(options.visible);
+    }
     setAnimation(animation) {
         this.element.classList.toggle('compat-marker-bounce', animation === 'bounce');
     }
