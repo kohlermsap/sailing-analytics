@@ -120,6 +120,12 @@ class CompatMap {
         this.deferred = [];
         this.detachedPolylineBackings = [];
         this.polylineBackings = new Map();
+        this.polylineOwners = new Map();
+        this.polylinePublishedIds = new Set();
+        this.dirtyPolylineIds = new Set();
+        this.removedPolylineIds = new Set();
+        this.polylineFlushFrame = null;
+        this.nextPolylineSequence = 1;
         this.cameraChangedSinceIdle = true;
         element.style.position = element.style.position || 'relative';
         element.style.isolation = 'isolate';
@@ -241,9 +247,92 @@ class CompatMap {
         }
         this.map.on('contextmenu', event => this.emit('rightclick', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) }));
         this.map.on('load', () => {
+            this.initializePolylineBatch();
             this.loaded = true;
             this.deferred.splice(0).forEach(action => action());
         });
+    }
+    initializePolylineBatch() {
+        if (this.map.getSource('compat-polylines')) return;
+        this.map.addSource('compat-polylines', {
+            type: 'geojson',
+            data: { type: 'FeatureCollection', features: [] }
+        });
+        const sort = ['get', 'sortKey'];
+        this.map.addLayer({
+            id: 'compat-polylines',
+            type: 'line',
+            source: 'compat-polylines',
+            layout: { 'line-sort-key': sort },
+            paint: {
+                'line-color': ['get', 'color'],
+                'line-opacity': ['case', ['get', 'visible'], ['get', 'opacity'], 0],
+                'line-width': ['get', 'width']
+            }
+        });
+        this.map.addLayer({
+            id: 'compat-polylines-hit',
+            type: 'line',
+            source: 'compat-polylines',
+            filter: ['all', ['==', ['get', 'visible'], true], ['==', ['get', 'interactive'], true]],
+            layout: { 'line-sort-key': sort },
+            paint: {
+                'line-color': '#000000',
+                'line-opacity': 0,
+                'line-width': ['max', ['get', 'width'], 8]
+            }
+        });
+    }
+    registerPolyline(polyline) {
+        if (!polyline.sequence) polyline.sequence = this.nextPolylineSequence++;
+        this.polylineOwners.set(polyline.featureId, polyline);
+        this.removedPolylineIds.delete(polyline.featureId);
+        this.dirtyPolylineIds.add(polyline.featureId);
+        this.schedulePolylineFlush();
+    }
+    markPolylineDirty(polyline) {
+        if (this.polylineOwners.get(polyline.featureId) !== polyline) return;
+        this.dirtyPolylineIds.add(polyline.featureId);
+        this.schedulePolylineFlush();
+    }
+    unregisterPolyline(polyline) {
+        if (this.polylineOwners.get(polyline.featureId) !== polyline) return;
+        this.polylineOwners.delete(polyline.featureId);
+        this.dirtyPolylineIds.delete(polyline.featureId);
+        this.removedPolylineIds.add(polyline.featureId);
+        this.schedulePolylineFlush();
+    }
+    schedulePolylineFlush() {
+        if (this.polylineFlushFrame !== null) return;
+        this.polylineFlushFrame = requestAnimationFrame(() => {
+            this.polylineFlushFrame = null;
+            this.flushPolylineBatch();
+        });
+    }
+    flushPolylineBatch() {
+        const source = this.map.getSource('compat-polylines');
+        if (!source) return;
+        const add = [];
+        const update = [];
+        for (const id of this.dirtyPolylineIds) {
+            const owner = this.polylineOwners.get(id);
+            if (!owner) continue;
+            const feature = owner.feature();
+            if (this.polylinePublishedIds.has(id)) {
+                update.push({
+                    id,
+                    newGeometry: feature.geometry,
+                    addOrUpdateProperties: Object.entries(feature.properties).map(([key, value]) => ({ key, value }))
+                });
+            } else {
+                add.push(feature);
+                this.polylinePublishedIds.add(id);
+            }
+        }
+        const remove = [...this.removedPolylineIds].filter(id => this.polylinePublishedIds.delete(id));
+        this.dirtyPolylineIds.clear();
+        this.removedPolylineIds.clear();
+        if (add.length || update.length || remove.length) source.updateData({ add, update, remove });
     }
     addListener(name, handler) {
         if (!this.listeners.has(name)) this.listeners.set(name, new Set());
