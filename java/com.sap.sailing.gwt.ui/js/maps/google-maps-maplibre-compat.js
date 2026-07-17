@@ -433,6 +433,8 @@ class CompatPolyline {
     }
     detachBacking() {
         clearTimeout(this.publishTimer);
+        this.publishTimer = null;
+        this.publishPending = false;
         const backing = this.backing;
         if (!backing) return;
         this.setBackingVisibility(backing, 'none');
@@ -463,9 +465,19 @@ class CompatPolyline {
         this.schedulePublish();
     }
     schedulePublish() {
-        clearTimeout(this.publishTimer);
         if (!this.backing?.owner) return;
-        this.publishTimer = setTimeout(() => this.publish(), POLYLINE_PATH_DEBOUNCE_MS);
+        if (this.publishTimer) {
+            this.publishPending = true;
+            return;
+        }
+        this.publish();
+        this.publishTimer = setTimeout(() => {
+            this.publishTimer = null;
+            if (this.publishPending) {
+                this.publishPending = false;
+                this.schedulePublish();
+            }
+        }, POLYLINE_PATH_DEBOUNCE_MS);
     }
     publish() {
         const backing = this.backing;
