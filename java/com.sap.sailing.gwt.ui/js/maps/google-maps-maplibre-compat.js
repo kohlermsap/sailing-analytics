@@ -8,12 +8,14 @@ function asLngLatLiteral(value) {
     return value;
 }
 
+const GOOGLE_ZOOM_SCALE_CORRECTION = Math.log2(1.00225);
+
 function toMapLibreZoom(googleZoom) {
-    return googleZoom - 1;
+    return googleZoom - 1 + GOOGLE_ZOOM_SCALE_CORRECTION;
 }
 
 function toGoogleZoom(mapLibreZoom) {
-    return mapLibreZoom + 1;
+    return mapLibreZoom + 1 - GOOGLE_ZOOM_SCALE_CORRECTION;
 }
 
 function isSatelliteMapType(mapTypeId) {
@@ -156,14 +158,16 @@ class CompatMap {
         const controlPositions = {
             1: ['10px', '', '', '10px'], 2: ['10px', '', '', '50%'], 3: ['10px', '10px', '', ''],
             // RaceMap's LEFT_TOP control already supplies its own 10px margin; keep overlays and boats untouched.
-            4: ['50%', '', '', '10px'], 5: ['60px', '', '', '0px'], 6: ['', '', '60px', '10px'],
-            7: ['60px', '10px', '', ''], 8: ['50%', '10px', '', ''], 9: ['', '10px', '60px', ''],
+            4: ['50%', '', '', '10px'], 5: ['60px', '', '', '0px'], 6: ['', '', '23px', '0px'],
+            7: ['60px', '10px', '', ''], 8: ['50%', '10px', '', ''], 9: ['', '0px', '10px', ''],
             10: ['', '', '10px', '10px'], 11: ['', '', '10px', '50%'], 12: ['', '10px', '10px', '']
         };
         this.controls = Array.from({ length: 13 }, (_, position) => {
             const container = document.createElement('div');
             const [top, right, bottom, left] = controlPositions[position] || ['', '', '', ''];
             Object.assign(container.style, { position: 'absolute', top, right, bottom, left, zIndex: 20, pointerEvents: 'auto' });
+            // Match Google control metrics; MapLibre's 12px/20px font adds baseline space below inline canvases.
+            if (position === 5) container.style.font = '400 11px Roboto, Arial, sans-serif';
             if (position === 2 || position === 11) container.style.transform = 'translateX(-50%)';
             if (position === 4 || position === 8) container.style.transform = 'translateY(-50%)';
             element.appendChild(container);
@@ -294,7 +298,11 @@ class CompatMap {
     getMapTypeId() { return this.options.mapTypeId || 'roadmap'; }
     setOptions(options = {}) {
         Object.assign(this.options, options);
-        if ('heading' in options) this.setHeading(options.heading);
+        const camera = {};
+        if ('center' in options) camera.center = lngLat(asLngLatLiteral(options.center));
+        if ('zoom' in options) camera.zoom = toMapLibreZoom(options.zoom);
+        if ('heading' in options) camera.bearing = options.heading;
+        if (Object.keys(camera).length) this.map.jumpTo(camera);
         if ('seaMarksVisible' in options) applyRaceStyle(this.map, options.seaMarksVisible);
         if ('mapTypeId' in options) setSatelliteVisible(this.map, isSatelliteMapType(options.mapTypeId));
     }
@@ -659,7 +667,7 @@ class CompatCircle {
         this.options = options;
         this.center = options.center;
         this.radius = options.radius || 0;
-        this.visible = true;
+        this.visible = options.visible !== false;
         this.id = `compat-circle-${nextOverlayId++}`;
         if (options.map) this.setMap(options.map);
     }
@@ -703,6 +711,7 @@ class CompatCircle {
         Object.assign(this.options, options);
         if ('center' in options) this.center = options.center;
         if ('radius' in options) this.radius = options.radius;
+        if ('visible' in options) this.setVisible(options.visible);
         this.map?.map.getSource(this.id)?.setData(this.feature());
     }
     setVisible(visible) {
@@ -822,7 +831,7 @@ class CompatMarker {
         this.options = options;
         this.position = options.position;
         this.title = options.title || '';
-        this.visible = true;
+        this.visible = options.visible !== false;
         this.element = document.createElement('div');
         this.element.title = this.title;
         this.element.style.lineHeight = '0';
@@ -884,6 +893,10 @@ class CompatMarker {
         this.element.style.display = visible ? '' : 'none';
     }
     getVisible() { return this.visible; }
+    setOptions(options = {}) {
+        Object.assign(this.options, options);
+        if ('visible' in options) this.setVisible(options.visible);
+    }
     setAnimation(animation) {
         this.element.classList.toggle('compat-marker-bounce', animation === 'bounce');
     }

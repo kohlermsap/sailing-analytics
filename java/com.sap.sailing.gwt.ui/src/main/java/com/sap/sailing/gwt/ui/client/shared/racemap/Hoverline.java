@@ -86,11 +86,11 @@ public class Hoverline {
     public Hoverline(final Colorline colorline,
             final ColorlineOptions colorlineOptions, final RaceMap map) {
         options = colorlineOptions;
+        options.setVisible(false);
         hoverline = new Colorline(options);
         hoverline.setMap(colorline.getMap());
         hoverline.setPath(MVCArray.newInstance(colorline.getPath().toArray(new LatLng[0])));
         colorline.addPathChangeListener(hoverline);
-        options.setVisible(false);
         colorline.addMouseOverHandler(new MouseOverMapHandler() {
             @Override
             public void onEvent(MouseOverMapEvent event) {
