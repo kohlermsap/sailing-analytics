@@ -132,6 +132,9 @@ class CompatMap {
         Object.assign(this.overlayMouseTarget.style, { position: 'absolute', inset: '0', zIndex: 10, pointerEvents: 'none', transformOrigin: '50% 50%' });
         Object.assign(this.floatPane.style, { position: 'absolute', inset: '0', zIndex: 15, pointerEvents: 'none' });
         element.append(this.overlayLayer, this.markerLayer, this.overlayMouseTarget, this.floatPane);
+        for (const pane of [this.markerLayer, this.overlayMouseTarget, this.floatPane]) {
+            for (const name of ['click', 'dblclick', 'contextmenu']) pane.addEventListener(name, event => event.stopPropagation());
+        }
         this.updateOverlayPointerEvents = () => {
             const width = element.clientWidth;
             const height = element.clientHeight;
@@ -153,6 +156,8 @@ class CompatMap {
             bearing: options.heading || 0,
             pitch: 0
         });
+        // MapLibre listens for gestures on this container, so interactive panes must be descendants.
+        this.map.getCanvasContainer().append(this.overlayLayer, this.markerLayer, this.overlayMouseTarget, this.floatPane);
         this.resizeObserver = new ResizeObserver(() => { this.map.resize(); this.updateOverlayPointerEvents(); });
         this.resizeObserver.observe(element);
         const controlPositions = {
