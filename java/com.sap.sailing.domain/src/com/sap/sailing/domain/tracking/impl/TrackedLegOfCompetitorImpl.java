@@ -327,7 +327,7 @@ public class TrackedLegOfCompetitorImpl implements TrackedLegOfCompetitor {
                 projectToBearing = cache.getLegBearing(getTrackedLeg(), at);
             }
             if (speed.getBearing() != null && projectToBearing != null) {
-                //cos becomes negative after > 90 from leg direction
+                // cos becomes negative after > 90 from leg direction
                 final double cos = Math.cos(speed.getBearing().getRadians() - projectToBearing.getRadians());
                 result = new KnotSpeedWithBearingImpl(speed.getKnots() * cos, projectToBearing);
             } else {
