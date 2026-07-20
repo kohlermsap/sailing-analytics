@@ -119,7 +119,7 @@ class CompatMap {
         this.loaded = false;
         this.deferred = [];
         this.polylineOwners = new Map();
-        this.polylinePublishedIds = new Set();
+        this.polylineFeatureCache = new Map();
         this.dirtyPolylineIds = new Set();
         this.removedPolylineIds = new Set();
         this.polylineFlushFrame = null;
@@ -333,21 +333,19 @@ class CompatMap {
     flushPolylineBatch() {
         const source = this.map.getSource('compat-polylines');
         if (!source) return;
-        // ponytail: setData full-replace instead of updateData diff. updateData({newGeometry})
-        // caused a brief per-feature re-tile flicker: the course middle line updates ~1 Hz and
-        // was perceived as blinking, while the advantage line at ~16 Hz looked like smooth motion.
-        // setData replaces the whole FeatureCollection atomically. It's still ONE call per rAF for
-        // the entire polyline set (unbatched was ~52 setData calls per source), so throughput is
-        // preserved. Upgrade path: revisit if setData ever becomes a hotspot for >1000 polylines.
-        const features = [];
-        for (const [id, owner] of this.polylineOwners) {
-            features.push(owner.feature());
-            this.polylinePublishedIds.add(id);
+        // ponytail: setData full-replace with per-owner feature cache. updateData({newGeometry})
+        // triggered a per-feature re-tile that showed up as a distinct blink on ~1 Hz polylines
+        // (course middle line). setData is atomic. To keep the fast tail path cheap, only dirty
+        // owners re-run feature(); everyone else reuses the cached feature. Same work per frame
+        // as the old updateData diff, but the full source is published atomically.
+        for (const id of this.dirtyPolylineIds) {
+            const owner = this.polylineOwners.get(id);
+            if (owner) this.polylineFeatureCache.set(id, owner.feature());
         }
-        for (const id of this.removedPolylineIds) this.polylinePublishedIds.delete(id);
+        for (const id of this.removedPolylineIds) this.polylineFeatureCache.delete(id);
         this.dirtyPolylineIds.clear();
         this.removedPolylineIds.clear();
-        source.setData({ type: 'FeatureCollection', features });
+        source.setData({ type: 'FeatureCollection', features: [...this.polylineFeatureCache.values()] });
     }
     addListener(name, handler) {
         if (!this.listeners.has(name)) this.listeners.set(name, new Set());
