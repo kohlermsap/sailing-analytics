@@ -3301,7 +3301,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
             requiresUpdateCoordinateSystem = true;
         }
         if (GoogleMapsLoader.isMapLibreRequested() && newSettings.isShowSeaMarks() != settings.isShowSeaMarks()) {
-            MapOptions mapOptions = MapOptions.newInstance();
+            MapOptions mapOptions = MapOptions.newInstance(false);
             setSeaMarksVisible(mapOptions, newSettings.isShowSeaMarks());
             map.setOptions(mapOptions);
         }
