@@ -362,7 +362,7 @@ class CompatMap {
         if (!event.point || !this.map.getLayer('compat-polylines-hit')) return null;
         const names = Array.isArray(eventNames) ? eventNames : [eventNames];
         return this.map.queryRenderedFeatures(event.point, { layers: ['compat-polylines-hit'] })
-            .map(feature => this.polylineOwners.get(String(feature.id)))
+            .map(feature => this.polylineOwners.get(feature.properties?.compatId))
             .find(owner => names.some(name => owner?.listeners.get(name)?.size)) || null;
     }
     polylineEvent(owner, event) {
@@ -510,6 +510,9 @@ class CompatPolyline {
             type: 'Feature',
             id: this.featureId,
             properties: {
+                // ponytail: MapLibre's queryRenderedFeatures does not preserve string feature.id
+                // through the tile pipeline (returns 0). Route hover/click via this properties.compatId.
+                compatId: this.featureId,
                 color: this.options.strokeColor || '#000000',
                 opacity: this.options.strokeOpacity ?? 1,
                 width: this.options.strokeWeight || 1,
