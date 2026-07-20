@@ -230,7 +230,7 @@ class CompatMap {
                 if (name === 'mousemove') {
                     clearTimeout(this.mouseMoveTimer);
                     this.mouseMoveTimer = setTimeout(() => {
-                        // ponytail: layer-filtered queryRenderedFeatures avoids scanning the full style (100+ base-tile layers).
+                        // Layer-filtered queryRenderedFeatures avoids scanning the full style (100+ base-tile layers).
                         // Upgrade path if still hot: rAF-coalesce, or merge all compat polylines into one shared source.
                         const hitLayers = this.getCompatHitLayerIds();
                         const overPolyline = event.point && hitLayers.length > 0 &&
@@ -239,7 +239,7 @@ class CompatMap {
                     });
                 }
                 else this.emit(name, mapEvent);
-                // ponytail: mousedown avoids MapLibre dragstart re-entry; upgrade if non-drag clicks matter.
+                // mousedown avoids MapLibre dragstart re-entry; upgrade if non-drag clicks matter.
                 if (name === 'mousedown') queueMicrotask(() => this.emit('dragstart', mapEvent));
             });
         }
@@ -248,7 +248,7 @@ class CompatMap {
             // Suppress the browser's native context menu so a real double-right-click registers as two
             // contextmenu events (Google Maps parity: no native menu over the map).
             event.originalEvent?.preventDefault?.();
-            // ponytail: double-right-click zooms out around the cursor (Google Maps parity). The app binds no
+            // Double-right-click zooms out around the cursor (Google Maps parity). The app binds no
             // rightclick, so a single right-click still emits 'rightclick' and only the fast second click zooms.
             const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
             if (now - lastContextMenu < 300) {
@@ -298,7 +298,7 @@ class CompatMap {
         for (const [mapLibreEvent, compatEvent] of POLYLINE_EVENTS) {
             this.map.on(mapLibreEvent, 'compat-polylines-hit', event => this.routePolylineEvent(mapLibreEvent, compatEvent, event));
         }
-        // ponytail: pointer cursor over any interactive polyline (Google Maps parity). Dedicated handlers cover all
+        // Pointer cursor over any interactive polyline (Google Maps parity). Dedicated handlers cover all
         // hit-layer features, including click-only lines that updatePolylineHover skips (no mouseover listener).
         const polylineCanvas = this.map.getCanvas();
         this.map.on('mouseenter', 'compat-polylines-hit', () => { polylineCanvas.style.cursor = 'pointer'; });
@@ -333,7 +333,7 @@ class CompatMap {
     flushPolylineBatch() {
         const source = this.map.getSource('compat-polylines');
         if (!source) return;
-        // ponytail: setData full-replace with per-owner feature cache. updateData({newGeometry})
+        // setData full-replace with per-owner feature cache. updateData({newGeometry})
         // triggered a per-feature re-tile that showed up as a distinct blink on ~1 Hz polylines
         // (course middle line). setData is atomic. To keep the fast tail path cheap, only dirty
         // owners re-run feature(); everyone else reuses the cached feature. Same work per frame
@@ -504,20 +504,20 @@ class CompatPolyline {
     }
     feature() {
         const zIndex = Number(this.options.zIndex) || 0;
-        // ponytail: fractional insertion order is enough until a map creates one billion polylines.
+        // Fractional insertion order is enough until a map creates one billion polylines.
         const sortKey = zIndex + (this.sequence || 0) / 1e9;
         return {
             type: 'Feature',
             id: this.featureId,
             properties: {
-                // ponytail: MapLibre's queryRenderedFeatures does not preserve string feature.id
+                // MapLibre's queryRenderedFeatures does not preserve string feature.id
                 // through the tile pipeline (returns 0). Route hover/click via this properties.compatId.
                 compatId: this.featureId,
                 color: this.options.strokeColor || '#000000',
                 opacity: this.options.strokeOpacity ?? 1,
                 width: this.options.strokeWeight || 1,
                 visible: this.visible,
-                // ponytail: Google Maps treats clickable polylines (default true) as interactive for hit-testing
+                // Google Maps treats clickable polylines (default true) as interactive for hit-testing
                 // and the pointer cursor, independent of JS listeners. Tails have no listeners but are clickable,
                 // so they must still show the pointer cursor. Click routing checks listeners before dispatching.
                 interactive: this.options.clickable !== false,
