@@ -245,6 +245,9 @@ class CompatMap {
         }
         let lastContextMenu = 0;
         this.map.on('contextmenu', event => {
+            // Suppress the browser's native context menu so a real double-right-click registers as two
+            // contextmenu events (Google Maps parity: no native menu over the map).
+            event.originalEvent?.preventDefault?.();
             // ponytail: double-right-click zooms out around the cursor (Google Maps parity). The app binds no
             // rightclick, so a single right-click still emits 'rightclick' and only the fast second click zooms.
             const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
@@ -519,7 +522,10 @@ class CompatPolyline {
                 opacity: this.options.strokeOpacity ?? 1,
                 width: this.options.strokeWeight || 1,
                 visible: this.visible,
-                interactive: [...this.listeners.values()].some(handlers => handlers.size > 0),
+                // ponytail: Google Maps treats clickable polylines (default true) as interactive for hit-testing
+                // and the pointer cursor, independent of JS listeners. Tails have no listeners but are clickable,
+                // so they must still show the pointer cursor. Click routing checks listeners before dispatching.
+                interactive: this.options.clickable !== false,
                 sortKey
             },
             geometry: { type: 'LineString', coordinates: this.path.__compatArrayValues.map(point => lngLat(asLngLatLiteral(point))) }
