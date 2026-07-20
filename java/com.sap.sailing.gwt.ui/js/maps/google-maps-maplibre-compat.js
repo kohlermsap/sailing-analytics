@@ -243,7 +243,19 @@ class CompatMap {
                 if (name === 'mousedown') queueMicrotask(() => this.emit('dragstart', mapEvent));
             });
         }
-        this.map.on('contextmenu', event => this.emit('rightclick', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) }));
+        let lastContextMenu = 0;
+        this.map.on('contextmenu', event => {
+            // ponytail: double-right-click zooms out around the cursor (Google Maps parity). The app binds no
+            // rightclick, so a single right-click still emits 'rightclick' and only the fast second click zooms.
+            const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+            if (now - lastContextMenu < 300) {
+                lastContextMenu = 0;
+                if (this.map.zoomOut) this.map.zoomOut({ around: event.lngLat });
+                return;
+            }
+            lastContextMenu = now;
+            this.emit('rightclick', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) });
+        });
         this.map.on('load', () => {
             this.initializePolylineBatch();
             this.loaded = true;
@@ -283,6 +295,11 @@ class CompatMap {
         for (const [mapLibreEvent, compatEvent] of POLYLINE_EVENTS) {
             this.map.on(mapLibreEvent, 'compat-polylines-hit', event => this.routePolylineEvent(mapLibreEvent, compatEvent, event));
         }
+        // ponytail: pointer cursor over any interactive polyline (Google Maps parity). Dedicated handlers cover all
+        // hit-layer features, including click-only lines that updatePolylineHover skips (no mouseover listener).
+        const polylineCanvas = this.map.getCanvas();
+        this.map.on('mouseenter', 'compat-polylines-hit', () => { polylineCanvas.style.cursor = 'pointer'; });
+        this.map.on('mouseleave', 'compat-polylines-hit', () => { polylineCanvas.style.cursor = ''; });
     }
     registerPolyline(polyline) {
         if (!polyline.sequence) polyline.sequence = this.nextPolylineSequence++;
