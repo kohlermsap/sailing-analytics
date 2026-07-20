@@ -333,27 +333,21 @@ class CompatMap {
     flushPolylineBatch() {
         const source = this.map.getSource('compat-polylines');
         if (!source) return;
-        const add = [];
-        const update = [];
-        for (const id of this.dirtyPolylineIds) {
-            const owner = this.polylineOwners.get(id);
-            if (!owner) continue;
-            const feature = owner.feature();
-            if (this.polylinePublishedIds.has(id)) {
-                update.push({
-                    id,
-                    newGeometry: feature.geometry,
-                    addOrUpdateProperties: Object.entries(feature.properties).map(([key, value]) => ({ key, value }))
-                });
-            } else {
-                add.push(feature);
-                this.polylinePublishedIds.add(id);
-            }
+        // ponytail: setData full-replace instead of updateData diff. updateData({newGeometry})
+        // caused a brief per-feature re-tile flicker: the course middle line updates ~1 Hz and
+        // was perceived as blinking, while the advantage line at ~16 Hz looked like smooth motion.
+        // setData replaces the whole FeatureCollection atomically. It's still ONE call per rAF for
+        // the entire polyline set (unbatched was ~52 setData calls per source), so throughput is
+        // preserved. Upgrade path: revisit if setData ever becomes a hotspot for >1000 polylines.
+        const features = [];
+        for (const [id, owner] of this.polylineOwners) {
+            features.push(owner.feature());
+            this.polylinePublishedIds.add(id);
         }
-        const remove = [...this.removedPolylineIds].filter(id => this.polylinePublishedIds.delete(id));
+        for (const id of this.removedPolylineIds) this.polylinePublishedIds.delete(id);
         this.dirtyPolylineIds.clear();
         this.removedPolylineIds.clear();
-        if (add.length || update.length || remove.length) source.updateData({ add, update, remove });
+        source.setData({ type: 'FeatureCollection', features });
     }
     addListener(name, handler) {
         if (!this.listeners.has(name)) this.listeners.set(name, new Set());
