@@ -2160,7 +2160,8 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
                             advantageTimer = new AdvantageLineAnimator(advantageLine);
                             MVCArray<LatLng> pointsAsArray = MVCArray.newInstance();
                             pointsAsArray.insertAt(0, coordinateSystem.toLatLng(advantageLinePos1));
-                            pointsAsArray.insertAt(1, coordinateSystem.toLatLng(advantageLinePos2));
+                            pointsAsArray.insertAt(1, coordinateSystem.toLatLng(posAheadOfFirstBoat));
+                            pointsAsArray.insertAt(2, coordinateSystem.toLatLng(advantageLinePos2));
                             advantageLine.setPath(pointsAsArray);
                             advantageLine.setMap(map);
                             Hoverline advantageHoverline = new Hoverline(advantageLine, options, this);
@@ -2175,6 +2176,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
                             });
                         } else {
                             nextPath.push(coordinateSystem.toLatLng(advantageLinePos1));
+                            nextPath.push(coordinateSystem.toLatLng(posAheadOfFirstBoat));
                             nextPath.push(coordinateSystem.toLatLng(advantageLinePos2));
                             advantageTimer.setNextPositionAndTransitionMillis(nextPath, timeForPositionTransitionMillis);
                             if (advantageLineMouseOverHandler != null) {

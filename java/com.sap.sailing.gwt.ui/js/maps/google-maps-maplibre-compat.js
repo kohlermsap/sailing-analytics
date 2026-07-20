@@ -23,6 +23,42 @@ function isSatelliteMapType(mapTypeId) {
     return id === 'satellite' || id === 'hybrid';
 }
 
+function geodesicCoordinates(points) {
+    const coordinates = points.map(point => lngLat(asLngLatLiteral(point)));
+    if (coordinates.length < 2) return coordinates;
+    const result = [coordinates[0]];
+    const radians = Math.PI / 180;
+    for (let i = 1; i < coordinates.length; i++) {
+        const previous = coordinates[i - 1];
+        const next = coordinates[i];
+        const deltaLng = ((next[0] - previous[0] + 540) % 360) - 180;
+        if (Math.abs(next[1] - previous[1]) <= 5 && Math.abs(deltaLng) <= 5) {
+            result.push([result.at(-1)[0] + deltaLng, next[1]]);
+            continue;
+        }
+        const [lng1, lat1] = previous.map(value => value * radians);
+        const [lng2, lat2] = next.map(value => value * radians);
+        const a = [Math.cos(lat1) * Math.cos(lng1), Math.cos(lat1) * Math.sin(lng1), Math.sin(lat1)];
+        const b = [Math.cos(lat2) * Math.cos(lng2), Math.cos(lat2) * Math.sin(lng2), Math.sin(lat2)];
+        const angle = Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2])));
+        let steps = Math.max(1, Math.ceil(angle / (5 * radians)));
+        if (steps > 1 && steps % 2) steps++;
+        const sinAngle = Math.sin(angle);
+        for (let step = 1; step <= steps; step++) {
+            const fraction = step / steps;
+            const x = angle < 1e-12 ? a[0] : (Math.sin((1 - fraction) * angle) * a[0] + Math.sin(fraction * angle) * b[0]) / sinAngle;
+            const y = angle < 1e-12 ? a[1] : (Math.sin((1 - fraction) * angle) * a[1] + Math.sin(fraction * angle) * b[1]) / sinAngle;
+            const z = angle < 1e-12 ? a[2] : (Math.sin((1 - fraction) * angle) * a[2] + Math.sin(fraction * angle) * b[2]) / sinAngle;
+            let lng = Math.atan2(y, x) / radians;
+            const previousLng = result.at(-1)[0];
+            while (lng - previousLng > 180) lng -= 360;
+            while (lng - previousLng < -180) lng += 360;
+            result.push([lng, Math.atan2(z, Math.hypot(x, y)) / radians]);
+        }
+    }
+    return result;
+}
+
 function circleCoordinates(center, radiusMeters, steps = 64) {
     const { lat, lng } = asLngLatLiteral(center);
     const earthRadius = 6371000;
@@ -523,7 +559,12 @@ class CompatPolyline {
                 interactive: this.options.clickable !== false,
                 sortKey
             },
-            geometry: { type: 'LineString', coordinates: this.path.__compatArrayValues.map(point => lngLat(asLngLatLiteral(point))) }
+            geometry: {
+                type: 'LineString',
+                coordinates: this.options.geodesic
+                    ? geodesicCoordinates(this.path.__compatArrayValues)
+                    : this.path.__compatArrayValues.map(point => lngLat(asLngLatLiteral(point)))
+            }
         };
     }
     setMap(map) {
