@@ -7,7 +7,7 @@ JAVA_HOME=${JAVA_HOME:-/Users/d041705/.asdf/installs/java/sapmachine-18}
 MAVEN_HOME=${MAVEN_HOME:-/Users/d041705/.asdf/installs/maven/3.9.1}
 CODE_SERVER_HOST=${CODE_SERVER_HOST:-127.0.0.1}
 CODE_SERVER_PORT=${CODE_SERVER_PORT:-9876}
-GWT_JVM_ARGS=${GWT_JVM_ARGS:--Xmx4g -Dgwt.rpc.version=9}
+GWT_JVM_ARGS=${GWT_JVM_ARGS:--Xmx4g -Dgwt.rpc.version=9 -Djava.io.tmpdir=$SAILING_BUILD_CACHE/tmp}
 
 fail_patched_gwt_release() {
   echo "Missing SAP-patched GWT release in $HOME/.m2/repository; install the SAP-patched GWT 2.12.4 release before running this wrapper." >&2
