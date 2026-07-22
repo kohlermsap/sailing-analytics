@@ -262,7 +262,13 @@ class CompatMap {
         this.map.on('dragend', () => this.emit('dragend'));
         for (const name of ['click', 'mousedown', 'mousemove', 'mouseout', 'mouseup', 'dblclick']) {
             this.map.on(name, event => {
-                const mapEvent = { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) };
+                const mapEvent = {
+                    latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng),
+                    pixel: event.point && { x: event.point.x, y: event.point.y },
+                    pageX: event.originalEvent?.pageX,
+                    pageY: event.originalEvent?.pageY,
+                    which: event.originalEvent?.which
+                };
                 if (name === 'mousemove') {
                     clearTimeout(this.mouseMoveTimer);
                     this.mouseMoveTimer = setTimeout(() => {
