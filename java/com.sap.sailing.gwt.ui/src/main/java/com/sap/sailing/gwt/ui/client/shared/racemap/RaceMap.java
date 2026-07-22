@@ -821,7 +821,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
                             ? new RotatedCoordinateSystem(new DegreeBearingImpl(lastCombinedTrueWindFromDirectionInIntegerDegrees).add(new DegreeBearingImpl(90)))
                             : new RotateAndTranslateCoordinateSystem(centerOfCourse, new DegreeBearingImpl(lastCombinedTrueWindFromDirectionInIntegerDegrees).add(new DegreeBearingImpl(90))));
                     if (map != null) {
-                        mapOptions = getMapOptions(/* wind-up */ true, settings.isShowSatelliteLayer());
+                        mapOptions = getMapOptions(/* wind-up */ true, settings.isShowSatelliteLayer(), /* populateDefaults */ false);
                         if (vectorRenderingTypeSupported) {
                             mapOptions.setHeading(lastCombinedTrueWindFromDirectionInIntegerDegrees);
                         }
@@ -841,7 +841,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
             }
         } else {
             if (map != null) {
-                mapOptions = getMapOptions(/* wind-up */ false, settings.isShowSatelliteLayer());
+                mapOptions = getMapOptions(/* wind-up */ false, settings.isShowSatelliteLayer(), /* populateDefaults */ false);
                 if (vectorRenderingTypeSupported) {
                     mapOptions.setHeading(0);
                 }
@@ -908,7 +908,7 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
         Runnable onLoad = new Runnable() {
             @Override
             public void run() {
-                MapOptions mapOptions = getMapOptions(/* wind up */ false, showSatelliteLayer);
+                MapOptions mapOptions = getMapOptions(/* wind up */ false, showSatelliteLayer, /* populateDefaults */ true);
                 mapOptions.setRenderingType(RenderingType.VECTOR);
                 map = new MapWidget(mapOptions);
                 vectorRenderingTypeSupported = isVectorRenderingTypeSupported(map);
@@ -3756,8 +3756,8 @@ public class RaceMap extends AbstractCompositeComponent<RaceMapSettings> impleme
         return new BoatsBoundsCalculator().calculateNewBounds(RaceMap.this);
     }
     
-    private MapOptions getMapOptions(boolean windUp, boolean showSatelliteLayer) {
-        MapOptions mapOptions = MapOptions.newInstance();
+    private MapOptions getMapOptions(boolean windUp, boolean showSatelliteLayer, boolean populateDefaults) {
+        MapOptions mapOptions = MapOptions.newInstance(populateDefaults);
         // Google Maps API does not support rotated satellite images
         mapOptions.setMapTypeId(getMapTypeId(windUp, showSatelliteLayer));
         mapOptions.setScrollWheel(true);
