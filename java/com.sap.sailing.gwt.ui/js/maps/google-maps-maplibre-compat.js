@@ -23,6 +23,42 @@ function isSatelliteMapType(mapTypeId) {
     return id === 'satellite' || id === 'hybrid';
 }
 
+function geodesicCoordinates(points) {
+    const coordinates = points.map(point => lngLat(asLngLatLiteral(point)));
+    if (coordinates.length < 2) return coordinates;
+    const result = [coordinates[0]];
+    const radians = Math.PI / 180;
+    for (let i = 1; i < coordinates.length; i++) {
+        const previous = coordinates[i - 1];
+        const next = coordinates[i];
+        const deltaLng = ((next[0] - previous[0] + 540) % 360) - 180;
+        if (Math.abs(next[1] - previous[1]) <= 5 && Math.abs(deltaLng) <= 5) {
+            result.push([result.at(-1)[0] + deltaLng, next[1]]);
+            continue;
+        }
+        const [lng1, lat1] = previous.map(value => value * radians);
+        const [lng2, lat2] = next.map(value => value * radians);
+        const a = [Math.cos(lat1) * Math.cos(lng1), Math.cos(lat1) * Math.sin(lng1), Math.sin(lat1)];
+        const b = [Math.cos(lat2) * Math.cos(lng2), Math.cos(lat2) * Math.sin(lng2), Math.sin(lat2)];
+        const angle = Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2])));
+        let steps = Math.max(1, Math.ceil(angle / (5 * radians)));
+        if (steps > 1 && steps % 2) steps++;
+        const sinAngle = Math.sin(angle);
+        for (let step = 1; step <= steps; step++) {
+            const fraction = step / steps;
+            const x = angle < 1e-12 ? a[0] : (Math.sin((1 - fraction) * angle) * a[0] + Math.sin(fraction * angle) * b[0]) / sinAngle;
+            const y = angle < 1e-12 ? a[1] : (Math.sin((1 - fraction) * angle) * a[1] + Math.sin(fraction * angle) * b[1]) / sinAngle;
+            const z = angle < 1e-12 ? a[2] : (Math.sin((1 - fraction) * angle) * a[2] + Math.sin(fraction * angle) * b[2]) / sinAngle;
+            let lng = Math.atan2(y, x) / radians;
+            const previousLng = result.at(-1)[0];
+            while (lng - previousLng > 180) lng -= 360;
+            while (lng - previousLng < -180) lng += 360;
+            result.push([lng, Math.atan2(z, Math.hypot(x, y)) / radians]);
+        }
+    }
+    return result;
+}
+
 function circleCoordinates(center, radiusMeters, steps = 64) {
     const { lat, lng } = asLngLatLiteral(center);
     const earthRadius = 6371000;
@@ -230,7 +266,7 @@ class CompatMap {
                 if (name === 'mousemove') {
                     clearTimeout(this.mouseMoveTimer);
                     this.mouseMoveTimer = setTimeout(() => {
-                        // ponytail: layer-filtered queryRenderedFeatures avoids scanning the full style (100+ base-tile layers).
+                        // Layer-filtered queryRenderedFeatures avoids scanning the full style (100+ base-tile layers).
                         // Upgrade path if still hot: rAF-coalesce, or merge all compat polylines into one shared source.
                         const hitLayers = this.getCompatHitLayerIds();
                         const overPolyline = event.point && hitLayers.length > 0 &&
@@ -239,7 +275,7 @@ class CompatMap {
                     });
                 }
                 else this.emit(name, mapEvent);
-                // ponytail: mousedown avoids MapLibre dragstart re-entry; upgrade if non-drag clicks matter.
+                // mousedown avoids MapLibre dragstart re-entry; upgrade if non-drag clicks matter.
                 if (name === 'mousedown') queueMicrotask(() => this.emit('dragstart', mapEvent));
             });
         }
@@ -248,7 +284,7 @@ class CompatMap {
             // Suppress the browser's native context menu so a real double-right-click registers as two
             // contextmenu events (Google Maps parity: no native menu over the map).
             event.originalEvent?.preventDefault?.();
-            // ponytail: double-right-click zooms out around the cursor (Google Maps parity). The app binds no
+            // Double-right-click zooms out around the cursor (Google Maps parity). The app binds no
             // rightclick, so a single right-click still emits 'rightclick' and only the fast second click zooms.
             const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
             if (now - lastContextMenu < 300) {
@@ -298,7 +334,7 @@ class CompatMap {
         for (const [mapLibreEvent, compatEvent] of POLYLINE_EVENTS) {
             this.map.on(mapLibreEvent, 'compat-polylines-hit', event => this.routePolylineEvent(mapLibreEvent, compatEvent, event));
         }
-        // ponytail: pointer cursor over any interactive polyline (Google Maps parity). Dedicated handlers cover all
+        // Pointer cursor over any interactive polyline (Google Maps parity). Dedicated handlers cover all
         // hit-layer features, including click-only lines that updatePolylineHover skips (no mouseover listener).
         const polylineCanvas = this.map.getCanvas();
         this.map.on('mouseenter', 'compat-polylines-hit', () => { polylineCanvas.style.cursor = 'pointer'; });
@@ -333,7 +369,7 @@ class CompatMap {
     flushPolylineBatch() {
         const source = this.map.getSource('compat-polylines');
         if (!source) return;
-        // ponytail: setData full-replace with per-owner feature cache. updateData({newGeometry})
+        // setData full-replace with per-owner feature cache. updateData({newGeometry})
         // triggered a per-feature re-tile that showed up as a distinct blink on ~1 Hz polylines
         // (course middle line). setData is atomic. To keep the fast tail path cheap, only dirty
         // owners re-run feature(); everyone else reuses the cached feature. Same work per frame
@@ -504,26 +540,31 @@ class CompatPolyline {
     }
     feature() {
         const zIndex = Number(this.options.zIndex) || 0;
-        // ponytail: fractional insertion order is enough until a map creates one billion polylines.
+        // Fractional insertion order is enough until a map creates one billion polylines.
         const sortKey = zIndex + (this.sequence || 0) / 1e9;
         return {
             type: 'Feature',
             id: this.featureId,
             properties: {
-                // ponytail: MapLibre's queryRenderedFeatures does not preserve string feature.id
+                // MapLibre's queryRenderedFeatures does not preserve string feature.id
                 // through the tile pipeline (returns 0). Route hover/click via this properties.compatId.
                 compatId: this.featureId,
                 color: this.options.strokeColor || '#000000',
                 opacity: this.options.strokeOpacity ?? 1,
                 width: this.options.strokeWeight || 1,
                 visible: this.visible,
-                // ponytail: Google Maps treats clickable polylines (default true) as interactive for hit-testing
+                // Google Maps treats clickable polylines (default true) as interactive for hit-testing
                 // and the pointer cursor, independent of JS listeners. Tails have no listeners but are clickable,
                 // so they must still show the pointer cursor. Click routing checks listeners before dispatching.
                 interactive: this.options.clickable !== false,
                 sortKey
             },
-            geometry: { type: 'LineString', coordinates: this.path.__compatArrayValues.map(point => lngLat(asLngLatLiteral(point))) }
+            geometry: {
+                type: 'LineString',
+                coordinates: this.options.geodesic
+                    ? geodesicCoordinates(this.path.__compatArrayValues)
+                    : this.path.__compatArrayValues.map(point => lngLat(asLngLatLiteral(point)))
+            }
         };
     }
     setMap(map) {
