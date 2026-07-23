@@ -1,17 +1,17 @@
 package com.sap.sailing.gwt.ui.shared.racemap;
 
+import com.google.gwt.ajaxloader.client.Properties;
 import com.google.gwt.canvas.client.Canvas;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
-import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseMoveEvent;
 import com.google.gwt.event.dom.client.MouseOutEvent;
 import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.base.LatLng;
@@ -22,7 +22,7 @@ import com.google.gwt.maps.client.events.click.ClickEventFormatter;
 import com.google.gwt.maps.client.events.click.ClickMapHandler;
 import com.google.gwt.maps.client.events.dblclick.DblClickEventFormatter;
 import com.google.gwt.maps.client.events.dblclick.DblClickMapHandler;
-import com.google.gwt.maps.client.events.mousedown.MouseDownEventFormatter;
+import com.google.gwt.maps.client.events.mousedown.MouseDownMapEvent;
 import com.google.gwt.maps.client.events.mousedown.MouseDownMapHandler;
 import com.google.gwt.maps.client.events.mousemove.MouseMoveEventFormatter;
 import com.google.gwt.maps.client.events.mousemove.MouseMoveMapHandler;
@@ -30,7 +30,7 @@ import com.google.gwt.maps.client.events.mouseout.MouseOutEventFormatter;
 import com.google.gwt.maps.client.events.mouseout.MouseOutMapHandler;
 import com.google.gwt.maps.client.events.mouseover.MouseOverEventFormatter;
 import com.google.gwt.maps.client.events.mouseover.MouseOverMapHandler;
-import com.google.gwt.maps.client.events.mouseup.MouseUpEventFormatter;
+import com.google.gwt.maps.client.events.mouseup.MouseUpMapEvent;
 import com.google.gwt.maps.client.events.mouseup.MouseUpMapHandler;
 import com.google.gwt.maps.client.events.rightclick.RightClickEventFormatter;
 import com.google.gwt.maps.client.events.rightclick.RightClickMapHandler;
@@ -180,8 +180,7 @@ public abstract class CanvasOverlayV3 {
      * @param handler
      */
     public final HandlerRegistration addMouseDownHandler(MouseDownMapHandler handler) {
-        return MapHandlerRegistration.addEventListener(getCanvas().getCanvasElement(), MouseDownEvent.getType(), 
-                handler, new MouseDownEventFormatter(), true);
+        return addNativeMouseDownHandler(getCanvas().getCanvasElement(), handler);
     }
 
     /**
@@ -220,9 +219,49 @@ public abstract class CanvasOverlayV3 {
      * @param handler
      */
     public final HandlerRegistration addMouseUpHandler(MouseUpMapHandler handler) {
-        return MapHandlerRegistration.addEventListener(getCanvas().getCanvasElement(), MouseUpEvent.getType(), 
-                handler, new MouseUpEventFormatter(), true);
+        return addNativeMouseUpHandler(getCanvas().getCanvasElement(), handler);
     }
+
+    private static HandlerRegistration addNativeMouseDownHandler(JavaScriptObject target, MouseDownMapHandler handler) {
+        JavaScriptObject listener = addNativeMouseDownHandlerImpl(target, handler);
+        return () -> removeNativeHandler(target, "mousedown", listener);
+    }
+
+    private static HandlerRegistration addNativeMouseUpHandler(JavaScriptObject target, MouseUpMapHandler handler) {
+        JavaScriptObject listener = addNativeMouseUpHandlerImpl(target, handler);
+        return () -> removeNativeHandler(target, "mouseup", listener);
+    }
+
+    private static native JavaScriptObject addNativeMouseDownHandlerImpl(JavaScriptObject target,
+            MouseDownMapHandler handler) /*-{
+        var callback = $entry(function(event) {
+            @com.sap.sailing.gwt.ui.shared.racemap.CanvasOverlayV3::dispatchMouseDown(Lcom/google/gwt/maps/client/events/mousedown/MouseDownMapHandler;Lcom/google/gwt/ajaxloader/client/Properties;)(handler, event);
+        });
+        target.addEventListener("mousedown", callback, true);
+        return callback;
+    }-*/;
+
+    private static native JavaScriptObject addNativeMouseUpHandlerImpl(JavaScriptObject target,
+            MouseUpMapHandler handler) /*-{
+        var callback = $entry(function(event) {
+            @com.sap.sailing.gwt.ui.shared.racemap.CanvasOverlayV3::dispatchMouseUp(Lcom/google/gwt/maps/client/events/mouseup/MouseUpMapHandler;Lcom/google/gwt/ajaxloader/client/Properties;)(handler, event);
+        });
+        target.addEventListener("mouseup", callback, true);
+        return callback;
+    }-*/;
+
+    private static void dispatchMouseDown(MouseDownMapHandler handler, Properties properties) {
+        handler.onEvent(new MouseDownMapEvent(properties));
+    }
+
+    private static void dispatchMouseUp(MouseUpMapHandler handler, Properties properties) {
+        handler.onEvent(new MouseUpMapEvent(properties));
+    }
+
+    private static native void removeNativeHandler(JavaScriptObject target, String eventName,
+            JavaScriptObject listener) /*-{
+        target.removeEventListener(eventName, listener, true);
+    }-*/;
 
     /**
      * This event is fired when the Canvas is right-clicked on.

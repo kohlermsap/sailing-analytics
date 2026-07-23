@@ -262,6 +262,8 @@ class CompatMap {
         this.map.on('dragend', () => this.emit('dragend'));
         for (const name of ['click', 'mousedown', 'mousemove', 'mouseout', 'mouseup', 'dblclick']) {
             this.map.on(name, event => {
+                const relatedTarget = event.originalEvent?.relatedTarget;
+                if (name === 'mouseout' && relatedTarget && this.element.contains(relatedTarget)) return;
                 const mapEvent = {
                     latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng),
                     pixel: event.point && { x: event.point.x, y: event.point.y },
@@ -482,6 +484,7 @@ class CompatMap {
         if ('heading' in options) camera.bearing = options.heading;
         if (Object.keys(camera).length) this.map.jumpTo(camera);
         if ('seaMarksVisible' in options) applyRaceStyle(this.map, options.seaMarksVisible);
+        if ('draggable' in options) this.map.dragPan[options.draggable ? 'enable' : 'disable']();
         if ('mapTypeId' in options) setSatelliteVisible(this.map, isSatelliteMapType(options.mapTypeId));
     }
     resize() { this.map.resize(); this.emit('resize'); }
