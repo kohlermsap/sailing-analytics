@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+USER_HOME=${HOME:?HOME must be set}
 PROJECT_HOME=${PROJECT_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
 SAILING_BUILD_CACHE=${SAILING_BUILD_CACHE:-/Volumes/INSTALL/sailing-build-cache}
-JAVA_HOME=${JAVA_HOME:-/Users/d041705/.asdf/installs/java/sapmachine-18}
-MAVEN_HOME=${MAVEN_HOME:-/Users/d041705/.asdf/installs/maven/3.9.1}
+JAVA_HOME=${JAVA_HOME:-$USER_HOME/.asdf/installs/java/sapmachine-18}
+MAVEN_HOME=${MAVEN_HOME:-$USER_HOME/.asdf/installs/maven/3.9.1}
 CODE_SERVER_HOST=${CODE_SERVER_HOST:-127.0.0.1}
 CODE_SERVER_PORT=${CODE_SERVER_PORT:-9876}
 GWT_JVM_ARGS=${GWT_JVM_ARGS:--Xmx4g -Dgwt.rpc.version=9 -Djava.io.tmpdir=$SAILING_BUILD_CACHE/tmp}
