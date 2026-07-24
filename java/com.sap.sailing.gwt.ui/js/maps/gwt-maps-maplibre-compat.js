@@ -48,6 +48,11 @@ function newOverlay(NativeClass, options = {}) {
         else delete nativeOptions.map;
     }
     const overlay = new NativeClass(nativeOptions);
+    const setMap = overlay.setMap.bind(overlay);
+    overlay.setMap = map => {
+        if (isMapWidget(map) && !map.map) map.ready(() => setMap(map.map));
+        else setMap(unwrapMap(map));
+    };
     if (mapWidget && !mapWidget.map) mapWidget.ready(() => overlay.setMap(mapWidget.map));
     return overlay;
 }
