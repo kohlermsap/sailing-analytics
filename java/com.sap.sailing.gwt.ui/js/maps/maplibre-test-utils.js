@@ -73,8 +73,8 @@ export function setSatelliteVisible(map, visible) {
             map.setLayoutProperty('satellite', 'visibility', visible ? 'visible' : 'none');
         }
     };
-    if (map.isStyleLoaded?.() || map.loaded()) apply();
-    else map.once('load', apply);
+    if (map.isStyleLoaded?.()) apply();
+    else map.once('idle', apply);
 }
 
 export function createRaceMap(containerId, options = {}) {

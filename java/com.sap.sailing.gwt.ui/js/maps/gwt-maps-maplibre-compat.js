@@ -1,6 +1,6 @@
 // GWT adapter: exposes branflake GWT Maps wrapper conventions over the Google-style MapLibre facade.
 // Keep MapLibre provider behavior in google-maps-maplibre-compat.js.
-import { installGoogleMapsCompat } from './google-maps-maplibre-compat.js?v=race-map-feedback-15';
+import { installGoogleMapsCompat } from './google-maps-maplibre-compat.js?v=race-map-feedback-16';
 
 function call(handler, event = {}) {
     if (typeof handler === 'function') handler(event);
