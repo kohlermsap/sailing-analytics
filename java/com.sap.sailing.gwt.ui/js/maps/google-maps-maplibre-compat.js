@@ -482,7 +482,8 @@ class CompatMap {
         if ('center' in options) camera.center = lngLat(asLngLatLiteral(options.center));
         if ('zoom' in options) camera.zoom = toMapLibreZoom(options.zoom);
         if ('heading' in options) camera.bearing = options.heading;
-        if (Object.keys(camera).length) this.map.jumpTo(camera);
+        if ('heading' in options && !('center' in options) && !('zoom' in options)) this.setHeading(options.heading);
+        else if (Object.keys(camera).length) this.map.jumpTo(camera);
         if ('seaMarksVisible' in options) applyRaceStyle(this.map, options.seaMarksVisible);
         if ('draggable' in options) this.map.dragPan[options.draggable ? 'enable' : 'disable']();
         if ('mapTypeId' in options) setSatelliteVisible(this.map, isSatelliteMapType(options.mapTypeId));
