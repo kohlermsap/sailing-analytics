@@ -198,8 +198,8 @@ class CompatMap {
         });
         // MapLibre listens for gestures on this container, so interactive panes must be descendants.
         this.map.getCanvasContainer().append(this.overlayLayer, this.markerLayer, this.overlayMouseTarget, this.floatPane);
-        this.resizeObserver = new ResizeObserver(() => { this.map.resize(); this.updateOverlayPointerEvents(); });
-        this.resizeObserver.observe(element);
+        requestAnimationFrame(() => this.map.resize());
+        this.map.on('resize', this.updateOverlayPointerEvents);
         const controlPositions = {
             1: ['10px', '', '', '10px'], 2: ['10px', '', '', '50%'], 3: ['10px', '10px', '', ''],
             // RaceMap's LEFT_TOP control already supplies its own 10px margin; keep overlays and boats untouched.
