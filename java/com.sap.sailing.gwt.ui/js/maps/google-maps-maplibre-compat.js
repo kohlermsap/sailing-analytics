@@ -681,19 +681,22 @@ class CompatPolyline {
 
 class CompatOverlayView {
     setMap(map) {
-        if (this.map && map === null) {
-            if (this._redraw) this.map.map.off('move', this._redraw);
+        if (this.map === map) return;
+        if (this.map && this._redraw) {
+            this.map.map.off('move', this._redraw);
             this.onRemove?.();
-            this.map = null;
-            return;
         }
         this.map = map;
+        this._redraw = null;
+        const attachment = this._attachment = {};
+        if (!map) return;
         map.ready(() => queueMicrotask(() => {
-            if (this.map !== map) return;
-            this.onAdd?.();
-            this.draw?.();
+            if (this._attachment !== attachment) return;
             this._redraw = () => { if (this.map === map) this.draw?.(); };
-            map.map.on('move', this._redraw);
+            this.onAdd?.();
+            if (this._attachment !== attachment) return;
+            this.draw?.();
+            if (this._attachment === attachment) map.map.on('move', this._redraw);
         }));
     }
     getPanes() {
@@ -708,6 +711,7 @@ class CompatOverlayView {
         };
     }
     getProjection() {
+        if (!this.map || !this._redraw) return null;
         const project = latLng => {
             const point = this.map.map.project(lngLat(asLngLatLiteral(latLng)));
             return { x: point.x, y: point.y };
@@ -851,7 +855,16 @@ class CompatCircle {
         this.radius = options.radius || 0;
         this.visible = options.visible !== false;
         this.id = `compat-circle-${nextOverlayId++}`;
+        this.listeners = new Map();
         if (options.map) this.setMap(options.map);
+    }
+    addListener(name, handler) {
+        if (!this.listeners.has(name)) this.listeners.set(name, new Set());
+        this.listeners.get(name).add(handler);
+        return { remove: () => this.listeners.get(name)?.delete(handler) };
+    }
+    emit(name, event) {
+        for (const handler of this.listeners.get(name) || []) handler(event);
     }
     feature() {
         return {
@@ -867,17 +880,26 @@ class CompatCircle {
         };
     }
     setMap(map) {
-        if (map === null) {
-            for (const layer of [`${this.id}-fill`, `${this.id}-line`]) if (this.map?.map.getLayer(layer)) this.map.map.removeLayer(layer);
-            if (this.map?.map.getSource(this.id)) this.map.map.removeSource(this.id);
-            this.map = null;
-            return;
+        if (this.map === map) return;
+        if (this.map) {
+            if (this._click) this.map.map.off('click', `${this.id}-fill`, this._click);
+            for (const layer of [`${this.id}-fill`, `${this.id}-line`]) if (this.map.map.getLayer(layer)) this.map.map.removeLayer(layer);
+            if (this.map.map.getSource(this.id)) this.map.map.removeSource(this.id);
         }
         this.map = map;
+        this._click = null;
+        if (!map) return;
+        const click = this._click = event => {
+            if (this.options.clickable !== false) {
+                this.emit('click', { latLng: new CompatLatLng(event.lngLat.lat, event.lngLat.lng) });
+            }
+        };
         map.ready(() => {
+            if (this.map !== map || this._click !== click) return;
             map.map.addSource(this.id, { type: 'geojson', data: this.feature() });
             map.map.addLayer({ id: `${this.id}-fill`, type: 'fill', source: this.id, paint: { 'fill-color': ['get', 'fillColor'], 'fill-opacity': ['get', 'fillOpacity'] } });
             map.map.addLayer({ id: `${this.id}-line`, type: 'line', source: this.id, paint: { 'line-color': ['get', 'strokeColor'], 'line-opacity': ['get', 'strokeOpacity'], 'line-width': ['get', 'strokeWeight'] } });
+            map.map.on('click', `${this.id}-fill`, click);
             this.setVisible(this.visible);
         });
     }

@@ -8,7 +8,6 @@ import com.google.gwt.maps.client.base.Point;
 import com.sap.sailing.gwt.ui.client.shared.racemap.CoordinateSystem;
 import com.sap.sailing.gwt.ui.simulator.racemap.FullCanvasOverlay;
 import com.sap.sailing.simulator.util.SailingSimulatorConstants;
-import com.sap.sse.common.impl.DegreePosition;
 
 public class RegattaAreaCanvasOverlay extends FullCanvasOverlay {
 
@@ -68,18 +67,12 @@ public class RegattaAreaCanvasOverlay extends FullCanvasOverlay {
     }
 
     protected void drawRegattaAreas() {
-        LatLng cPos = coordinateSystem.toLatLng(new DegreePosition(54.4344, 10.19659167));
-        Point centerPoint = getMapProjection().fromLatLngToDivPixel(cPos);
-        Point borderPoint = getMapProjection().fromLatLngToDivPixel(this.getEdgePoint(cPos, 0.015));
-        double pxStroke = Math.pow(2.0, (getMap().getZoom() - 10.0) / 2.0);
+        final double pxStroke = Math.pow(2.0, (getMap().getZoom() - 10.0) / 2.0);
         final Context2d context2d = canvas.getContext2d();
         context2d.setLineWidth(3);
         context2d.setStrokeStyle("Black");
-        for (CourseAreaDescriptor courseArea : venue.getCourseAreas()) {
-            centerPoint = getMapProjection().fromLatLngToDivPixel(courseArea.getCenterPos());
-            borderPoint = getMapProjection().fromLatLngToDivPixel(courseArea.getEdgePos());
-            drawCourseArea(courseArea.getName(), context2d, centerPoint, borderPoint, courseArea.getColor(), courseArea.getColorText(),
-                    pxStroke);
+        for (final CourseAreaDescriptor courseArea : venue.getCourseAreas()) {
+            drawCourseArea(courseArea, context2d, pxStroke);
         }
     }
 
@@ -116,69 +109,56 @@ public class RegattaAreaCanvasOverlay extends FullCanvasOverlay {
     	this.currentCourseArea = courseArea;
     }
     
-    protected void drawCourseArea(String name, Context2d context2d, Point centerPoint, Point borderPoint,
-            String color, String colorText, double pxStroke) {
-        Point diffPoint = Point.newInstance(centerPoint.getX() - borderPoint.getX(),
-                centerPoint.getY() - borderPoint.getY());
-        double pxRadius = Math.sqrt(diffPoint.getX() * diffPoint.getX() + diffPoint.getY() * diffPoint.getY());
-        String bgColor;
+    protected void drawCourseArea(final CourseAreaDescriptor courseArea, final Context2d context2d, final double pxStroke) {
+        final Point centerPoint = getMapProjection().fromLatLngToDivPixel(courseArea.getCenterPos());
+        final String bgColor;
         if (simulatorMap.getWindParams().isShowStreamlets()) {
             bgColor = "#505050";
         } else {
             bgColor = "#DEDEDE";
         }
+        // Match the geographic circle's hit region rather than drawing a screen-space circle under tilt.
+        context2d.beginPath();
+        for (int step = 0; step < 64; step++) {
+            final LatLng boundary = getDistantPoint(courseArea.getCenterPos(), courseArea.getRadius(), step * 360.0 / 64);
+            final Point pixel = getMapProjection().fromLatLngToDivPixel(boundary);
+            final double x = pixel.getX() - getWidgetPosLeft();
+            final double y = pixel.getY() - getWidgetPosTop();
+            if (step == 0) {
+                context2d.moveTo(x, y);
+            } else {
+                context2d.lineTo(x, y);
+            }
+        }
+        context2d.closePath();
         context2d.setGlobalAlpha(1.0f);
         context2d.setFillStyle(bgColor);
-        context2d.beginPath();
-        context2d.arc(centerPoint.getX() - this.getWidgetPosLeft(), centerPoint.getY() - this.getWidgetPosTop(),
-                pxRadius, 0.0, 2 * Math.PI);
-        context2d.closePath();
         context2d.fill();
-
         context2d.setGlobalAlpha(0.5f);
-        context2d.setFillStyle(color);
-        context2d.beginPath();
-        context2d.arc(centerPoint.getX() - this.getWidgetPosLeft(), centerPoint.getY() - this.getWidgetPosTop(),
-                pxRadius, 0.0, 2 * Math.PI);
-        context2d.closePath();
+        context2d.setFillStyle(courseArea.getColor());
         context2d.fill();
-
         context2d.setGlobalAlpha(1.0f);
         context2d.setLineWidth(pxStroke);
         context2d.setStrokeStyle(bgColor);
-        context2d.beginPath();
-        context2d.arc(centerPoint.getX() - this.getWidgetPosLeft(), centerPoint.getY() - this.getWidgetPosTop(),
-                pxRadius, 0.0, 2 * Math.PI);
-        context2d.closePath();
         context2d.stroke();
-
         context2d.setGlobalAlpha(0.8f);
-        context2d.setLineWidth(pxStroke);
-        context2d.setStrokeStyle(color);
-        context2d.beginPath();
-        context2d.arc(centerPoint.getX() - this.getWidgetPosLeft(), centerPoint.getY() - this.getWidgetPosTop(),
-                pxRadius, 0.0, 2 * Math.PI);
-        context2d.closePath();
+        context2d.setStrokeStyle(courseArea.getColor());
         context2d.stroke();
 
         if (getMap().getZoom() >= 11) {
             context2d.setGlobalAlpha(0.8f);
-            context2d.setFillStyle(colorText);
+            context2d.setFillStyle(courseArea.getColorText());
 
-            double fontsize = 14.0 + (32.0 - 14.0) * (getMap().getZoom() - 11.0) / (14.0 - 11.0);
+            final double fontsize = 14.0 + (32.0 - 14.0) * (getMap().getZoom() - 11.0) / (14.0 - 11.0);
             context2d.setFont("normal " + fontsize + "px Calibri");
             // TextMetrics txtmet = context2d.measureText(name);
             context2d.setTextAlign(TextAlign.CENTER);
-            context2d.fillText(name, centerPoint.getX() - this.getWidgetPosLeft(), centerPoint.getY() + 0.32 * fontsize
+            context2d.fillText(courseArea.getName(), centerPoint.getX() - this.getWidgetPosLeft(), centerPoint.getY() + 0.32 * fontsize
                     - this.getWidgetPosTop());
 
         }
         
         context2d.setGlobalAlpha(1.0f);
-    }
-
-    protected LatLng getEdgePoint(LatLng pos, double dist) {
-        return getDistantPoint(pos, dist, 0.0);
     }
 
     protected LatLng getDistantPoint(LatLng pos, double dist, double degBear) {

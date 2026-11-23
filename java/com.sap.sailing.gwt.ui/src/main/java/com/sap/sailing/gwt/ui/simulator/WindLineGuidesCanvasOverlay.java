@@ -180,8 +180,9 @@ public class WindLineGuidesCanvasOverlay extends FullCanvasOverlay implements Ti
         final double x = canvasPositionInPx.getX() - getWidgetPosLeft();
         final double y = canvasPositionInPx.getY() - getWidgetPosTop();
         windFieldPoints.put(new ToolTip(x, y), windDTO);
-        final double dx = length * Math.sin(angle);
-        final double dy = -length * Math.cos(angle);
+        final double screenAngle = projectBearing(position, angle);
+        final double dx = length * Math.sin(screenAngle);
+        final double dy = -length * Math.cos(screenAngle);
         final double x1 = x + dx / 2;
         final double y1 = y + dy / 2;
         drawLine(x - dx / 2, y - dy / 2, x1, y1, weight, arrowColor);

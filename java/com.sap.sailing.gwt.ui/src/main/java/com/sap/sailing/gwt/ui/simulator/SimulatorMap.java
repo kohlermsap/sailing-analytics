@@ -538,7 +538,7 @@ public class SimulatorMap extends AbsolutePanel implements RequiresDataInitializ
             @Override
             public void onSuccess(WindFieldDTO wl) {
                 if (removeOverlays) {
-                    removeOverlays();
+                    clearOverlays();
                 }
                 //LOGGER.info("Number of windDTO : " + wl.getMatrix().size());
                 // Window.alert("Number of windDTO : " + wl.getMatrix().size());

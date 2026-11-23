@@ -15,7 +15,10 @@ import com.sap.sailing.gwt.ui.client.shared.racemap.CoordinateSystem;
 import com.sap.sailing.gwt.ui.shared.SimulatorWindDTO;
 import com.sap.sailing.gwt.ui.shared.racemap.CanvasOverlayV3;
 import com.sap.sailing.gwt.ui.simulator.streamlets.Vector;
+import com.sap.sse.common.Distance;
 import com.sap.sse.common.Position;
+import com.sap.sse.common.impl.DegreeBearingImpl;
+import com.sap.sse.common.impl.MeterDistance;
 
 /**
  * This class extends {@link CanvasOverlayV3} to provide the functionality that the canvas always covers the
@@ -26,6 +29,7 @@ import com.sap.sse.common.Position;
  *
  */
 public abstract class FullCanvasOverlay extends CanvasOverlayV3 implements RequiresResize {
+    private static final Distance DIRECTION_PROBE_DISTANCE = new MeterDistance(/* meters */ 1);
 
     /** the x coordinate where the canvas is placed */
     protected double widgetPosLeft = 0;
@@ -249,7 +253,16 @@ public abstract class FullCanvasOverlay extends CanvasOverlayV3 implements Requi
         double x = canvasPositionInPx.getX() - getWidgetPosLeft();
         double y = canvasPositionInPx.getY() - getWidgetPosTop();
         //windFieldPoints.put(new ToolTip(x, y), windDTO);
-        drawArrowPx(x, y, angle, length, weight, drawHead, color);
+        drawArrowPx(x, y, projectBearing(position, angle), length, weight, drawHead, color);
+    }
+
+    protected double projectBearing(final Position position, final double bearingInRadians) {
+        final Point origin = getMapProjection().fromLatLngToDivPixel(coordinateSystem.toLatLng(position));
+        final Position tip = position.translateRhumb(new DegreeBearingImpl(Math.toDegrees(bearingInRadians)),
+                DIRECTION_PROBE_DISTANCE);
+        final Point projectedTip = getMapProjection().fromLatLngToDivPixel(coordinateSystem.toLatLng(tip));
+        // A short local probe accounts for both map bearing and position-dependent perspective under tilt.
+        return Math.atan2(projectedTip.getX() - origin.getX(), origin.getY() - projectedTip.getY());
     }
 
     protected void drawArrowPx(double x, double y, double angle, double length, double weight, boolean drawHead, String color) {

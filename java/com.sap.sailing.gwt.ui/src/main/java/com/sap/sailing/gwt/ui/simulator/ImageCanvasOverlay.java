@@ -48,11 +48,9 @@ public class ImageCanvasOverlay extends CanvasOverlayV3 {
 
     public void setPosition() {
         if (getMapProjection() != null) {
-            Point sw = getMapProjection().fromLatLngToDivPixel(getMap().getBounds().getSouthWest());
-            Point ne = getMapProjection().fromLatLngToDivPixel(getMap().getBounds().getNorthEast());
-            double pLeft = Math.min(sw.getX(), ne.getX()) - 25 + oLeft;
-            double pTop = Math.min(sw.getY(), ne.getY()) - 25 + oTop;
-            setCanvasPosition(pLeft, pTop);
+            final Point anchor = getMapProjection().fromLatLngToDivPixel(getMapProjection().fromContainerPixelToLatLng(
+                    Point.newInstance(/* x */ oLeft - 25, /* y */ oTop - 25)));
+            setCanvasPosition(anchor.getX(), anchor.getY());
         }
     }
     
@@ -65,7 +63,7 @@ public class ImageCanvasOverlay extends CanvasOverlayV3 {
     protected void draw() {
         if (getMapProjection() != null) {
             setPosition();
-            imgTrafo.drawToCanvas(getCanvas(), bearing, 1.0);
+            imgTrafo.drawToCanvas(getCanvas(), bearing - map.getHeading(), /* scaleFactor */ 1.0);
         }
     }
 

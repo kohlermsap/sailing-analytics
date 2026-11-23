@@ -159,7 +159,8 @@ public class PathLegendCanvasOverlay extends FullCanvasOverlay {
                 double txtwidth = txtmet.getWidth();
                 context2d.fillText(cText, cX-(txtwidth/2.0), cY-25);
                 if (this.curSpeed > 0.0) {
-                    drawArrowPx(cX, cY, curBear.getRadians(), cLength, cWidth, true, "Green");
+                    drawArrowPx(cX, cY, projectBearing(coordinateSystem.getPosition(map.getCenter()), curBear.getRadians()),
+                            cLength, cWidth, /* drawHead */ true, /* color */ "Green");
                 }
             }
         }

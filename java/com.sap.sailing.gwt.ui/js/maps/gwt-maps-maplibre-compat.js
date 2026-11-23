@@ -1,6 +1,6 @@
 // GWT adapter: exposes branflake GWT Maps wrapper conventions over the Google-style MapLibre facade.
 // Keep MapLibre provider behavior in google-maps-maplibre-compat.js.
-import { installGoogleMapsCompat } from './google-maps-maplibre-compat.js?v=race-map-feedback-22';
+import { installGoogleMapsCompat } from './google-maps-maplibre-compat.js?v=simulator-6285-1';
 
 function call(handler, event = {}) {
     if (typeof handler === 'function') handler(event);
@@ -81,7 +81,7 @@ function installGwtWrapperGlobals() {
     }
 
     class SphericalUtils {
-        static computeDistanceBetween(from, to, radius = 6371009) {
+        static computeDistanceBetween(from, to, radius = 6378137) {
             const a = literal(from), b = literal(to);
             const toRad = deg => deg * Math.PI / 180;
             const dLat = toRad(b.lat - a.lat);
@@ -341,7 +341,7 @@ function installGwtWrapperGlobals() {
         ControlPosition: google.maps.ControlPosition
     });
     // GWT's JSNI constructors look these up under $wnd.google.maps.
-    Object.assign(google.maps, { MVCArray, MarkerImage, Size, StyledMapType });
+    Object.assign(google.maps, { MVCArray, MarkerImage, Size, StyledMapType, geometry: { spherical: SphericalUtils } });
 }
 
 export function installGwtMapsCompat() {
