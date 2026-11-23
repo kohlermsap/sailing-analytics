@@ -408,21 +408,25 @@ public abstract class CanvasOverlayV3 {
         setCanvasTransform();
     }
 
-    protected void updateDrawingMatrixAndSetCanvasTransform(double a, double b, double c, double d) {
-        drawingAngle = null;
-        drawingMatrix = new double[] { a, b, c, d };
+    protected void updateDrawingMatrixAndSetCanvasTransform(final double a, final double b, final double c, final double d) {
+        final double angleInRadians = Math.atan2(b, a);
+        final double angleInDegrees = Math.toDegrees(angleInRadians);
+        drawingAngle = drawingAngle == null ? angleInDegrees : getNewRotationWithMinimalDiff(angleInDegrees);
+        final double cosine = Math.cos(angleInRadians);
+        final double sine = Math.sin(angleInRadians);
+        // Keep rotation explicit: Firefox interpolates raw matrices the long way across +/-180 degrees.
+        drawingMatrix = new double[] { Math.hypot(a, b), 0, cosine * c + sine * d, cosine * d - sine * c };
         setCanvasTransform();
     }
     
     private void setCanvasTransform() {
-        if (drawingMatrix == null) {
-            setProperty(canvas.getElement().getStyle(), "transform", "translate3d(" + canvasPositionX + "px, " +
-                    canvasPositionY + "px, 0) rotate(" + (drawingAngle == null ? 0.0 : drawingAngle) + "deg)");
-        } else {
-            setProperty(canvas.getElement().getStyle(), "transform", "translate3d(" + canvasPositionX + "px, " +
-                    canvasPositionY + "px, 0) matrix(" + drawingMatrix[0] + ", " + drawingMatrix[1] + ", " +
-                    drawingMatrix[2] + ", " + drawingMatrix[3] + ", 0, 0)");
+        String transform = "translate3d(" + canvasPositionX + "px, " + canvasPositionY + "px, 0) rotate(" +
+                (drawingAngle == null ? 0.0 : drawingAngle) + "deg)";
+        if (drawingMatrix != null) {
+            transform += " matrix(" + drawingMatrix[0] + ", " + drawingMatrix[1] + ", " +
+                    drawingMatrix[2] + ", " + drawingMatrix[3] + ", 0, 0)";
         }
+        setProperty(canvas.getElement().getStyle(), "transform", transform);
     }
 
     protected double getNewRotationWithMinimalDiff(double desiredAngle) {
