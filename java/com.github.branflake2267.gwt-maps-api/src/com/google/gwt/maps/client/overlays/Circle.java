@@ -149,7 +149,7 @@ public class Circle extends MVCObject<Circle> {
    * @param options
    */
   public final native void setOptions(CircleOptions options) /*-{
-    this.options = options;
+    this.setOptions(options);
   }-*/;
 
   /**

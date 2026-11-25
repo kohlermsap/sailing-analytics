@@ -4,6 +4,7 @@ import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.base.LatLng;
 import com.google.gwt.maps.client.base.Point;
 import com.google.gwt.maps.client.base.Size;
+import com.google.gwt.maps.client.overlays.MapCanvasProjection;
 import com.sap.sailing.domain.common.LegType;
 import com.sap.sailing.domain.common.Tack;
 import com.sap.sailing.domain.common.dto.BoatClassDTO;
@@ -36,6 +37,9 @@ public class BoatOverlay extends CanvasOverlayV3 {
     // MapCanvasProjection exposes points but no local transform, so nearby probes approximate its affine basis.
     // Keep this distance short: long probes sample perspective curvature and visibly distort boat proportions.
     private static final Distance SCREEN_HEADING_PROBE_DISTANCE = new MeterDistance(1);
+    // shortcut: models above 8192px are culled; use clipped vector geometry if closer views must render them.
+    private static final int MAX_PROJECTED_EDGE = 8192;
+    private static final int MAX_BACKING_EDGE = 1024;
 
     private int canvasWidth;
     private int canvasHeight;
@@ -66,57 +70,100 @@ public class BoatOverlay extends CanvasOverlayV3 {
     
     @Override
     protected void draw() {
-        if (getMapProjection() != null && boatFix != null) {
-            final LatLng latLngPosition = coordinateSystem.toLatLng(boatFix.position);
-            final Point boatPositionInPx = getMapProjection().fromLatLngToDivPixel(latLngPosition);
-            final double trueHeadingInDegrees = boatFix.optionalTrueHeading != null
-                    ? boatFix.optionalTrueHeading.getDegrees()
-                    : (boatFix.speedWithBearing == null ? 0 : boatFix.speedWithBearing.bearingInDegrees);
-            final Point headingReferenceInPx = getMapProjection().fromLatLngToDivPixel(coordinateSystem.toLatLng(
-                    boatFix.position.translateRhumb(new DegreeBearingImpl(trueHeadingInDegrees), SCREEN_HEADING_PROBE_DISTANCE)));
-            final Point starboardReferenceInPx = getMapProjection().fromLatLngToDivPixel(coordinateSystem.toLatLng(
-                    boatFix.position.translateRhumb(new DegreeBearingImpl(trueHeadingInDegrees + 90), SCREEN_HEADING_PROBE_DISTANCE)));
-            final double forwardX = headingReferenceInPx.getX() - boatPositionInPx.getX();
-            final double forwardY = headingReferenceInPx.getY() - boatPositionInPx.getY();
-            final double starboardX = starboardReferenceInPx.getX() - boatPositionInPx.getX();
-            final double starboardY = starboardReferenceInPx.getY() - boatPositionInPx.getY();
-            final double sumOfSquares = forwardX * forwardX + forwardY * forwardY +
-                    starboardX * starboardX + starboardY * starboardY;
-            final double determinant = forwardX * starboardY - forwardY * starboardX;
-            final double normalization = Math.sqrt((sumOfSquares + Math.sqrt(Math.max(0,
-                    sumOfSquares * sumOfSquares - 4 * determinant * determinant))) / 2);
-            if (normalization > 0.000001) {
-                final Util.Pair<Size, Size> boatScaleAndSize = getBoatScaleAndSize(boatClass, normalization);
-                final Size boatSizeScaleFactor = boatScaleAndSize.getA();
-                canvasWidth = (int) boatScaleAndSize.getB().getWidth();
-                canvasHeight = (int) boatScaleAndSize.getB().getHeight();
-                if (lastWidth == null || canvasWidth != lastWidth || lastHeight == null || canvasHeight != lastHeight) {
-                    setCanvasSize(canvasWidth, canvasHeight);
-                }
-                if (needToDraw(boatFix.legType, boatFix.tack, isSelected(), canvasWidth, canvasHeight,
-                        boatSizeScaleFactor, color, displayMode)) {
-                    boatVectorGraphics.drawBoatToCanvas(getCanvas().getContext2d(), boatFix.legType, boatFix.tack,
-                            getDisplayMode(), canvasWidth, canvasHeight, boatSizeScaleFactor, color);
-                    lastLegType = boatFix.legType;
-                    lastTack = boatFix.tack;
-                    lastSelected = isSelected();
-                    lastWidth = canvasWidth;
-                    lastHeight = canvasHeight;
-                    lastScale = boatSizeScaleFactor;
-                    lastColor = color;
-                    lastDisplayMode = displayMode;
-                }
-                updateDrawingMatrixAndSetCanvasTransform(forwardX / normalization, forwardY / normalization,
-                        starboardX / normalization, starboardY / normalization);
-            } else {
-                final double screenDrawingAngle = Math.toDegrees(Math.atan2(forwardY, forwardX));
-                updateDrawingAngleAndSetCanvasRotation(screenDrawingAngle);
+        final MapCanvasProjection projection = getMapProjection();
+        if (projection != null && boatFix != null) {
+            final LatLng position = coordinateSystem.toLatLng(boatFix.position);
+            final Point screenCenter = projection.fromLatLngToContainerPixel(position);
+            final int viewportWidth = map.getDiv().getClientWidth();
+            final int viewportHeight = map.getDiv().getClientHeight();
+            final boolean nearViewport = Double.isFinite(screenCenter.getX()) && Double.isFinite(screenCenter.getY())
+                    && screenCenter.getX() >= -MAX_PROJECTED_EDGE && screenCenter.getY() >= -MAX_PROJECTED_EDGE
+                    && screenCenter.getX() <= viewportWidth + MAX_PROJECTED_EDGE && screenCenter.getY() <= viewportHeight + MAX_PROJECTED_EDGE;
+            if (!nearViewport || !drawProjectedBoat(projection, position, screenCenter, viewportWidth, viewportHeight)) {
+                clearBoatCanvas();
             }
-            setCanvasPosition(boatPositionInPx.getX() - getCanvas().getCoordinateSpaceWidth() / 2,
-                    boatPositionInPx.getY() - getCanvas().getCoordinateSpaceHeight() / 2);
         }
     }
-    
+
+    private boolean drawProjectedBoat(final MapCanvasProjection projection, final LatLng position,
+            final Point screenCenter, final int viewportWidth, final int viewportHeight) {
+        final Point center = projection.fromLatLngToDivPixel(position);
+        final double trueHeadingInDegrees = boatFix.optionalTrueHeading != null ? boatFix.optionalTrueHeading.getDegrees()
+                : (boatFix.speedWithBearing == null ? 0 : boatFix.speedWithBearing.bearingInDegrees);
+        final Point forward = projection.fromLatLngToDivPixel(coordinateSystem.toLatLng(
+                boatFix.position.translateRhumb(new DegreeBearingImpl(trueHeadingInDegrees), SCREEN_HEADING_PROBE_DISTANCE)));
+        final Point starboard = projection.fromLatLngToDivPixel(coordinateSystem.toLatLng(
+                boatFix.position.translateRhumb(new DegreeBearingImpl(trueHeadingInDegrees + 90), SCREEN_HEADING_PROBE_DISTANCE)));
+        final double forwardX = forward.getX() - center.getX(), forwardY = forward.getY() - center.getY();
+        final double starboardX = starboard.getX() - center.getX(), starboardY = starboard.getY() - center.getY();
+        final double sum = forwardX * forwardX + forwardY * forwardY + starboardX * starboardX + starboardY * starboardY;
+        final double determinant = forwardX * starboardY - forwardY * starboardX;
+        final double normalization = Math.sqrt((sum + Math.sqrt(Math.max(0,
+                sum * sum - 4 * determinant * determinant))) / 2);
+        boolean rendered = false;
+        if (Double.isFinite(normalization) && normalization > 0.000001 && determinant > 0) {
+            final Util.Pair<Size, Size> scaleAndSize = getBoatScaleAndSize(boatClass, normalization);
+            final Size logicalScale = scaleAndSize.getA();
+            final double logicalWidth = scaleAndSize.getB().getWidth(), logicalHeight = scaleAndSize.getB().getHeight();
+            final boolean validSize = Double.isFinite(logicalWidth) && Double.isFinite(logicalHeight)
+                    && logicalWidth > 0 && logicalHeight > 0 && logicalWidth <= MAX_PROJECTED_EDGE && logicalHeight <= MAX_PROJECTED_EDGE
+                    && Double.isFinite(logicalScale.getWidth()) && Double.isFinite(logicalScale.getHeight());
+            if (validSize) {
+                final double extentX = (Math.abs(forwardX / normalization) * logicalWidth
+                        + Math.abs(starboardX / normalization) * logicalHeight) / 2;
+                final double extentY = (Math.abs(forwardY / normalization) * logicalWidth
+                        + Math.abs(starboardY / normalization) * logicalHeight) / 2;
+                if (screenCenter.getX() + extentX >= 0 && screenCenter.getY() + extentY >= 0
+                        && screenCenter.getX() - extentX <= viewportWidth && screenCenter.getY() - extentY <= viewportHeight) {
+                    // Cap raster memory, not the visible geometry. CSS restores the same logical size and pitch.
+                    final double rasterScale = Math.min(1, Math.min(MAX_BACKING_EDGE / logicalWidth, MAX_BACKING_EDGE / logicalHeight));
+                    final Size scale = rasterScale == 1 ? logicalScale : Size.newInstance(
+                            logicalScale.getWidth() * rasterScale, logicalScale.getHeight() * rasterScale);
+                    canvasWidth = Math.min(MAX_BACKING_EDGE, (int) (logicalWidth * rasterScale));
+                    canvasHeight = Math.min(MAX_BACKING_EDGE, (int) (logicalHeight * rasterScale));
+                    getCanvas().getElement().setPropertyDouble(/* name */ "__boatLogicalWidth", logicalWidth);
+                    getCanvas().getElement().setPropertyDouble(/* name */ "__boatLogicalHeight", logicalHeight);
+                    if (lastWidth == null || canvasWidth != lastWidth || lastHeight == null || canvasHeight != lastHeight) {
+                        setCanvasSize(canvasWidth, canvasHeight);
+                    }
+                    if (needToDraw(boatFix.legType, boatFix.tack, isSelected(), canvasWidth, canvasHeight, scale, color, displayMode)) {
+                        // A failed paint must not leave a cache claiming the cleared bitmap is still valid.
+                        lastWidth = null;
+                        lastHeight = null;
+                        boatVectorGraphics.drawBoatToCanvas(getCanvas().getContext2d(), boatFix.legType, boatFix.tack,
+                                getDisplayMode(), canvasWidth, canvasHeight, scale, color);
+                        lastLegType = boatFix.legType;
+                        lastTack = boatFix.tack;
+                        lastSelected = isSelected();
+                        lastWidth = canvasWidth;
+                        lastHeight = canvasHeight;
+                        lastScale = scale;
+                        lastColor = color;
+                        lastDisplayMode = displayMode;
+                    }
+                    updateDrawingMatrixAndSetCanvasTransform(forwardX / normalization / rasterScale,
+                            forwardY / normalization / rasterScale, starboardX / normalization / rasterScale,
+                            starboardY / normalization / rasterScale);
+                    setCanvasPosition(center.getX() - getCanvas().getCoordinateSpaceWidth() / 2,
+                            center.getY() - getCanvas().getCoordinateSpaceHeight() / 2);
+                    rendered = true;
+                }
+            }
+        }
+        return rendered;
+    }
+
+    private void clearBoatCanvas() {
+        if (getCanvas().getCoordinateSpaceWidth() != 0 || getCanvas().getCoordinateSpaceHeight() != 0) {
+            setCanvasSize(/* newWidthInPx */ 0, /* newHeightInPx */ 0);
+        }
+        canvasWidth = 0;
+        canvasHeight = 0;
+        lastWidth = null;
+        lastHeight = null;
+        lastScale = null;
+    }
+
     /**
      * Compares the drawing parameters to {@link #lastLegType} and the other <code>last...</code>. If anything has
      * changed, the result is <code>true</code>.

@@ -72,9 +72,18 @@ export function onMapTileServerError(event) {
     }
 }
 
+function hasImageOrZoomExpression(expression) {
+    return Array.isArray(expression) && (['image', 'coalesce', 'zoom'].includes(expression[0]) || expression.some(hasImageOrZoomExpression));
+}
+
 export function applyRaceStyle(map, seaMarksVisible = false) {
     const apply = () => {
         for (const layer of map.getStyle().layers || []) {
+            const icon = layer.layout?.['icon-image'];
+            if (layer.type === 'symbol' && Array.isArray(icon) && !hasImageOrZoomExpression(icon)) {
+                // Omit unavailable icons but keep labels; authored image policies and top-level zoom rules stay intact.
+                map.setLayoutProperty(layer.id, 'icon-image', ['coalesce', ['image', icon], ['image', '']]);
+            }
             if (layer.type === 'fill' && /water/i.test(`${layer.id} ${layer['source-layer'] || ''}`)) {
                 map.setPaintProperty(layer.id, 'fill-color', RACE_WATER_COLOR);
             }
@@ -98,7 +107,7 @@ export function applyRaceStyle(map, seaMarksVisible = false) {
         }
     };
     if (map.getLayer('openseamap') || map.isStyleLoaded?.() || map.loaded()) apply();
-    else map.once('load', apply);
+    else map.once('styledata', apply);
 }
 
 const SATELLITE_TILES = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';

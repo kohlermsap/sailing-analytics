@@ -20,6 +20,10 @@ package com.google.gwt.maps.client.overlays;
  * #L%
  */
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.maps.client.MapImpl;
 import com.google.gwt.maps.client.MapWidget;
@@ -37,6 +41,7 @@ import com.google.gwt.maps.client.overlays.overlayhandlers.OverlayViewOnRemoveHa
  * Doc</a>
  */
 public class OverlayView extends MVCObject<OverlayView> {
+  private static final Logger LOGGER = Logger.getLogger(OverlayView.class.getName());
 
   /**
    * use newInstance();
@@ -83,21 +88,34 @@ public class OverlayView extends MVCObject<OverlayView> {
 
     MapOverlay.prototype = new $wnd.google.maps.OverlayView();
 
-    MapOverlay.prototype.onAdd = function() {
-      $entry(@com.google.gwt.maps.client.overlays.OverlayView::onAddCallback(Lcom/google/gwt/maps/client/overlays/overlayhandlers/OverlayViewOnAddHandler;Lcom/google/gwt/maps/client/overlays/overlayhandlers/OverlayViewMethods;)(onAddHandler, this));
-    };
+    MapOverlay.prototype.onAdd = $entry(function() {
+      @com.google.gwt.maps.client.overlays.OverlayView::onAddCallback(Lcom/google/gwt/maps/client/overlays/overlayhandlers/OverlayViewOnAddHandler;Lcom/google/gwt/maps/client/overlays/overlayhandlers/OverlayViewMethods;)(onAddHandler, this);
+    });
 
-    MapOverlay.prototype.onRemove = function() {
-      $entry(@com.google.gwt.maps.client.overlays.OverlayView::onRemoveCallback(Lcom/google/gwt/maps/client/overlays/overlayhandlers/OverlayViewOnRemoveHandler;Lcom/google/gwt/maps/client/overlays/overlayhandlers/OverlayViewMethods;)(onRemoveHandler, this));
-    };
+    MapOverlay.prototype.onRemove = $entry(function() {
+      @com.google.gwt.maps.client.overlays.OverlayView::onRemoveCallback(Lcom/google/gwt/maps/client/overlays/overlayhandlers/OverlayViewOnRemoveHandler;Lcom/google/gwt/maps/client/overlays/overlayhandlers/OverlayViewMethods;)(onRemoveHandler, this);
+    });
 
-    MapOverlay.prototype.draw = function() {
-      $entry(@com.google.gwt.maps.client.overlays.OverlayView::onDrawCallback(Lcom/google/gwt/maps/client/overlays/overlayhandlers/OverlayViewOnDrawHandler;Lcom/google/gwt/maps/client/overlays/overlayhandlers/OverlayViewMethods;)(onDrawHandler, this));
-    };
+    MapOverlay.prototype.draw = $entry(function() {
+      try {
+        @com.google.gwt.maps.client.overlays.OverlayView::onDrawCallback(Lcom/google/gwt/maps/client/overlays/overlayhandlers/OverlayViewOnDrawHandler;Lcom/google/gwt/maps/client/overlays/overlayhandlers/OverlayViewMethods;)(onDrawHandler, this);
+        this.__drawFailureReported = false;
+      } catch (error) {
+        if (!this.__drawFailureReported) {
+          this.__drawFailureReported = true;
+          @com.google.gwt.maps.client.overlays.OverlayView::onDrawFailure(Ljava/lang/Object;)(error);
+        }
+      }
+    });
 
     var jso = new MapOverlay(map);
     return jso;
   }-*/;
+
+  private static void onDrawFailure(final Object error) {
+    final Throwable cause = error instanceof Throwable ? (Throwable) error : new JavaScriptException(error);
+    LOGGER.log(Level.SEVERE, /* msg */ "Map overlay draw failed", cause);
+  }
 
   private final static void onDrawCallback(OverlayViewOnDrawHandler handler, OverlayViewMethods methods) {
     handler.onDraw(methods);

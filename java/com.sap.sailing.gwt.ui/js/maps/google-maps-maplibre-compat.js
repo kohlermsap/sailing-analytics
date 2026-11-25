@@ -1,6 +1,6 @@
 // Core facade: implements the Google Maps JavaScript API surface on MapLibre GL JS.
 // Keep GWT wrapper conventions in gwt-maps-maplibre-compat.js.
-import { addCollapsedAttributionControl, applyRaceStyle, createArrowSvg, createRaceStyle, lngLat, mapTileServerTransformRequest, onMapTileServerError, setSatelliteVisible } from './maplibre-test-utils.js?v=race-map-feedback-20';
+import { addCollapsedAttributionControl, applyRaceStyle, createArrowSvg, createRaceStyle, lngLat, mapTileServerTransformRequest, onMapTileServerError, setSatelliteVisible } from './maplibre-test-utils.js?v=poi-sprite-fallback-1';
 
 function asLngLatLiteral(value) {
     if (Array.isArray(value)) return { lat: value[1], lng: value[0] };
@@ -185,7 +185,9 @@ class CompatMap {
             const width = element.clientWidth;
             const height = element.clientHeight;
             for (const canvas of this.overlayMouseTarget.querySelectorAll('canvas')) {
-                const fullMapCanvas = width > 0 && height > 0 && canvas.width >= width && canvas.height >= height;
+                const fullMapCanvas = width > 0 && height > 0
+                        && (canvas.__boatLogicalWidth ?? canvas.width) >= width
+                        && (canvas.__boatLogicalHeight ?? canvas.height) >= height;
                 const pointerEvents = canvas.style.cursor === 'pointer' && !fullMapCanvas ? 'auto' : 'none';
                 if (canvas.style.pointerEvents !== pointerEvents) canvas.style.pointerEvents = pointerEvents;
             }
@@ -692,12 +694,23 @@ class CompatOverlayView {
         if (!map) return;
         map.ready(() => queueMicrotask(() => {
             if (this._attachment !== attachment) return;
-            this._redraw = () => { if (this.map === map) this.draw?.(); };
+            this._redraw = () => { if (this.map === map) this.drawSafely(); };
             this.onAdd?.();
             if (this._attachment !== attachment) return;
-            this.draw?.();
+            this.drawSafely();
             if (this._attachment === attachment) map.map.on('move', this._redraw);
         }));
+    }
+    drawSafely() {
+        try {
+            this.draw?.();
+            this._drawFailureReported = false;
+        } catch (error) {
+            if (!this._drawFailureReported) {
+                this._drawFailureReported = true;
+                console.error('Map overlay draw failed', error);
+            }
+        }
     }
     getPanes() {
         return {

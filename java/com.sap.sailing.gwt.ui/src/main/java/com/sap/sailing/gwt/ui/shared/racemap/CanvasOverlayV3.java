@@ -412,10 +412,12 @@ public abstract class CanvasOverlayV3 {
         final double angleInRadians = Math.atan2(b, a);
         final double angleInDegrees = Math.toDegrees(angleInRadians);
         drawingAngle = drawingAngle == null ? angleInDegrees : getNewRotationWithMinimalDiff(angleInDegrees);
-        final double cosine = Math.cos(angleInRadians);
-        final double sine = Math.sin(angleInRadians);
+        final double forwardLength = Math.hypot(a, b);
+        // For a zero column, atan2 yields zero or +/-PI; preserve that rotation without dividing by zero.
+        final double cosine = forwardLength == 0 ? (angleInRadians == 0 ? 1 : -1) : a / forwardLength;
+        final double sine = forwardLength == 0 ? 0 : b / forwardLength;
         // Keep rotation explicit: Firefox interpolates raw matrices the long way across +/-180 degrees.
-        drawingMatrix = new double[] { Math.hypot(a, b), 0, cosine * c + sine * d, cosine * d - sine * c };
+        drawingMatrix = new double[] { forwardLength, 0, cosine * c + sine * d, cosine * d - sine * c };
         setCanvasTransform();
     }
     

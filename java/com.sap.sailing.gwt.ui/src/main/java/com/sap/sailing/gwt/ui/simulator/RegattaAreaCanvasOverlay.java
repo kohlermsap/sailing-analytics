@@ -1,13 +1,20 @@
 package com.sap.sailing.gwt.ui.simulator;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gwt.canvas.dom.client.Context2d;
 import com.google.gwt.canvas.dom.client.Context2d.TextAlign;
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.base.LatLng;
 import com.google.gwt.maps.client.base.Point;
+import com.google.gwt.maps.client.overlays.Circle;
+import com.google.gwt.maps.client.overlays.CircleOptions;
 import com.sap.sailing.gwt.ui.client.shared.racemap.CoordinateSystem;
 import com.sap.sailing.gwt.ui.simulator.racemap.FullCanvasOverlay;
 import com.sap.sailing.simulator.util.SailingSimulatorConstants;
+import com.sap.sse.common.Util;
+import com.sap.sse.common.impl.RGBColor;
 
 public class RegattaAreaCanvasOverlay extends FullCanvasOverlay {
 
@@ -19,6 +26,8 @@ public class RegattaAreaCanvasOverlay extends FullCanvasOverlay {
     private boolean initial;
     private double raceBearing = 0.0;
     private double diffBearing = 0.0;
+    private final List<Circle> areaCircles = new ArrayList<>();
+    private int lastStrokeWeight = -1;
 
     public RegattaAreaCanvasOverlay(MapWidget map, int zIndex, char event, final SimulatorMap simulatorMap, CoordinateSystem coordinateSystem) {
 
@@ -34,9 +43,24 @@ public class RegattaAreaCanvasOverlay extends FullCanvasOverlay {
     public void addToMap() {
         super.addToMap();
         
-        int counter = 0;
-        for (CourseAreaDescriptor courseArea : venue.getCourseAreas()) {
-            simulatorMap.drawCircleFromRadius(counter++, courseArea);
+        if (areaCircles.isEmpty()) {
+            int counter = 0;
+            final int background = simulatorMap.getWindParams().isShowStreamlets() ? 80 : 222;
+            for (final CourseAreaDescriptor courseArea : venue.getCourseAreas()) {
+                final Circle circle = simulatorMap.drawCircleFromRadius(counter++, courseArea);
+                final RGBColor color = new RGBColor(courseArea.getColor());
+                final CircleOptions options = CircleOptions.newInstance();
+                options.setFillColor(blendWithBackground(color, background, /* opacity */ 0.5));
+                options.setFillOpacity(1);
+                options.setStrokeColor(blendWithBackground(color, background, /* opacity */ 0.8));
+                options.setStrokeOpacity(1);
+                circle.setOptions(options);
+                areaCircles.add(circle);
+            }
+        } else {
+            for (final Circle circle : areaCircles) {
+                circle.setMap(map);
+            }
         }
         
         map.panTo(venue.getCenterPos());
@@ -66,13 +90,34 @@ public class RegattaAreaCanvasOverlay extends FullCanvasOverlay {
                 canvas.getCoordinateSpaceWidth(), canvas.getCoordinateSpaceHeight());
     }
 
+    @Override
+    public void removeFromMap() {
+        super.removeFromMap();
+        for (final Circle circle : areaCircles) {
+            circle.setMap(/* map */ null);
+        }
+    }
+
+    private String blendWithBackground(final RGBColor color, final int background, final double opacity) {
+        final Util.Triple<Integer, Integer, Integer> rgb = color.getAsRGB();
+        return new RGBColor((int) Math.round(opacity * rgb.getA() + (1 - opacity) * background),
+                (int) Math.round(opacity * rgb.getB() + (1 - opacity) * background),
+                (int) Math.round(opacity * rgb.getC() + (1 - opacity) * background)).getAsHtml();
+    }
+
     protected void drawRegattaAreas() {
-        final double pxStroke = Math.pow(2.0, (getMap().getZoom() - 10.0) / 2.0);
+        final int strokeWeight = Math.max(1, (int) Math.round(Math.pow(2.0, (getMap().getZoom() - 10.0) / 2.0)));
+        if (strokeWeight != lastStrokeWeight) {
+            final CircleOptions options = CircleOptions.newInstance();
+            options.setStrokeWeight(strokeWeight);
+            for (final Circle circle : areaCircles) {
+                circle.setOptions(options);
+            }
+            lastStrokeWeight = strokeWeight;
+        }
         final Context2d context2d = canvas.getContext2d();
-        context2d.setLineWidth(3);
-        context2d.setStrokeStyle("Black");
         for (final CourseAreaDescriptor courseArea : venue.getCourseAreas()) {
-            drawCourseArea(courseArea, context2d, pxStroke);
+            drawCourseAreaLabel(courseArea, context2d);
         }
     }
 
@@ -109,43 +154,10 @@ public class RegattaAreaCanvasOverlay extends FullCanvasOverlay {
     	this.currentCourseArea = courseArea;
     }
     
-    protected void drawCourseArea(final CourseAreaDescriptor courseArea, final Context2d context2d, final double pxStroke) {
+    protected void drawCourseAreaLabel(final CourseAreaDescriptor courseArea, final Context2d context2d) {
+        // Native circles clip geographic fills at the camera plane; this canvas contains only upright labels.
         final Point centerPoint = getMapProjection().fromLatLngToDivPixel(courseArea.getCenterPos());
-        final String bgColor;
-        if (simulatorMap.getWindParams().isShowStreamlets()) {
-            bgColor = "#505050";
-        } else {
-            bgColor = "#DEDEDE";
-        }
-        // Match the geographic circle's hit region rather than drawing a screen-space circle under tilt.
-        context2d.beginPath();
-        for (int step = 0; step < 64; step++) {
-            final LatLng boundary = getDistantPoint(courseArea.getCenterPos(), courseArea.getRadius(), step * 360.0 / 64);
-            final Point pixel = getMapProjection().fromLatLngToDivPixel(boundary);
-            final double x = pixel.getX() - getWidgetPosLeft();
-            final double y = pixel.getY() - getWidgetPosTop();
-            if (step == 0) {
-                context2d.moveTo(x, y);
-            } else {
-                context2d.lineTo(x, y);
-            }
-        }
-        context2d.closePath();
-        context2d.setGlobalAlpha(1.0f);
-        context2d.setFillStyle(bgColor);
-        context2d.fill();
-        context2d.setGlobalAlpha(0.5f);
-        context2d.setFillStyle(courseArea.getColor());
-        context2d.fill();
-        context2d.setGlobalAlpha(1.0f);
-        context2d.setLineWidth(pxStroke);
-        context2d.setStrokeStyle(bgColor);
-        context2d.stroke();
-        context2d.setGlobalAlpha(0.8f);
-        context2d.setStrokeStyle(courseArea.getColor());
-        context2d.stroke();
-
-        if (getMap().getZoom() >= 11) {
+        if (getMap().getZoom() >= 11 && Double.isFinite(centerPoint.getX()) && Double.isFinite(centerPoint.getY())) {
             context2d.setGlobalAlpha(0.8f);
             context2d.setFillStyle(courseArea.getColorText());
 

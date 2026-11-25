@@ -968,7 +968,7 @@ public class SimulatorMap extends AbsolutePanel implements RequiresDataInitializ
     	return raceCourseCanvasOverlay;
     }
    
-    public void drawCircleFromRadius(int regIdx, CourseAreaDescriptor courseArea) {
+    public Circle drawCircleFromRadius(int regIdx, CourseAreaDescriptor courseArea) {
    	 
         CircleOptions circleOptions = CircleOptions.newInstance();
         circleOptions.setStrokeColor("white");
@@ -1000,6 +1000,7 @@ public class SimulatorMap extends AbsolutePanel implements RequiresDataInitializ
                 }
             }
         });
-        circle.setMap(getMap());           
+        circle.setMap(getMap());
+        return circle;
     }
 }
